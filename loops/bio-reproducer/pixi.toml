@@ -18,15 +18,15 @@ nextflow = ">=24.0"
 python = ">=3.10"
 
 [tasks]
-install-skit = { cmd = "SKIT_BINDIR=${PIXI_PROJECT_ROOT}/.local/bin curl -fsSL https://raw.githubusercontent.com/vlln/skit/main/install.sh | sh" }
-install-mip = { cmd = "MIP_BINDIR=${PIXI_PROJECT_ROOT}/.local/bin curl -fsSL https://raw.githubusercontent.com/vlln/mip/main/scripts/install.sh | sh" }
+install-skit = { cmd = "SKIT_BINDIR=$SKIT_BINDIR curl -fsSL https://raw.githubusercontent.com/vlln/skit/main/install.sh | sh" }
+install-mip = { cmd = "MIP_BINDIR=$SKIT_BINDIR curl -fsSL https://raw.githubusercontent.com/vlln/mip/main/scripts/install.sh | sh" }
 
 # Skills
-install-skill-paperutils = { cmd = "skit install --dir ${PIXI_PROJECT_ROOT}/.skills https://github.com/vlln/paperutils/skills/paperutils"}
-install-skill-mineru-api = { cmd = "skit install --dir ${PIXI_PROJECT_ROOT}/.skills https://github.com/vlln/mineru-api-skill/skills/mineru-api" }
-install-skill-background-task = { cmd = "skit install --dir ${PIXI_PROJECT_ROOT}/.skills https://github.com/vlln/background-task-skill/skills/background-task" }
-install-skill-image-mirror = { cmd = "skit install --dir ${PIXI_PROJECT_ROOT}/.skills https://github.com/vlln/mip/skills/image-mirror-skill" }
-install-skill-bioskills = { cmd = "skit install --dir ${PIXI_PROJECT_ROOT}/.skills https://github.com/vlln/bio-skills --all" }
+install-skill-paperutils = { cmd = "skit install --dir $SKILLS_HOME https://github.com/vlln/paperutils/skills/paperutils"}
+install-skill-mineru-api = { cmd = "skit install --dir $SKILLS_HOME https://github.com/vlln/mineru-api-skill/skills/mineru-api" }
+install-skill-background-task = { cmd = "skit install --dir $SKILLS_HOME https://github.com/vlln/background-task-skill/skills/background-task" }
+install-skill-image-mirror = { cmd = "skit install --dir $SKILLS_HOME https://github.com/vlln/mip/skills/image-mirror-skill" }
+install-skill-bioskills = { cmd = "skit install --dir $SKILLS_HOME https://github.com/vlln/bio-skills --all" }
 
 install-skills = { cmd = "echo 'All skills installed'", depends-on = [
     "install-skill-paperutils",
