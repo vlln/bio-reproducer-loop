@@ -4,30 +4,38 @@
 
 ## 前置依赖
 
-- [loopflow](https://github.com/vlln/loopflow) — workflow 运行时
 - [pixi](https://pixi.sh) — 环境和依赖管理
-- [skit](https://github.com/vlln/skit) — skill 安装工具
+- [loopflow](https://github.com/vlln/loopflow) — workflow 运行时
 
-## 安装
+## 快速开始
 
 ```bash
+# 1. 安装 pixi（如未安装）
+curl -fsSL https://pixi.sh/install.sh | sh
+
+# 2. 安装 loopflow（如未安装）
+pip install loopflow
+
+# 3. Clone 并进入项目
 git clone git@github.com:vlln/bio-reproducer-loop.git
-cd bio-reproducer-loop
+cd bio-reproducer-loop/loops/bio-reproducer
 
-# 安装 skill 依赖
-cd loops/bio-reproducer
-pixi run install
-```
+# 4. 安装工具链和 skills
+pixi run install-skit      # skit — skill 包管理器
+pixi run install-mip        # mip — 镜像管理工具
+pixi run install-skills     # 所有 skill 依赖（paperutils、mineru-api 等）
 
-## 使用
+# 5. 验证环境
+pixi run check-env
 
-```bash
+# 6. 运行复现
+cd ../..  # 回到项目根目录
 loopflow run loops/bio-reproducer \
   --paper_path /path/to/paper.pdf \
   --language zh
 ```
 
-或指定 DOI：
+也可以指定 DOI 而非本地 PDF：
 
 ```bash
 loopflow run loops/bio-reproducer \
@@ -51,7 +59,7 @@ loopflow run loops/bio-reproducer \
 
 ```
 loops/bio-reproducer/
-├── workflow.py      # 阶段编排和门禁
+├── workflow.py      # 阶段编排和 phase gating
 ├── pixi.toml        # 环境和 skill 依赖
 ├── pixi.lock        # 锁定依赖版本
 └── agents/          # 各阶段 agent 定义
