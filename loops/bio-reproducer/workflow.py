@@ -1,5 +1,3 @@
-from loopflow import GoalBlocked
-
 meta = {
     "name": "bio-reproducer",
     "description": "复现生物信息学论文：7 阶段从论文提取到打包交付",
@@ -37,102 +35,95 @@ def run(agent, parallel, pipeline, phase, log, args, workflow, state):
 
     # ── Phase 1: Reader ──────────────────────────────────────────────
     phase("Reader")
-    try:
-        reader_result = agent(
-            "提取论文全部声明和资源。",
-            agent_def="reader",
-            goal="完整提取论文的所有方法声明、数据声明、工具声明和结果声明，创建完整的复现计划 plan.md。",
-            goal_max_iterations=5,
-            **common,
-        )
-    except GoalBlocked as e:
-        log(f"Reader blocked: {e}")
+    reader_result = agent(
+        "提取论文全部声明和资源。",
+        agent_def="reader",
+        goal="完整提取论文的所有方法声明、数据声明、工具声明和结果声明，创建完整的复现计划 plan.md。",
+        goal_max_iterations=5,
+        **common,
+    )
+    if reader_result is None:
+        log("Reader: goal blocked")
         return None
 
     # ── Phase 2: Bootstrap ───────────────────────────────────────────
     phase("Bootstrap")
-    try:
-        bootstrap_result = agent(
-            "检查 Java 11+、Nextflow、容器运行时。",
-            agent_def="bootstrap",
-            goal="完整检查所有系统运行时环境：Java、Nextflow、Docker，每个组件必须实际运行验证。",
-            goal_max_iterations=3,
-            **common,
-        )
-    except GoalBlocked as e:
-        log(f"Bootstrap blocked: {e}")
+    bootstrap_result = agent(
+        "检查 Java 11+、Nextflow、容器运行时。",
+        agent_def="bootstrap",
+        goal="完整检查所有系统运行时环境：Java、Nextflow、Docker，每个组件必须实际运行验证。",
+        goal_max_iterations=3,
+        **common,
+    )
+    if bootstrap_result is None:
+        log("Bootstrap: goal blocked")
         return None
 
     # ── Phase 3: Provision ───────────────────────────────────────────
     phase("Provision")
-    try:
-        provision_result = agent(
-            "部署工具容器环境。",
-            agent_def="provision",
-            goal="成功部署所有必需的工具容器镜像，每个镜像必须拉取成功并通过验证。",
-            goal_max_iterations=5,
-            **common,
-        )
-    except GoalBlocked as e:
-        log(f"Provision blocked: {e}")
+    provision_result = agent(
+        "部署工具容器环境。",
+        agent_def="provision",
+        goal="成功部署所有必需的工具容器镜像，每个镜像必须拉取成功并通过验证。",
+        goal_max_iterations=5,
+        **common,
+    )
+    if provision_result is None:
+        log("Provision: goal blocked")
         return None
 
     # ── Phase 4: Data ────────────────────────────────────────────────
     phase("Data")
-    try:
-        data_result = agent(
-            "下载分析所需数据。",
-            agent_def="data",
-            goal="完整下载所有必需数据文件：FASTQ 样本、参考基因组、微阵列数据。验证每个文件的完整性和预期大小。",
-            goal_max_iterations=8,
-            **common,
-        )
-    except GoalBlocked as e:
-        log(f"Data blocked: {e}")
+    data_result = agent(
+        "下载分析所需数据。",
+        agent_def="data",
+        goal="完整下载所有必需数据文件：FASTQ 样本、参考基因组、微阵列数据。验证每个文件的完整性和预期大小。",
+        goal_max_iterations=8,
+        **common,
+    )
+    if data_result is None:
+        log("Data: goal blocked")
         return None
 
     # ── Phase 5: Run ─────────────────────────────────────────────────
     phase("Run")
-    try:
-        run_result = agent(
-            "运行分析流水线。",
-            agent_def="run",
-            goal="成功运行完整的 RNA-Seq 分析流水线，生成所有图表和结果文件。",
-            goal_max_iterations=5,
-            **common,
-        )
-    except GoalBlocked as e:
-        log(f"Run blocked: {e}")
+    run_result = agent(
+        "运行分析流水线。",
+        agent_def="run",
+        goal="成功运行完整的 RNA-Seq 分析流水线，生成所有图表和结果文件。",
+        goal_max_iterations=5,
+        **common,
+    )
+    if run_result is None:
+        log("Run: goal blocked")
         return None
 
     # ── Phase 6: Validate ────────────────────────────────────────────
     phase("Validate")
-    try:
-        validate_result = agent(
-            "对比复现结果与论文声称。",
-            agent_def="validate",
-            goal="完整验证所有可复现的图表和指标，给出最终评分和偏差分析。",
-            goal_max_iterations=3,
-            **common,
-        )
-    except GoalBlocked as e:
-        log(f"Validate blocked: {e}")
+    validate_result = agent(
+        "对比复现结果与论文声称。",
+        agent_def="validate",
+        goal="完整验证所有可复现的图表和指标，给出最终评分和偏差分析。",
+        goal_max_iterations=3,
+        **common,
+    )
+    if validate_result is None:
+        log("Validate: goal blocked")
         return None
 
     # ── Phase 7: Package ─────────────────────────────────────────────
     verdict = validate_result.get("payload", {}).get("verdict") if validate_result else None
     if verdict in ("REPRODUCED", "PARTIAL"):
         phase("Package")
-        try:
-            package_result = agent(
-                "打包复现产物：生成 README、run.sh、.gitignore。",
-                agent_def="package",
-                goal="创建完整的复现产物包：README.md、run.sh、.gitignore。",
-                goal_max_iterations=3,
-                **common,
-            )
-        except GoalBlocked as e:
-            log(f"Package blocked: {e}")
+        package_result = agent(
+            "打包复现产物：生成 README、run.sh、.gitignore。",
+            agent_def="package",
+            goal="创建完整的复现产物包：README.md、run.sh、.gitignore。",
+            goal_max_iterations=3,
+            **common,
+        )
+        if package_result is None:
+            log("Package: goal blocked")
     else:
         log(f"跳过 Package：verdict={verdict}")
 
