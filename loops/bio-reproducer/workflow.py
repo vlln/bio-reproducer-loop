@@ -42,8 +42,8 @@ def run(agent, parallel, pipeline, phase, log, args, workflow, state):
         goal_max_iterations=5,
         **common,
     )
-    if reader_result is None:
-        log("Reader: goal blocked")
+    if reader_result.status != "complete":
+        log(f"Reader: {reader_result.status} — {reader_result.reason}")
         return None
 
     # ── Phase 2: Bootstrap ───────────────────────────────────────────
@@ -55,8 +55,8 @@ def run(agent, parallel, pipeline, phase, log, args, workflow, state):
         goal_max_iterations=3,
         **common,
     )
-    if bootstrap_result is None:
-        log("Bootstrap: goal blocked")
+    if bootstrap_result.status != "complete":
+        log(f"Bootstrap: {bootstrap_result.status} — {bootstrap_result.reason}")
         return None
 
     # ── Phase 3: Provision ───────────────────────────────────────────
@@ -68,8 +68,8 @@ def run(agent, parallel, pipeline, phase, log, args, workflow, state):
         goal_max_iterations=5,
         **common,
     )
-    if provision_result is None:
-        log("Provision: goal blocked")
+    if provision_result.status != "complete":
+        log(f"Provision: {provision_result.status} — {provision_result.reason}")
         return None
 
     # ── Phase 4: Data ────────────────────────────────────────────────
@@ -81,8 +81,8 @@ def run(agent, parallel, pipeline, phase, log, args, workflow, state):
         goal_max_iterations=8,
         **common,
     )
-    if data_result is None:
-        log("Data: goal blocked")
+    if data_result.status != "complete":
+        log(f"Data: {data_result.status} — {data_result.reason}")
         return None
 
     # ── Phase 5: Run ─────────────────────────────────────────────────
@@ -94,8 +94,8 @@ def run(agent, parallel, pipeline, phase, log, args, workflow, state):
         goal_max_iterations=5,
         **common,
     )
-    if run_result is None:
-        log("Run: goal blocked")
+    if run_result.status != "complete":
+        log(f"Run: {run_result.status} — {run_result.reason}")
         return None
 
     # ── Phase 6: Validate ────────────────────────────────────────────
@@ -107,12 +107,12 @@ def run(agent, parallel, pipeline, phase, log, args, workflow, state):
         goal_max_iterations=3,
         **common,
     )
-    if validate_result is None:
-        log("Validate: goal blocked")
+    if validate_result.status != "complete":
+        log(f"Validate: {validate_result.status} — {validate_result.reason}")
         return None
 
     # ── Phase 7: Package ─────────────────────────────────────────────
-    verdict = validate_result.get("payload", {}).get("verdict") if validate_result else None
+    verdict = validate_result.value.get("payload", {}).get("verdict") if validate_result.value else None
     if verdict in ("REPRODUCED", "PARTIAL"):
         phase("Package")
         package_result = agent(
@@ -122,9 +122,9 @@ def run(agent, parallel, pipeline, phase, log, args, workflow, state):
             goal_max_iterations=3,
             **common,
         )
-        if package_result is None:
-            log("Package: goal blocked")
+        if package_result.status != "complete":
+            log(f"Package: {package_result.status} — {package_result.reason}")
     else:
         log(f"跳过 Package：verdict={verdict}")
 
-    return validate_result
+    return validate_result.value
