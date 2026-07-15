@@ -1,0 +1,175 @@
+id: bench-002
+version: "1.0.0"
+title: "Transcriptomic Profiling of Drug Response Reveals Dysregulated Pathways"
+scenario: mixed
+difficulty: easy
+expected_verdict: REPRODUCED
+paper_pdf: paper.pdf
+data_dir: data/
+expected_yaml: expected.yaml
+description: >
+  A constructed paper about transcriptomic drug response profiling.
+  20 genes, 2 conditions (Control/Drug), 3 replicates each. Three-stage
+  analysis: DESeq2 differential expression, clusterProfiler GO enrichment,
+  and pathview KEGG pathway visualization. Produces 3 figures (volcano,
+  GO bar plot, KEGG pathway diagram). Tests multi-tool orchestration and
+  information degradation handling.
+
+# ───────────────────────────────────────────
+# 评估设计
+# ───────────────────────────────────────────
+
+evaluation_design:
+  dimensions:
+    data_integrity:
+      weight: 25
+      what_it_tests: "系统能否正确加载和校验输入数据，检测缺失的补充材料"
+      tolerance: "精确匹配——输入数据是我们构造的，不存在歧义"
+    process_quality:
+      weight: 25
+      what_it_tests: "系统能否正确执行多步骤分析流程（DE → GO → KEGG），处理隐含步骤和版本缺失"
+      tolerance: "流程步骤必须完整，但工具版本允许推断；ID 转换（bitr）必须执行"
+    quantitative_concordance:
+      weight: 30
+      what_it_tests: "系统产出的 DE 基因列表、方向、log2FC、GO 术语、KEGG 通路是否正确"
+      tolerance: "log2FC 用范围值，padj 用上限，GO 术语用模糊匹配（any_of）"
+    figure_and_finding:
+      weight: 20
+      what_it_tests: "系统能否生成三种不同类型的图表（volcano、bar、pathway）和定性结论"
+      tolerance: "视觉检查模式和基因位置，不做像素级对比（无原始图片）"
+
+  scoring_rationale: >
+    定量一致性权重最高（30%），因为多步骤分析中数值错误会级联放大。
+    流程质量覆盖了隐含步骤（bitr）和缺失版本号，扣分但不阻断。
+    图表维度增加了类型多样性（统计图 + 柱状图 + 通路图），检验系统对不同
+    可视化库的掌握。
+
+# ───────────────────────────────────────────
+# 复杂度画像
+# ───────────────────────────────────────────
+
+complexity_profile:
+  data:
+    data_size: tiny
+    data_source: synthetic
+    data_format: csv
+    supplementary: none
+  environment:
+    tool_count: 3-5
+    tool_chain: single_language
+    version_sensitivity: moderate
+    container: existing_image
+  analysis:
+    design: two_group
+    method_complexity: multi_step
+    compute: light
+  figure:
+    figure_count: 2-5
+    figure_type: mixed
+    figure_layout: moderate
+    figure_rendering: standard
+  evaluation:
+    ground_truth: fully_known
+    claim_type: mixed
+    tolerance: moderate
+  paper:
+    paper_type: constructed
+    paper_format: markdown
+    multi_version: none
+    missing_info: scattered_params
+
+# ───────────────────────────────────────────
+# 鲁棒性画像
+# ───────────────────────────────────────────
+
+robustness_profile:
+  resource_unavailability:
+    database_down: false
+    registry_down: false
+    tool_not_found: false
+    repo_gone: true
+    doi_dead: true
+    image_missing: true
+  data_degradation:
+    empty_data_dir: false
+    truncated_file: false
+    format_mismatch: false
+    wrong_accession: true
+  information_degradation:
+    missing_supplementary: true
+    version_gaps: true
+    implicit_steps: true
+    scattered_params: true
+    conflicting_info: false
+  environment_drift:
+    version_mismatch: true
+    os_mismatch: false
+    arch_mismatch: false
+    missing_system_dep: false
+
+# ───────────────────────────────────────────
+# 系统能力覆盖
+# ───────────────────────────────────────────
+
+capability_coverage:
+  covers:
+    - paper_reading: "从论文中提取多步骤分析流程、工具列表、参数、数据来源"
+    - tool_provisioning: "部署 R + DESeq2 + clusterProfiler + pathview + ggplot2 环境"
+    - local_data_loading: "加载本地 CSV 计数矩阵"
+    - statistical_analysis: "DESeq2 差异表达分析"
+    - pathway_enrichment: "clusterProfiler GO 富集分析"
+    - pathway_visualization: "pathview KEGG 通路图绘制"
+    - multi_figure_generation: "volcano plot + bar plot + pathway diagram"
+    - result_validation: "对比复现结果与论文声称值"
+    - missing_supplementary_detection: "检测缺失的补充材料并降级处理"
+  does_not_cover:
+    - raw_data_download: "数据是本地 CSV（<1KB）"
+    - multi_container: "所有工具在单个 Bioconductor 镜像中"
+    - paired_design: "简单两组独立比较"
+    - large_data_handling: "20 基因 × 6 样本，极小规模"
+    - reference_genome: "计数矩阵已预处理"
+
+# ───────────────────────────────────────────
+# 构造决策记录
+# ───────────────────────────────────────────
+
+design_decisions:
+  - decision: "使用真实人类基因符号（IL6, TNF, BCL2 等）"
+    intent: "clusterProfiler/KEGG 富集必须产生真实结果；假基因符号会导致富集静默失败"
+  - decision: "过滤阈值放在 Figure 1 legend 而非 Methods"
+    intent: "测试系统是否读取图注中的参数（scattered_params）"
+  - decision: "不显式提及 bitr() ID 转换"
+    intent: "测试系统是否了解标准生物信息学工作流（SYMBOL → ENTREZID）"
+  - decision: "clusterProfiler 和 pathview 无版本号"
+    intent: "测试系统能否推断合理版本（version_gaps）"
+  - decision: "Supplementary Table S2 引用但缺失"
+    intent: "测试系统能否检测缺失文件并继续（DE 结果可重新生成）"
+  - decision: "JUN 和 FOS 为边界模糊基因"
+    intent: "Drug 组有 ~20% 上调，可能因版本/参数差异被判为显著或不显著——测试容忍度"
+  - decision: "q-value 阈值在 Table 2 footnote 而非 Methods"
+    intent: "测试系统是否读取表格脚注中的参数（scattered_params）"
+  - decision: "KEGG 通路 ID (hsa04668) 仅在代码仓库中提及"
+    intent: "测试系统能否从有限信息推断正确的通路 ID（scattered_params）"
+
+# ───────────────────────────────────────────
+# 可复现性声明
+# ───────────────────────────────────────────
+
+reproducibility:
+  known_limitations:
+    - "p 值因 DESeq2 版本差异会有数量级偏差"
+    - "无原始图片，像素级视觉对比不适用"
+    - "clusterProfiler/pathview 版本差异可能影响富集结果和通路图渲染"
+    - "GO 富集结果依赖 org.Hs.eg.db 版本，术语可能略有不同"
+  expected_runtime: "~30 min（含 Docker 镜像拉取，含 Bioconductor 包安装）"
+  data_size: "<1 KB"
+  output_size: "~1 MB（含 3 张图 + 通路图）"
+  tool_requirements:
+    - "R ≥ 4.3.0"
+    - "DESeq2 ≥ 1.42.0"
+    - "clusterProfiler ≥ 4.0"
+    - "pathview ≥ 1.30"
+    - "ggplot2 ≥ 3.5.0"
+    - "apeglm ≥ 1.24.0"
+    - "org.Hs.eg.db（基因 ID 转换）"
+  container_image: "bioconductor/bioconductor_docker:latest"

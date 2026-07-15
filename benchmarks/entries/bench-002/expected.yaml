@@ -1,0 +1,174 @@
+id: bench-002
+version: "1.0.0"
+expected_verdict: REPRODUCED
+min_score: 80
+runs_required: 5
+verdict_match_threshold: 0.6
+
+checks:
+  data_integrity:
+    - check_id: D1
+      description: "Count matrix has 20 genes and 6 samples"
+      type: auto
+      expected:
+        n_genes: 20
+        n_samples: 6
+    - check_id: D2
+      description: "All expected output files generated (non-empty)"
+      type: auto
+      expected:
+        files_non_empty: true
+    - check_id: D3
+      description: "Supplementary Table S2 is missing; system should detect and proceed"
+      type: auto
+      expected:
+        supplementary_missing: "Supplementary Table S2"
+        handling: "detected_or_proceeded"
+
+  process_quality:
+    - check_id: Q1
+      description: "DESeq2 differential expression analysis completed without error"
+      type: auto
+      expected:
+        status: success
+    - check_id: Q2
+      description: "clusterProfiler GO enrichment analysis completed without error"
+      type: auto
+      expected:
+        status: success
+    - check_id: Q3
+      description: "pathview KEGG pathway visualization completed without error"
+      type: auto
+      expected:
+        status: success
+    - check_id: Q4
+      description: "R version is 4.3.x or compatible"
+      type: auto
+      expected:
+        r_version_pattern: "4\\.3"
+    - check_id: Q5
+      description: "Multi-step pipeline: DE -> GO enrichment -> KEGG visualization executed in order"
+      type: auto
+      expected:
+        pipeline_stages: ["differential_expression", "go_enrichment", "kegg_visualization"]
+        executed_in_order: true
+    - check_id: Q6
+      description: "Gene ID conversion performed (SYMBOL to ENTREZID) for clusterProfiler"
+      type: auto
+      expected:
+        id_conversion_performed: true
+
+  quantitative_concordance:
+    - check_id: R1
+      description: "IL6 is significantly upregulated"
+      type: auto
+      expected:
+        gene: IL6
+        direction: up
+        log2fc_min: 1.5
+        padj_max: 0.01
+    - check_id: R2
+      description: "TNF is significantly upregulated"
+      type: auto
+      expected:
+        gene: TNF
+        direction: up
+        log2fc_min: 1.0
+        padj_max: 0.01
+    - check_id: R3
+      description: "CXCL8 is significantly upregulated"
+      type: auto
+      expected:
+        gene: CXCL8
+        direction: up
+        log2fc_min: 1.0
+        padj_max: 0.01
+    - check_id: R4
+      description: "IL1B is significantly upregulated"
+      type: auto
+      expected:
+        gene: IL1B
+        direction: up
+        log2fc_min: 0.8
+        padj_max: 0.05
+    - check_id: R5
+      description: "BCL2 is significantly downregulated"
+      type: auto
+      expected:
+        gene: BCL2
+        direction: down
+        log2fc_max: -1.0
+        padj_max: 0.01
+    - check_id: R6
+      description: "MCL1 is significantly downregulated"
+      type: auto
+      expected:
+        gene: MCL1
+        direction: down
+        log2fc_max: -0.8
+        padj_max: 0.01
+    - check_id: R7
+      description: "At least 5 significant genes found (padj < 0.05)"
+      type: auto
+      expected:
+        min_sig_genes: 5
+    - check_id: R8
+      description: "GO enrichment identifies inflammatory response or related terms"
+      type: auto
+      expected:
+        go_terms_any_of:
+          - "GO:0006954"
+          - "inflammatory response"
+          - "cytokine"
+          - "cytokine-mediated signaling"
+    - check_id: R9
+      description: "GO enrichment identifies apoptosis-related terms"
+      type: auto
+      expected:
+        go_terms_any_of:
+          - "GO:0006915"
+          - "GO:0043067"
+          - "apoptotic"
+          - "programmed cell death"
+
+  figure_and_finding:
+    - check_id: F1
+      description: "Volcano plot generated with highlighted significant genes"
+      type: auto
+      expected:
+        figure_exists: true
+        figure_type: volcano
+    - check_id: F2
+      description: "Volcano plot shows IL6, TNF, CXCL8, IL1B as upregulated and BCL2, MCL1 as downregulated"
+      type: visual
+      expected:
+        highlighted_genes: ["IL6", "TNF", "CXCL8", "IL1B", "BCL2", "MCL1"]
+    - check_id: F3
+      description: "GO enrichment bar plot generated"
+      type: auto
+      expected:
+        figure_exists: true
+        figure_type: barplot
+    - check_id: F4
+      description: "GO bar plot shows at least 5 enriched terms"
+      type: visual
+      expected:
+        min_terms: 5
+    - check_id: F5
+      description: "KEGG pathway diagram generated"
+      type: auto
+      expected:
+        figure_exists: true
+        figure_type: kegg_pathway
+    - check_id: F6
+      description: "KEGG pathway diagram shows TNF signaling pathway with gene coloring"
+      type: visual
+      expected:
+        pathway: "TNF signaling"
+        colored_genes: true
+    - check_id: F7
+      description: "Qualitative conclusion: Drug induces inflammatory + suppresses anti-apoptotic programs"
+      type: qualitative
+      expected:
+        conclusion_inflammatory: true
+        conclusion_anti_apoptotic: true
