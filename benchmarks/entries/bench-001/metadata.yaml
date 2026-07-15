@@ -13,3 +13,123 @@ description: >
   Uses R + DESeq2. Expected output: volcano plot and differential
   expression table. This is a minimal smoke test for the system's
   ability to read a paper, provision tools, and run analysis.
+
+# ───────────────────────────────────────────
+# 评估设计
+# ───────────────────────────────────────────
+
+evaluation_design:
+  dimensions:
+    data_integrity:
+      weight: 25
+      what_it_tests: "系统能否正确加载和校验输入数据（基因数、样本数、文件产出）"
+      tolerance: "精确匹配——输入数据是我们构造的，不存在歧义"
+    process_quality:
+      weight: 25
+      what_it_tests: "系统能否使用正确的工具和参数完成分析流程"
+      tolerance: "版本号用正则匹配而非精确值（如 R 4\\.3 而非 4.3.0），因为环境版本漂移是预期内的"
+    quantitative_concordance:
+      weight: 30
+      what_it_tests: "系统产出的数值是否在可接受范围内（方向、log2FC、p 值）"
+      tolerance: >
+        log2FC 用范围值（min/max）而非精确值，因为 DESeq2 版本差异和 apeglm
+        shrinkage 算法变化会导致 ~15% 偏差。p 值只设上限不设下限，因为新版
+        DESeq2 在小样本上会产生更极端的 p 值。
+    figure_and_finding:
+      weight: 20
+      what_it_tests: "系统能否复现关键图表（volcano plot）和定性结论"
+      tolerance: "视觉检查基因位置和模式，不做像素级对比（无原始图片）"
+
+  scoring_rationale: |
+    四个维度权重不同：定量一致性（30%）权重最高，因为它直接反映分析结果的
+    正确性；数据完整性（25%）和流程质量（25%）是基础保障；图表复现（20%）
+    是定性验证。总分 ≥ 85 为 REPRODUCED——允许版本差异导致的轻微数值偏差，
+    但方向和显著性必须一致。
+
+# ───────────────────────────────────────────
+# 系统能力覆盖
+# ───────────────────────────────────────────
+
+capability_coverage:
+  covers:
+    - paper_reading: "从论文中提取工具列表、参数、数据来源、预期结果"
+    - tool_provisioning: "部署 R + DESeq2 + ggplot2 + apeglm 环境"
+    - local_data_loading: "加载本地 CSV 计数矩阵"
+    - statistical_analysis: "DESeq2 差异表达分析（Wald test + apeglm shrinkage）"
+    - figure_generation: "ggplot2 生成 volcano plot"
+    - result_validation: "对比复现结果与论文声称值"
+    - package_delivery: "生成 README + run.sh 可复现包"
+  does_not_cover:
+    - raw_data_download: "数据是本地 CSV（<1KB），不需要下载 FASTQ 或访问 GEO/SRA"
+    - multi_tool_pipeline: "仅使用 R + DESeq2，无 Nextflow 多步骤流程"
+    - large_data_handling: "10 基因 × 6 样本，极小规模"
+    - paired_design: "简单两组独立比较，无配对/时间序列/因子设计"
+    - reference_genome: "计数矩阵已预处理，不需要参考基因组或比对"
+    - docker_image_building: "使用已有 Bioconductor 镜像，不需要自定义 Dockerfile"
+
+# ───────────────────────────────────────────
+# 构造决策记录
+# ───────────────────────────────────────────
+
+design_decisions:
+  - decision: "论文以 Markdown 而非 PDF 提供"
+    intent: "测试系统能否处理非标准输入格式；Reader 需检测并跳过 mineru-api 转换"
+
+  - decision: "GEO accession GSE99999 指向不相关研究（硬皮病）"
+    intent: "测试 Agent 能否检测资源不匹配，正确 fallback 到本地 counts.csv"
+
+  - decision: "GitHub URL https://github.com/example/deseq2-analysis 返回 404"
+    intent: "测试 Agent 能否从 Methods 文本重建分析脚本，而非阻塞等待缺失代码"
+
+  - decision: "DOI 10.1234/bench.001 不可解析"
+    intent: "测试 Agent 对虚构 benchmark 标识符的处理——应记录为不可解析而非崩溃"
+
+  - decision: "论文声明 R 4.3.0 / DESeq2 1.42.0，实际环境版本更新"
+    intent: "测试版本漂移时评估系统是否合理归因（版本差异）而非直接判定失败"
+
+  - decision: "10 基因极小规模"
+    intent: "验证功能正确性，不测性能/规模；使单次运行 ≤ 30 分钟"
+
+  - decision: "计数矩阵中 Gene_A 实际 log2FC ~2.95 但论文声称 2.5"
+    intent: "模拟真实场景中归一化和 shrinkage 导致的数值偏差，测试 expected.yaml 容忍度设计的有效性"
+
+  - decision: "无原始 Figure 1 图片"
+    intent: "测试系统在缺少原始参考图时的降级评估能力（模式对比而非像素对比）"
+
+# ───────────────────────────────────────────
+# 可复现性声明
+# ───────────────────────────────────────────
+
+reproducibility:
+  known_limitations:
+    - "p 值因 DESeq2 版本差异会有数量级偏差（0.0008 vs 4e-119），这是预期行为"
+    - "无原始 figure 图片，K6 检查项为 N/A，无法做像素级视觉对比"
+    - "log2FC 因 apeglm 版本差异会有 ~15% 偏差"
+  expected_runtime: "~25 min（含 Docker 镜像拉取，不含首次拉取时间）"
+  data_size: "<1 KB"
+  output_size: "~500 KB（含 volcano plot PNG/PDF）"
+  tool_requirements:
+    - "R ≥ 4.3.0"
+    - "DESeq2 ≥ 1.42.0"
+    - "ggplot2 ≥ 3.5.0"
+    - "apeglm ≥ 1.24.0"
+  container_image: "bioconductor/bioconductor_docker:latest"
+
+# ───────────────────────────────────────────
+# 基准线
+# ───────────────────────────────────────────
+
+baseline:
+  established: "2026-07-15"
+  runs: 1
+  verdict: REPRODUCED
+  score: 87
+  score_breakdown:
+    data_integrity: "25/25"
+    process_quality: "20/25"
+    quantitative_concordance: "22.5/30"
+    figure_and_finding: "20/20"
+  notes: >
+    首次运行。主要扣分项：软件版本差异（R 4.6.1 vs 4.3.0, DESeq2 1.52.0 vs
+    1.42.0）导致 p 值数量级差异。log2FC 偏差在预期范围内。需要跑满 5 次建立
+    分布基线。
