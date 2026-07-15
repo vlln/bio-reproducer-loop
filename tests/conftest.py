@@ -33,10 +33,15 @@ def load_expected(bench_id: str) -> dict:
 @pytest.fixture
 def bench_001():
     """Fixture for bench-001 (basic figure reproduction)."""
+    entry_dir = BENCHMARKS_DIR / "bench-001"
+    # Prefer PDF, fall back to Markdown
+    paper = entry_dir / "paper.pdf"
+    if not paper.exists():
+        paper = entry_dir / "paper.md"
     return {
         "id": "bench-001",
-        "paper_pdf": str(BENCHMARKS_DIR / "bench-001" / "paper.pdf"),
-        "data_dir": str(BENCHMARKS_DIR / "bench-001" / "data"),
+        "paper_path": str(paper),
+        "data_dir": str(entry_dir / "data"),
         "expected": load_expected("bench-001"),
     }
 
