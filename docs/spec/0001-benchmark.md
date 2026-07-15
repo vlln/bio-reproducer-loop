@@ -43,7 +43,7 @@ created: 2026-07-15T00:00:00Z
 
 | 模块 | 提供的能力 | 目录路径 | 优先级 |
 |------|-----------|---------|---------|
-| L1 单元测试 | 单 Phase Agent 可靠性验证、schema 合规检查、行为稳定性测量 | `tests/unit/` | P0 |
+| L1 单元测试 | 单 Phase Agent 业务逻辑正确性验证、行为稳定性测量 | `tests/unit/` | P0 |
 | L2 集成测试 | 跨 Phase 信息流验证、非完美上游处理验证、变更影响检测 | `tests/integration/` | P0 |
 | L3 能力基准 | 构造论文端到端黑盒测试、复现场景覆盖 | `benchmarks/entries/` | P0 |
 | L4 工程基准 | 真实论文冻结环境测试、工程复杂度覆盖 | `benchmarks/entries/` | P1 |
