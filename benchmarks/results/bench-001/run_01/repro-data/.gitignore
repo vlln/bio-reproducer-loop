@@ -1,0 +1,26 @@
+# Task execution logs
+*.log
+.task_status/
+
+# Nextflow work directory (large intermediate files)
+work/
+.nextflow/
+.nextflow.log*
+
+# Container / Singularity images
+*.sif
+*.img
+
+# R package library (if installed locally)
+.renv/
+renv/library/
+renv/staging/
+
+# R session data
+.RData
+.Rhistory
+.Rproj.user/
+
+# Editor / OS artifacts
+*~
+.DS_Store
