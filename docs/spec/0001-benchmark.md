@@ -11,7 +11,9 @@ created: 2026-07-15T00:00:00Z
 
 ## 一、项目概述
 
-为 bio-reproducer 构建系统化测试与测评体系。分为两个域：L1-L2 内部测试（耦合于 bio-reproducer 实现），L3-L5 黑盒基准（引擎无关，可成为公开标准）。
+本 Spec 覆盖 bio-reproducer 的**测试与基准体系**（L1-L5）。论文复现系统本身（`loops/bio-reproducer/`）是已有实现，不在本 Spec 范围内——其设计见 `loops/bio-reproducer/agents/` 和 `workflow.py`。
+
+测试体系分为两个域：L1-L2 内部测试（耦合于复现系统实现），L3-L5 黑盒基准（引擎无关，可成为公开标准）。
 
 ### 两个域的关键区别
 
