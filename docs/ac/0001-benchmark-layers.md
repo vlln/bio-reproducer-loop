@@ -54,8 +54,10 @@ created: 2026-07-15T00:00:00Z
 
 | 编号 | 前置条件 | 操作步骤 | 预期结果 | 验证方式 |
 |------|---------|---------|---------|---------|
-| AC-0002-B-1 | plan.md 中 Data Requirements 表为空 | 运行 Data agent | 标记为 partial 或 blocked，说明原因 | Agent 判定 |
-| AC-0002-B-2 | provision.md 中某工具 status 为 failed | 运行 Run agent | 识别不可用工具，记录受影响步骤 | Agent 判定 |
+| AC-0002-B-1 | plan.md 中 Data Requirements 表为空 | 运行 Data agent | 标记为 partial 或 blocked，不崩溃 | 自动化（检查 status 字段） |
+| AC-0002-B-2 | provision.md 中某工具 status 为 failed | 运行 Run agent | 识别不可用工具，记录受影响步骤 | 自动化（检查 status 字段 + payload 包含 missing 记录） |
+
+注：L2 的边界场景只验证 Agent 产出的 schema 合规性（status 字段是否正确、是否崩溃），不验证 Agent 的语义判断是否合理（如"是否盲目搜索了"）。语义正确性由 L3 黑盒测试覆盖。
 
 ## 异常场景
 
