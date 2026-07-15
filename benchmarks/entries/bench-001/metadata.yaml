@@ -81,6 +81,35 @@ complexity_profile:
     missing_info: none
 
 # ───────────────────────────────────────────
+# 鲁棒性画像（注入故障）
+# ───────────────────────────────────────────
+
+robustness_profile:
+  resource_unavailability:
+    database_down: false
+    registry_down: false
+    tool_not_found: false
+    repo_gone: true
+    doi_dead: true
+    image_missing: true
+  data_degradation:
+    empty_data_dir: false
+    truncated_file: false
+    format_mismatch: false
+    wrong_accession: true
+  information_degradation:
+    missing_supplementary: false
+    version_gaps: true
+    implicit_steps: false
+    scattered_params: false
+    conflicting_info: false
+  environment_drift:
+    version_mismatch: true
+    os_mismatch: false
+    arch_mismatch: false
+    missing_system_dep: false
+
+# ───────────────────────────────────────────
 # 系统能力覆盖
 # ───────────────────────────────────────────
 
