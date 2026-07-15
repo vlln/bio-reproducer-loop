@@ -196,6 +196,63 @@ bio-reproducer/
 | paper_pdf | path | NOT NULL | 论文 PDF 路径 |
 | data_dir | path | NOT NULL | 数据集目录 |
 | expected_yaml | path | NOT NULL | 测评期望文件路径 |
+| complexity_profile | dict | 推荐 | 复杂度维度取值，用于可发现性和能力匹配 |
+
+### 复杂度维度分类法
+
+每个 benchmark entry 在 `metadata.yaml` 中声明 `complexity_profile`，标记该 entry 在各维度上的复杂度水平。所有 entry 共享同一套分类法，外部系统可按维度查询和筛选。
+
+#### 数据层
+
+| 维度 | 取值 | 说明 |
+|------|------|------|
+| data_size | tiny / small / medium / large / huge | tiny: <10KB, small: <10MB, medium: <100MB, large: <10GB, huge: >10GB |
+| data_source | local / public_db / restricted / synthetic | 数据来源：本地文件 / 公共数据库(GEO/SRA) / 需申请权限 / 系统生成 |
+| data_format | csv / tsv / rds / fastq / bam / mixed | 主要数据格式 |
+| supplementary | none / simple / complex | 补充材料复杂度：无 / 单表或简单文本 / 多附件嵌套格式 |
+
+#### 环境层
+
+| 维度 | 取值 | 说明 |
+|------|------|------|
+| tool_count | 1-2 / 3-5 / 6+ | 论文所需的工具/包数量 |
+| tool_chain | single_language / multi_language / multi_container | 工具链复杂度 |
+| version_sensitivity | loose / moderate / strict / critical | 版本差异对结果的影响程度 |
+| container | existing_image / custom_dockerfile / manual_build | 容器化难度 |
+
+#### 分析层
+
+| 维度 | 取值 | 说明 |
+|------|------|------|
+| design | two_group / paired / multi_factor / time_series / meta_analysis | 实验设计类型 |
+| method_complexity | standard / multi_step / parameter_tuning | 分析方法复杂度 |
+| compute | light / moderate / heavy | 计算资源需求：light(<5min) / moderate(5-30min) / heavy(>1h) |
+
+#### 图表层
+
+| 维度 | 取值 | 说明 |
+|------|------|------|
+| figure_count | 1 / 2-5 / 6+ | 需复现的图表数量 |
+| figure_type | statistical / heatmap / trajectory / multi_panel / mixed | 图表类型 |
+| figure_layout | simple / moderate / complex | 单面板 / 多面板 / 多图嵌套 |
+| figure_rendering | standard / custom_palette / complex_annotation | 渲染复杂度 |
+
+#### 评估层
+
+| 维度 | 取值 | 说明 |
+|------|------|------|
+| ground_truth | fully_known / partially_known / unknown | 正确答案的完整性 |
+| claim_type | exact_numeric / directional / qualitative / mixed | 论文声称的类型 |
+| tolerance | strict / moderate / loose | 数值比对容忍度 |
+
+#### 论文层
+
+| 维度 | 取值 | 说明 |
+|------|------|------|
+| paper_type | constructed / real_preprint / real_published | 构造论文 / 真实预印本 / 真实发表 |
+| paper_format | pdf / markdown / html | 论文格式 |
+| multi_version | none / preprint_published / versioned_dataset | 是否存在多版本问题 |
+| missing_info | none / implicit_steps / scattered_params / version_gaps | 论文信息的完整程度 |
 
 ### BenchmarkResult
 
