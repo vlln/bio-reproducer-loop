@@ -254,6 +254,59 @@ bio-reproducer/
 | multi_version | none / preprint_published / versioned_dataset | 是否存在多版本问题 |
 | missing_info | none / implicit_steps / scattered_params / version_gaps | 论文信息的完整程度 |
 
+### 鲁棒性维度分类法
+
+复杂度维度测量"有多难"，鲁棒性维度测量"会不会坏"——benchmark 设计者故意注入故障，测试系统能否正确检测、降级、或绕过。取值均为二元（true/false），true 表示该 entry 注入了此类故障。
+
+#### 外部资源不可用
+
+| 维度 | 说明 | 示例 |
+|------|------|------|
+| database_down | GEO/SRA/ENA 等公共数据库不可访问 | 网络断开、数据库维护 |
+| registry_down | 容器镜像仓库不可用 | Docker Hub/Quay 宕机 |
+| tool_not_found | 论文声明的工具不存在或已改名 | 包名变更、仓库归档 |
+| repo_gone | 论文声明的代码仓库 404 | 作者删库、链接失效 |
+| doi_dead | 论文 DOI 不可解析 | 虚构 DOI、链接失效 |
+| image_missing | 论文原始图片缺失，无法做像素级视觉对比 | 预印本无图、PDF 提取失败 |
+
+#### 数据降级
+
+| 维度 | 说明 | 示例 |
+|------|------|------|
+| empty_data_dir | data/ 目录为空，无可用的本地数据 | 数据未预下载 |
+| truncated_file | 数据文件截断或损坏 | 下载中断、文件不完整 |
+| format_mismatch | 文件格式与论文声明不符 | 声称 CSV 实为 TSV、声称 RDS 实为 RData |
+| wrong_accession | GEO/SRA accession 指向不相关数据 | 论文笔误、accession 重用 |
+
+#### 信息降级
+
+| 维度 | 说明 | 示例 |
+|------|------|------|
+| missing_supplementary | 补充材料不可获取 | 链接失效、需付费 |
+| version_gaps | 工具版本号不精确，只能推断 | "使用最新版"、"DESeq2" |
+| implicit_steps | 关键分析步骤未显式写出 | 未提及标准化方法、未说明过滤条件 |
+| scattered_params | 参数分散在正文、补充材料、代码注释中 | 阈值在 Methods，模型参数在 Suppl Table 2 |
+| conflicting_info | 正文与补充材料/代码中的信息矛盾 | 正文说 n=6，补充材料表显示 n=5 |
+
+#### 环境漂移
+
+| 维度 | 说明 | 示例 |
+|------|------|------|
+| version_mismatch | 软件版本与论文声明不同 | 论文要求 R 4.3.0，环境为 R 4.6.1 |
+| os_mismatch | 操作系统不同 | 论文基于 CentOS，环境为 macOS |
+| arch_mismatch | CPU 架构不同 | 论文基于 x86_64，环境为 ARM64 |
+| missing_system_dep | 系统级依赖缺失，需手动安装 | libxml2、libcurl 未安装 |
+
+#### 与复杂度维度的关系
+
+| | 复杂度维度 | 鲁棒性维度 |
+|---|---|---|
+| 问题 | "有多难？" | "会不会坏？" |
+| 取值 | 渐进 (tiny/medium/large) | 二元 (true/false) |
+| 来源 | 论文本身决定的 | benchmark 设计者故意注入的 |
+| 用途 | 筛选匹配能力的 entry | 筛选测试特定故障注入的 entry |
+| 查询示例 | "tool_count ≤ 3 的 entry" | "repo_gone=true 的 entry" |
+
 ### BenchmarkResult
 
 | 字段 | 类型 | 约束 | 说明 |
