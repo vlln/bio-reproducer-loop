@@ -47,6 +47,40 @@ evaluation_design:
     但方向和显著性必须一致。
 
 # ───────────────────────────────────────────
+# 复杂度画像
+# ───────────────────────────────────────────
+
+complexity_profile:
+  data:
+    data_size: tiny
+    data_source: synthetic
+    data_format: csv
+    supplementary: none
+  environment:
+    tool_count: 1-2
+    tool_chain: single_language
+    version_sensitivity: strict
+    container: existing_image
+  analysis:
+    design: two_group
+    method_complexity: standard
+    compute: light
+  figure:
+    figure_count: 1
+    figure_type: statistical
+    figure_layout: simple
+    figure_rendering: standard
+  evaluation:
+    ground_truth: fully_known
+    claim_type: exact_numeric
+    tolerance: moderate
+  paper:
+    paper_type: constructed
+    paper_format: markdown
+    multi_version: none
+    missing_info: none
+
+# ───────────────────────────────────────────
 # 系统能力覆盖
 # ───────────────────────────────────────────
 
