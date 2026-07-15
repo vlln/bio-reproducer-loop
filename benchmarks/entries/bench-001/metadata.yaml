@@ -1,0 +1,15 @@
+id: bench-001
+version: "1.0.0"
+title: "Differential Expression Analysis of Synthetic Gene Response to Treatment"
+scenario: mixed
+difficulty: easy
+expected_verdict: REPRODUCED
+paper_pdf: paper.pdf
+data_dir: data/
+expected_yaml: expected.yaml
+description: >
+  A constructed paper about differential expression analysis of 10 genes
+  across 2 conditions (Control/Treatment) with 3 replicates each.
+  Uses R + DESeq2. Expected output: volcano plot and differential
+  expression table. This is a minimal smoke test for the system's
+  ability to read a paper, provision tools, and run analysis.
