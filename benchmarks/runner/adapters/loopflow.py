@@ -66,7 +66,7 @@ def run(entry_path: str, run_dir: Optional[str] = None) -> dict:
             ["loop", "run", "bio-reproducer", "--args", json.dumps(args)],
             capture_output=True,
             text=True,
-            timeout=600,  # 10 minutes for L3
+            timeout=1800,  # 30 minutes — Provision phase pulls Docker images
         )
         duration = int(time.time() - start_time)
 
@@ -131,11 +131,20 @@ def _extract_stages(repro_dir: Path) -> list[dict]:
         "04_data": "data_manifest.md",
         "05_run": "run_results.md",
         "06_validate": "report.md",
-        "07_package": "README.md",
+        "07_package": "README.md",  # Package outputs go to repro-data/ root
     }
 
     stages = []
     for dir_name, phase_name in phase_map.items():
+        # Package phase writes to root of repro_dir, not a subdirectory
+        if dir_name == "07_package":
+            main_file = "README.md"
+            if (repro_dir / main_file).exists():
+                stages.append({"name": phase_name, "status": "completed"})
+            else:
+                stages.append({"name": phase_name, "status": "blocked"})
+            continue
+
         phase_dir = repro_dir / dir_name
         if not phase_dir.exists():
             stages.append({"name": phase_name, "status": "blocked"})
@@ -178,10 +187,10 @@ def _extract_verdict_and_score(repro_dir: Path) -> Tuple[str, int]:
         elif "BLOCKED" in line_stripped:
             verdict = "BLOCKED"
 
-    # Look for score pattern (e.g., "85/100" or "Score: 85")
-    match = re.search(r"(\d+)\s*/\s*100", content)
+    # Look for score pattern (e.g., "87.5 / 100" or "Score: 85")
+    match = re.search(r"(\d+\.?\d*)\s*/\s*100", content)
     if match:
-        score = int(match.group(1))
+        score = int(float(match.group(1)))
     else:
         match = re.search(r"[Ss]core\s*[:=]\s*(\d+)", content)
         if match:
