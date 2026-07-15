@@ -53,7 +53,18 @@ created: 2026-07-15T00:00:00Z
 
 ### L1 详细说明
 
-测单个 Agent 在单个 Phase 内的可靠性：Phase 完成率、行为稳定性、Schema 合规、边界处理、Prompt 完备性。通过 loopflow mock 模式运行，不依赖真实 LLM。
+测单个 Agent 在单个 Phase 内的可靠性：Phase 完成率、行为稳定性、Schema 合规、边界处理、Prompt 完备性。
+
+**异常判定机制**：L1 通过 loopflow mock 模式运行，不依赖真实 LLM。Mock 模式根据 output schema 自动生成合规数据，不处理输入内容。因此 L1 的异常场景只验证：
+- Agent 不崩溃（exit code = 0 或明确的 AgentError）
+- 产出 schema 合规（status 字段有效、必填字段存在）
+- 多次运行产出的 status 一致
+
+不对"Agent 是否真正理解了异常并做了正确决策"做判断——这由 L3 黑盒测试覆盖。
+
+**判定类别**：
+- A 类（自动化）：exit code、status 字段、schema 校验
+- B 类（需真实 LLM）：语义处理正确性 → 交给 L3
 
 每 Phase 的关注重点：
 
