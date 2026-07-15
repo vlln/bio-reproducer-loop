@@ -173,3 +173,22 @@ reproducibility:
     - "apeglm ≥ 1.24.0"
     - "org.Hs.eg.db（基因 ID 转换）"
   container_image: "bioconductor/bioconductor_docker:latest"
+
+# ───────────────────────────────────────────
+# 基准线
+# ───────────────────────────────────────────
+
+baseline:
+  established: "2026-07-15"
+  runs: 1
+  verdict: PARTIAL
+  score: 82
+  score_breakdown:
+    data_integrity: "25/25"
+    process_quality: "18.75/25"
+    quantitative_concordance: "24/30"
+    figure_and_finding: "15/20"
+  notes: >
+    首次运行。主要扣分项：DESeq2 版本差异导致 p 值偏差，JUN/FOS 被新版
+    DESeq2 判为显著（从 6 个 DE 变为 8 个），GO 术语排名因富集方法差异
+    略有不同。需要跑满 5 次建立分布基线。
