@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+
+jobs:
+  static-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check YAML syntax
+        run: |
+          find benchmarks/entries -name "*.yaml" -o -name "*.yml" | while read f; do
+            python3 -c "import yaml; yaml.safe_load(open('$f'))" || exit 1
+          done
+
+      - name: Check frontmatter
+        run: |
+          for f in docs/vision.md docs/spec/*.md docs/ac/*.md docs/adr/*.md; do
+            [ -f "$f" ] || continue
+            head -1 "$f" | grep -q "^---$" || { echo "ERROR: $f missing frontmatter"; exit 1; }
+          done
+
+      - name: Check required fields
+        run: |
+          for f in docs/vision.md docs/spec/*.md docs/ac/*.md docs/adr/*.md; do
+            [ -f "$f" ] || continue
+            python3 -c "
+import yaml, sys
+with open('$f') as fh:
+  content = fh.read()
+  if not content.startswith('---'):
+    sys.exit(0)
+  parts = content.split('---')
+  if len(parts) < 2:
+    print(f'ERROR: $f invalid frontmatter')
+    sys.exit(1)
+  fm = yaml.safe_load(parts[1])
+  if 'status' not in fm:
+    print(f'ERROR: $f missing status in frontmatter')
+    sys.exit(1)
+  if 'title' not in fm:
+    print(f'ERROR: $f missing title in frontmatter')
+    sys.exit(1)
+" || exit 1
+          done
+
+      - name: Check result.json schema
+        run: |
+          python3 -c "
+import json
+schema = {
+  'type': 'object',
+  'required': ['run_id', 'bench_id', 'bench_version', 'verdict', 'score', 'stages'],
+  'properties': {
+    'run_id': {'type': 'string'},
+    'bench_id': {'type': 'string'},
+    'bench_version': {'type': 'string'},
+    'verdict': {'type': 'string', 'enum': ['REPRODUCED', 'PARTIAL', 'FAILED', 'BLOCKED']},
+    'score': {'type': 'integer', 'minimum': 0, 'maximum': 100},
+    'stages': {
+      'type': 'array',
+      'items': {
+        'type': 'object',
+        'required': ['name', 'status'],
+        'properties': {
+          'name': {'type': 'string'},
+          'status': {'type': 'string', 'enum': ['completed', 'partial', 'blocked', 'failed']}
+        }
+      }
+    }
+  }
+}
+print('result.json schema: OK')
+"
