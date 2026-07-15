@@ -2,7 +2,7 @@
 title: ADR-0001 — 技术栈：Python + pytest + loopflow
 description: 基准测试体系的技术选型：使用 Python 编写测试和 runner，pytest 作为 L1/L2 测试框架，loopflow 作为 Agent 执行引擎。
 type: adr
-status: proposed
+status: accepted
 created: 2026-07-15T00:00:00Z
 ---
 

@@ -2,7 +2,7 @@
 title: Vision — bio-reproducer
 description: 一套 AI Agent 驱动的生物信息学论文复现系统，配套内部测试体系和可独立发布的公开 benchmark。
 type: vision
-status: proposed
+status: active
 created: 2026-07-15T00:00:00Z
 ---
 

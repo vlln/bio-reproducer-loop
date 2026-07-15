@@ -2,7 +2,7 @@
 title: Spec 001 — 基准测试体系
 description: bio-reproducer 的五层测试与基准体系：L1-L2 内部测试、L3-L5 黑盒基准，输入输出协议，执行器设计。
 type: spec
-status: proposed
+status: active
 version: 1
 created: 2026-07-15T00:00:00Z
 ---

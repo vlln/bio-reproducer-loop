@@ -2,7 +2,7 @@
 title: AC 001 — 基准测试分层
 description: 五层测试体系（L1-L5）的验收标准，覆盖各层的核心能力验证。
 type: ac
-status: proposed
+status: active
 created: 2026-07-15T00:00:00Z
 ---
 
