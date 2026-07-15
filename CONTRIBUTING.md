@@ -98,15 +98,17 @@ MAJOR=0 期间（0.x.y）：MINOR 升功能，PATCH 修 bug。
 
 | 命令 | 用途 |
 |------|------|
-| `pytest tests/unit/` | L1 单元测试 |
-| `pytest tests/integration/` | L2 集成测试 |
+| `pytest tests/unit/` | L1 单元测试（单 Phase Agent 业务逻辑） |
+| `pytest tests/integration/` | L2 集成测试（跨 Phase 信息流） |
 
 ### 测试目录
 
 | 层级 | 目录路径 | 说明 |
 |------|---------|------|
-| L1 单元测试 | `tests/unit/` | 单 Phase Agent 可靠性 |
-| L2 集成测试 | `tests/integration/` | 跨 Phase 信息流 |
+| L1 单元测试 | `tests/unit/` | 单 Phase Agent 业务逻辑正确性 |
+| L2 集成测试 | `tests/integration/` | 跨 Phase 信息流自洽性 |
+
+注：L1/L2 通过真实 LLM 调用运行，测试 Agent 的业务决策。Schema 合规（字段类型、JSON 格式）是 loopflow 运行时保证，不在此测试范围。
 
 ---
 
