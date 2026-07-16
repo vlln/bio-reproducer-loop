@@ -1,55 +1,90 @@
-"""L1: Provision Phase — 验证 Provision Agent 的工具部署计划正确性."""
+"""L1: Provision Phase — 验证 Provision Agent 的工具部署计划正确性。
 
-from loopflow.runtime import agent
+使用 loop run --from-phase Provision + golden/plan.md 作为前序输入。
+golden/provision.md 提供期望输出的关键结构化字段。
+"""
+
+import json
+import subprocess
+import tempfile
+from pathlib import Path
 
 
-def _call_provision(plan_path: str, output_dir: str = "/tmp/l1-provision-test") -> dict:
-    """Call the Provision agent and return parsed result."""
-    import shutil
-    from pathlib import Path
+def _run_provision(entry_dir: str, golden_plan_path: str) -> dict:
+    """Run Provision phase with golden plan as previous phase output."""
+    output_dir = tempfile.mkdtemp(prefix="l1-test-provision-")
 
-    # Set up the expected directory structure: {output_dir}/01_plan/plan.md
+    # Copy golden plan as Reader's output
     plan_dir = Path(output_dir) / "01_plan"
     plan_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copy(plan_path, plan_dir / "plan.md")
+    (plan_dir / "plan.md").write_text(Path(golden_plan_path).read_text())
 
-    result = agent(
-        prompt="部署工具容器环境。从 plan.md 中识别所需工具并部署。",
-        agent_def="provision",
-        goal="成功部署所有必需的工具容器镜像",
-        goal_max_iterations=5,
-        output_dir=output_dir,
-        language="en",
+    paper = Path(entry_dir) / "paper.pdf"
+    if not paper.exists():
+        paper = Path(entry_dir) / "paper.md"
+
+    args = json.dumps({
+        "paper_path": str(paper),
+        "output_dir": output_dir,
+        "language": "en",
+    })
+
+    result = subprocess.run(
+        ["loop", "run", "bio-reproducer", "--args", args,
+         "--from-phase", "Provision"],
+        capture_output=True, text=True,
     )
-    return {"status": result.status, "value": result.value, "turns": result.turns}
+    return {
+        "returncode": result.returncode,
+        "stderr": result.stderr,
+        "output_dir": output_dir,
+    }
+
+
+def _read_provision_output(output_dir: str) -> str:
+    """Read the provision phase output."""
+    path = Path(output_dir) / "03_provision" / "provision.md"
+    if not path.exists():
+        return ""
+    return path.read_text()
 
 
 def test_provision_identifies_tools_from_plan(bench_001, golden_plan):
-    """AC-0001-N-2: 给定 plan.md, Provision 产出的工具列表与 golden 一致.
-
-    检查 Provision agent 能否正确识别 plan.md 中声明的工具需求。
-    实际部署可能因无 Docker 而阻塞，但工具识别决策应正确。
-    """
-    result = _call_provision(golden_plan["path"])
-
-    output = str(result["value"]).lower()
-
-    # Must identify the key tools from the plan
-    # R is required for DESeq2 analysis
-    assert "r" in output, f"Provision must identify R. Output: {output[:300]}"
-
-    # DESeq2 is the main analysis tool
-    assert "deseq2" in output or "bioconductor" in output, (
-        f"Provision must identify DESeq2/Bioconductor. Output: {output[:300]}"
+    """AC-0001-N-2: Provision 从 plan.md 识别工具, 产出与 golden 一致."""
+    result = _run_provision(
+        bench_001["entry_dir"], golden_plan["path"]
     )
 
-    # The agent should either complete (tools identified) or report blocked
-    # (no Docker available) — both are valid business decisions
-    is_valid = (
-        result["status"] in ("complete", "blocked")
-        or ("docker" in output and "unavailable" in output)
-    )
-    assert is_valid, (
-        f"Provision should complete or report Docker unavailable. "
-        f"Status: {result['status']}"
+    output = _read_provision_output(result["output_dir"])
+
+    # Provision may complete (tools deployed) or block (no Docker).
+    # Both are valid business decisions. What matters is the tool
+    # identification, not the deployment success.
+    assert len(output) > 50, f"Provision output too short: {len(output)} chars"
+
+    # Compare against golden provision fixture
+    golden = Path(
+        f"{bench_001['entry_dir']}/golden/provision.md"
+    ).read_text()
+
+    # Key business fields: tools identified
+    checks = [
+        ("has_r", "R"),
+        ("has_deseq2", "DESeq2"),
+        ("has_ggplot2", "ggplot2"),
+        ("has_apeglm", "apeglm"),
+        ("has_bioconductor", "bioconductor"),
+    ]
+
+    failures = []
+    for name, keyword in checks:
+        in_output = keyword.lower() in output.lower()
+        in_golden = keyword.lower() in golden.lower()
+        if in_output != in_golden:
+            failures.append(
+                f"{name}: output={in_output}, golden={in_golden}"
+            )
+
+    assert not failures, (
+        f"Provision tool list differs from golden:\n" + "\n".join(failures)
     )

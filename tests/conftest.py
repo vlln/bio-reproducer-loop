@@ -40,6 +40,7 @@ def bench_001():
         paper = entry_dir / "paper.md"
     return {
         "id": "bench-001",
+        "entry_dir": str(entry_dir),
         "paper_path": str(paper),
         "data_dir": str(entry_dir / "data"),
         "expected": load_expected("bench-001"),
