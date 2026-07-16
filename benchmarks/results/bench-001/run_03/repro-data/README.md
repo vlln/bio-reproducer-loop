@@ -14,20 +14,20 @@ This study identifies differentially expressed genes (DEGs) between Control and 
 
 | Dimension | Score | Max | Assessment |
 |-----------|-------|-----|------------|
-| Data Integrity | 25.0 | 25 | All data integrity checks passed |
-| Process Quality | 20.0 | 25 | Minor version differences in R (4.4.0 vs 4.3.0) and ggplot2 (4.0.3 vs 3.5.0) from Bioconductor container |
-| Quantitative Concordance | 22.5 | 30 | Directions and significance calls match; log2FC magnitudes within ~17%; padj values are orders of magnitude more extreme than paper's idealized values |
-| Figure and Finding Reproduction | 20.0 | 20 | Volcano plot correctly shows Gene_A upper-right, Gene_B upper-left, others at origin |
+| Data Integrity | 25.0 | 25.0 | All 4 checks passed. Gene count, sample count, output files, and table structure all match. |
+| Process Quality | 20.0 | 25.0 | Pipeline succeeded. DESeq2 version matches (1.42.1 vs 1.42.0). Minor R/ggplot2 version differences from Bioconductor container. |
+| Quantitative Concordance | 22.5 | 30.0 | Directions, significance calls, and non-DE genes all correct. log2FC magnitudes within ~17%. padj values are orders of magnitude more extreme than the paper's idealized values. |
+| Figure and Finding Reproduction | 20.0 | 20.0 | All 5 checks passed. Volcano plot pattern confirmed. Core biological conclusions fully reproduced. |
 
-The core biological conclusions are fully reproduced: Gene_A is significantly upregulated, Gene_B is significantly downregulated, and the remaining 8 genes (Gene_C–Gene_J) show no significant differential expression. Numerical deviations in log2FC magnitudes (~12–17%) and padj values (orders of magnitude) are attributed to the paper using idealized/synthetic values rather than actual DESeq2 computation on the provided count data.
+The numerical discrepancies (log2FC and padj magnitudes) originate from the paper using idealized/synthetic values. The reproduction correctly implements the described analysis on the actual count data. The core biological conclusions are fully reproduced: Gene_A is significantly upregulated, Gene_B is significantly downregulated, and the remaining 8 genes (Gene_C–Gene_J) show no significant differential expression.
 
 ### Key Deviations
 
 | Metric | Paper | Reproduced | Cause |
 |--------|-------|------------|-------|
-| Gene_A log2FC | 2.5 | 2.92 | Paper uses idealized values |
+| Gene_A log2FC | 2.5 | 2.92 (+16.8%) | Paper uses idealized values |
 | Gene_A padj | 0.0008 | 4.37e-119 | Same as above |
-| Gene_B log2FC | -1.8 | -2.00 | Same as above |
+| Gene_B log2FC | -1.8 | -2.00 (-11.1%) | Same as above |
 | Gene_B padj | 0.004 | 5.57e-42 | Same as above |
 | R version | 4.3.0 | 4.4.0 | Bioconductor RELEASE_3_18 container |
 | ggplot2 version | 3.5.0 | 4.0.3 | Bioconductor RELEASE_3_18 container |
@@ -36,9 +36,11 @@ The core biological conclusions are fully reproduced: Gene_A is significantly up
 
 | Figure/Panel | Status | Generated Files | Validation |
 |--------------|--------|-----------------|------------|
-| Figure 1 (volcano plot) | Generated | `05_run/figures/volcano_plot.png`, `volcano_plot.pdf` | Pattern-based visual: Gene_A upper-right, Gene_B upper-left, others near origin — confirmed |
+| Figure 1 (volcano plot) | Generated | `05_run/figures/volcano_plot.png` (46 KB, 1050×900 px), `volcano_plot.pdf` (6 KB, 1 page) | Pattern-based visual: Gene_A upper-right, Gene_B upper-left, others near origin — confirmed |
 
-**Limitation**: No original figure image was provided in the paper. Pixel-level comparison is not possible. Validation is based on pattern matching against the paper's textual description of the expected figure. See `06_validate/figure_comparison.md` for the detailed visual assessment.
+The generated volcano plot was visually inspected and compared against the paper's described expected pattern. Gene_A is positioned in the upper-right quadrant, Gene_B in the upper-left quadrant, and the remaining 8 genes are tightly clustered near the origin. All structural elements (significance threshold line, axis labels, legend) are present. The plot fully reproduces the scientific pattern described in the paper.
+
+**Limitation**: No original figure image was provided in the paper. Pixel-level comparison is not possible. Validation is based on pattern matching against the paper's textual description. See `06_validate/figure_comparison.md` for the detailed visual assessment.
 
 ## System Requirements
 
@@ -63,6 +65,7 @@ bash run.sh check
 bash run.sh all
 
 # Or step by step:
+bash run.sh bootstrap   # Phase 2: Review environment report
 bash run.sh provision   # Phase 3: Pull/build container
 bash run.sh data        # Phase 4: Stage data
 bash run.sh run         # Phase 5: Run DESeq2 analysis
@@ -77,41 +80,41 @@ repro-data/
 ├── run.sh
 ├── .gitignore
 ├── 01_plan/
-│   └── plan.md                  # Paper extraction and reproduction plan
+│   └── plan.md                       # Paper extraction and reproduction plan
 ├── 02_bootstrap/
-│   └── bootstrap.md             # Environment inventory and verification
+│   └── bootstrap.md                  # Environment inventory and verification
 ├── 03_provision/
-│   ├── provision.md             # Container provisioning report
-│   ├── Dockerfile               # Custom Docker image definition
-│   ├── provision.nf             # Nextflow workflow for container build
-│   └── nextflow.config          # Nextflow config (Docker scope)
+│   ├── provision.md                  # Container provisioning report
+│   ├── Dockerfile                    # Custom Docker image definition
+│   ├── provision.nf                  # Nextflow workflow for container build
+│   └── nextflow.config               # Nextflow config (Docker scope)
 ├── 04_data/
-│   ├── data_manifest.md         # Data acquisition report
-│   ├── data.nf                  # Nextflow workflow for data staging
+│   ├── data_manifest.md              # Data acquisition report
+│   ├── data.nf                       # Nextflow workflow for data staging
 │   ├── nextflow.config
 │   └── raw_data/
-│       └── counts.csv           # Count matrix (10 genes × 6 samples)
+│       └── counts.csv                # Count matrix (10 genes × 6 samples)
 ├── 05_run/
-│   ├── main.nf                  # Main analysis pipeline (DSL2)
-│   ├── run_results.md           # Execution summary and results
-│   ├── deseq2_analysis.R        # DESeq2 + apeglm analysis script
-│   ├── volcano_plot.R           # Volcano plot generation script
+│   ├── main.nf                       # Main analysis pipeline (DSL2)
+│   ├── run_results.md                # Execution summary and results
+│   ├── deseq2_analysis.R             # DESeq2 + apeglm analysis script
+│   ├── volcano_plot.R                # Volcano plot generation script
 │   ├── nextflow.config
 │   ├── results/
-│   │   ├── deseq2_results.csv   # DE results table
+│   │   ├── deseq2_results.csv        # DE results table
 │   │   └── normalized_counts.csv
 │   ├── figures/
-│   │   ├── volcano_plot.png     # Figure 1 (PNG)
-│   │   └── volcano_plot.pdf     # Figure 1 (PDF)
+│   │   ├── volcano_plot.png          # Figure 1 (PNG)
+│   │   └── volcano_plot.pdf          # Figure 1 (PDF)
 │   └── reports/
 │       ├── run_report.html
 │       ├── timeline.html
 │       └── trace.txt
 └── 06_validate/
-    ├── report.md                # Validation report
-    ├── figure_comparison.md     # Figure comparison assessment
-    ├── checks_plan.md           # Validation check definitions
-    └── metrics.json             # Machine-readable metrics
+    ├── report.md                     # Validation report
+    ├── figure_comparison.md          # Figure comparison assessment
+    ├── checks_plan.md                # Validation check definitions
+    └── metrics.json                  # Machine-readable metrics
 ```
 
 ## Notes
@@ -121,4 +124,4 @@ repro-data/
 - **No original figure image**: The paper describes the volcano plot but does not provide an original image file. Visual validation is pattern-based.
 - **GEO accession mismatch**: GSE99999 resolves to an unrelated study. The count matrix from Supplementary Table S1 (`counts.csv`) is used as the primary data source.
 - **Estimated runtime**: ~5 minutes (including container pull). Cached re-runs complete in ~5 seconds.
-- **Java note**: The system Java stub may not work without `JAVA_HOME` set. The run.sh script handles this.
+- **Java note**: The system Java stub may not work without `JAVA_HOME` set. The `run.sh` script handles this automatically.

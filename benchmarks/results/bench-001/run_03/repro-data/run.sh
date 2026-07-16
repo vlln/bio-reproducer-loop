@@ -86,7 +86,7 @@ check() {
 }
 
 all() {
-    echo "This will run all reproduction phases: provision, data, run, validate."
+    echo "This will run all reproduction phases: bootstrap, provision, data, run, validate."
     echo "Estimated time: ~5 minutes (first run), ~5 seconds (cached re-run)."
     echo ""
     read -r -p "Continue? [y/N] " yn
@@ -94,6 +94,7 @@ all() {
         [Yy]*) ;;
         *) echo "Aborted."; exit 0 ;;
     esac
+    bootstrap
     provision
     data
     run
