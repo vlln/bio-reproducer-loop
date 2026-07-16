@@ -1,0 +1,181 @@
+{
+  "verdict": "REPRODUCED",
+  "total_score": 94.5,
+  "dimension_scores": {
+    "data_integrity": 25.0,
+    "process_quality": 22.5,
+    "quantitative_concordance": 27.0,
+    "figure_and_finding": 20.0
+  },
+  "dimension_weights": {
+    "data_integrity": 0.25,
+    "process_quality": 0.25,
+    "quantitative_concordance": 0.30,
+    "figure_and_finding": 0.20
+  },
+  "checks_total": 12,
+  "checks_scored": 12,
+  "checks_na": 0,
+  "figure_validation_status": "validated",
+  "checks": [
+    {
+      "check_id": "D1",
+      "dimension": "data_integrity",
+      "metric": "Input file dimensions",
+      "expected": "10 genes x 6 samples",
+      "actual": "10 genes x 6 samples",
+      "score": 1.0,
+      "type": "Auto"
+    },
+    {
+      "check_id": "D2",
+      "dimension": "data_integrity",
+      "metric": "Output files generated",
+      "expected": "deseq2_results.csv, volcano_plot.png, volcano_plot.pdf",
+      "actual": "All 3 files present and non-empty",
+      "score": 1.0,
+      "type": "Auto"
+    },
+    {
+      "check_id": "D3",
+      "dimension": "data_integrity",
+      "metric": "Results table structure",
+      "expected": "10 genes with columns: log2FC, padj, significant",
+      "actual": "10 genes with all required columns",
+      "score": 1.0,
+      "type": "Auto"
+    },
+    {
+      "check_id": "Q1",
+      "dimension": "process_quality",
+      "metric": "Pipeline task success",
+      "expected": "1 process completed, 0 failed",
+      "actual": "1 completed, 0 failed, 0 cached",
+      "score": 1.0,
+      "type": "Auto"
+    },
+    {
+      "check_id": "Q2",
+      "dimension": "process_quality",
+      "metric": "Software version match",
+      "expected": "R 4.3.0, DESeq2 1.42.0, ggplot2 3.5.0, apeglm 1.24.0",
+      "actual": "R 4.3.3, DESeq2 1.42.1, ggplot2 3.5.0, apeglm 1.24.0",
+      "score": 0.7,
+      "type": "Auto"
+    },
+    {
+      "check_id": "Q3",
+      "dimension": "process_quality",
+      "metric": "Analysis workflow fidelity",
+      "expected": "5-step DESeq2 workflow per Methods",
+      "actual": "All 5 steps implemented in analysis.R",
+      "score": 1.0,
+      "type": "Manual"
+    },
+    {
+      "check_id": "R1",
+      "dimension": "quantitative_concordance",
+      "metric": "Gene_A direction",
+      "expected": "Upregulated",
+      "actual": "Upregulated (log2FC = +2.918)",
+      "score": 1.0,
+      "type": "Auto"
+    },
+    {
+      "check_id": "R2",
+      "dimension": "quantitative_concordance",
+      "metric": "Gene_B direction",
+      "expected": "Downregulated",
+      "actual": "Downregulated (log2FC = -1.997)",
+      "score": 1.0,
+      "type": "Auto"
+    },
+    {
+      "check_id": "R3",
+      "dimension": "quantitative_concordance",
+      "metric": "Gene_A log2FC",
+      "expected": 2.5,
+      "actual": 2.918,
+      "score": 0.7,
+      "type": "Auto"
+    },
+    {
+      "check_id": "R4",
+      "dimension": "quantitative_concordance",
+      "metric": "Gene_B log2FC",
+      "expected": -1.8,
+      "actual": -1.997,
+      "score": 0.7,
+      "type": "Auto"
+    },
+    {
+      "check_id": "R5",
+      "dimension": "quantitative_concordance",
+      "metric": "Significant gene count",
+      "expected": 2,
+      "actual": 2,
+      "score": 1.0,
+      "type": "Auto"
+    },
+    {
+      "check_id": "R6",
+      "dimension": "quantitative_concordance",
+      "metric": "Non-significant gene count",
+      "expected": 8,
+      "actual": 8,
+      "score": 1.0,
+      "type": "Auto"
+    },
+    {
+      "check_id": "K1",
+      "dimension": "figure_and_finding",
+      "metric": "Volcano plot layout",
+      "expected": "Gene_A upper-right, Gene_B upper-left, 8 genes near origin",
+      "actual": "Gene_A upper-right, Gene_B upper-left, 8 genes clustered at origin",
+      "score": 1.0,
+      "type": "Visual"
+    },
+    {
+      "check_id": "K2",
+      "dimension": "figure_and_finding",
+      "metric": "Significant gene highlighting",
+      "expected": "Gene_A and Gene_B in red",
+      "actual": "Both highlighted in red with gene labels",
+      "score": 1.0,
+      "type": "Visual"
+    },
+    {
+      "check_id": "K3",
+      "dimension": "figure_and_finding",
+      "metric": "Scientific conclusion",
+      "expected": "2 significant DEGs with correct directions",
+      "actual": "Fully supported by reproduction results",
+      "score": 1.0,
+      "type": "Manual"
+    }
+  ],
+  "deviations": [
+    {
+      "check_id": "R3",
+      "deviation": "Gene_A log2FC: 2.918 vs expected 2.5",
+      "magnitude": "~17% higher",
+      "likely_cause": "DESeq2 version difference (1.42.1 vs 1.42.0); synthetic data with small sample size amplifies version-sensitive dispersion estimates",
+      "fault_phase": "Phase 5 (Run)"
+    },
+    {
+      "check_id": "R4",
+      "deviation": "Gene_B log2FC: -1.997 vs expected -1.8",
+      "magnitude": "~11% more negative",
+      "likely_cause": "Same as R3",
+      "fault_phase": "Phase 5 (Run)"
+    },
+    {
+      "check_id": "Q2",
+      "deviation": "R version 4.3.3 vs paper-specified 4.3.0; DESeq2 1.42.1 vs 1.42.0",
+      "magnitude": "Patch-level",
+      "likely_cause": "Container built with latest available versions at build time",
+      "fault_phase": "Phase 2 (Provision)"
+    }
+  ],
+  "next_action": "archive"
+}
