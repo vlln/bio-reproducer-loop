@@ -78,11 +78,28 @@ def golden_report():
 
 
 @pytest.fixture
-def golden_metrics():
-    """Golden Validate metrics for bench-001."""
-    golden_path = BENCHMARKS_DIR / "bench-001" / "golden" / "metrics.json"
-    if not golden_path.exists():
-        pytest.skip(f"Golden fixture not found: {golden_path}")
-    import json
-    with open(golden_path) as f:
-        return json.load(f)
+def bench_002():
+    """Fixture for bench-002 (multi-step drug response)."""
+    entry_dir = BENCHMARKS_DIR / "bench-002"
+    paper = entry_dir / "paper.pdf"
+    if not paper.exists():
+        paper = entry_dir / "paper.md"
+    return {
+        "id": "bench-002",
+        "entry_dir": str(entry_dir),
+        "paper_path": str(paper),
+        "data_dir": str(entry_dir / "data"),
+        "expected": load_expected("bench-002"),
+    }
+
+
+@pytest.fixture
+def golden_plan_002():
+    """Golden Reader output for bench-002."""
+    return load_golden("bench-002", "plan")
+
+
+@pytest.fixture
+def golden_provision_002():
+    """Golden Provision output for bench-002."""
+    return load_golden("bench-002", "provision")
