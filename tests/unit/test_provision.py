@@ -31,7 +31,7 @@ def _run_provision(entry_dir: str, golden_plan_path: str) -> dict:
 
     result = subprocess.run(
         ["loop", "run", "bio-reproducer", "--args", args,
-         "--from-phase", "Provision", "--only-phase", "Provision"],
+         "--only-phase", "Provision"],
         capture_output=True, text=True,
     )
     return {
