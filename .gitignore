@@ -14,4 +14,6 @@ __pycache__/
 benchmarks/results/
 
 # OS
-.DS_Store
+.DS_Store.nextflow*
+nextflow
+repro-data/
