@@ -1,0 +1,46 @@
+{
+  "verdict": "REPRODUCED",
+  "total_score": 87.5,
+  "dimension_scores": {
+    "data_integrity": 25.0,
+    "process_quality": 20.0,
+    "quantitative_concordance": 22.5,
+    "figure_and_finding": 20.0
+  },
+  "checks_total": 21,
+  "checks_scored": 20,
+  "checks_na": 1,
+  "figure_validation_status": "generated",
+  "checks": [
+    {"id": "D1", "metric": "gene_count", "expected": 10, "actual": 10, "score": 1.0, "type": "Auto"},
+    {"id": "D2", "metric": "sample_count", "expected": 6, "actual": 6, "score": 1.0, "type": "Auto"},
+    {"id": "D3", "metric": "output_files_generated", "expected": "deseq2_results.csv, significant_genes.csv, figure1_volcano.png, figure1_volcano.pdf", "actual": "all present and non-empty", "score": 1.0, "type": "Auto"},
+    {"id": "D4", "metric": "significant_genes_count", "expected": 2, "actual": 2, "score": 1.0, "type": "Auto"},
+    {"id": "Q1", "metric": "pipeline_steps_success", "expected": "6/6", "actual": "6/6", "score": 1.0, "type": "Auto"},
+    {"id": "Q2", "metric": "DESeq2_version", "expected": "1.42.0", "actual": "1.52.0", "score": 0.7, "type": "Auto"},
+    {"id": "Q3", "metric": "apeglm_version", "expected": "1.24.0", "actual": "1.34.0", "score": 0.7, "type": "Auto"},
+    {"id": "Q4", "metric": "R_version", "expected": "4.3.0", "actual": "4.6.1", "score": 0.7, "type": "Auto"},
+    {"id": "Q5", "metric": "ggplot2_version", "expected": "3.5.0", "actual": "4.0.3", "score": 0.7, "type": "Auto"},
+    {"id": "R1", "metric": "significant_genes_count", "expected": 2, "actual": 2, "score": 1.0, "type": "Auto"},
+    {"id": "R2", "metric": "Gene_A_direction", "expected": "upregulated", "actual": "upregulated", "score": 1.0, "type": "Auto"},
+    {"id": "R3", "metric": "Gene_B_direction", "expected": "downregulated", "actual": "downregulated", "score": 1.0, "type": "Auto"},
+    {"id": "R4", "metric": "Gene_A_log2FC", "expected": 2.5, "actual": 2.918, "score": 0.7, "type": "Auto"},
+    {"id": "R5", "metric": "Gene_B_log2FC", "expected": -1.8, "actual": -1.997, "score": 0.7, "type": "Auto"},
+    {"id": "R6", "metric": "Gene_A_padj", "expected": 0.0008, "actual": 4.37e-119, "score": 0.3, "type": "Auto"},
+    {"id": "R7", "metric": "Gene_B_padj", "expected": 0.004, "actual": 5.57e-42, "score": 0.3, "type": "Auto"},
+    {"id": "R8", "metric": "non_significant_genes_count", "expected": 8, "actual": 8, "score": 1.0, "type": "Auto"},
+    {"id": "K1", "metric": "volcano_plot_generated", "expected": "yes", "actual": "yes", "score": 1.0, "type": "Visual"},
+    {"id": "K2", "metric": "Gene_A_position", "expected": "upper-right", "actual": "upper-right", "score": 1.0, "type": "Visual"},
+    {"id": "K3", "metric": "Gene_B_position", "expected": "upper-left", "actual": "upper-left", "score": 1.0, "type": "Visual"},
+    {"id": "K4", "metric": "non_significant_cluster", "expected": "near_origin", "actual": "near_origin", "score": 1.0, "type": "Visual"},
+    {"id": "K5", "metric": "core_finding_supported", "expected": "2_significant_DE_genes", "actual": "2_significant_DE_genes", "score": 1.0, "type": "Manual"},
+    {"id": "K6", "metric": "original_figure_comparison", "expected": "pixel_level", "actual": "N/A", "score": null, "type": "Visual"}
+  ],
+  "deviations": [
+    {"check_id": "R6", "deviation": "Gene_A padj: 4.37e-119 vs expected 0.0008", "magnitude": "orders_of_magnitude", "likely_cause": "DESeq2 version difference (1.52.0 vs 1.42.0)", "fault_phase": "05_run"},
+    {"check_id": "R7", "deviation": "Gene_B padj: 5.57e-42 vs expected 0.004", "magnitude": "orders_of_magnitude", "likely_cause": "DESeq2 version difference (1.52.0 vs 1.42.0)", "fault_phase": "05_run"},
+    {"check_id": "R4", "deviation": "Gene_A log2FC: 2.92 vs expected 2.5", "magnitude": "17%", "likely_cause": "DESeq2/apeglm version differences affect shrinkage estimates", "fault_phase": "05_run"},
+    {"check_id": "R5", "deviation": "Gene_B log2FC: -2.00 vs expected -1.8", "magnitude": "11%", "likely_cause": "DESeq2/apeglm version differences affect shrinkage estimates", "fault_phase": "05_run"}
+  ],
+  "next_action": "archive"
+}

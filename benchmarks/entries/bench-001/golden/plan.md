@@ -37,10 +37,23 @@ Reproduce the differential expression analysis and generate the volcano plot (Fi
 2. Differential expression: normalized counts → DESeq2 → DE results table
 3. Visualization: DE results → ggplot2 → volcano plot (Figure 1)
 
+### Code and Data Availability
+| Resource | URL/Identifier | Purpose | Location in Paper |
+|----------|----------------|---------|-------------------|
+| counts.csv | Supplementary Table S1 | Count matrix (10 genes × 6 samples) | Supplementary Materials |
+| GitHub repository | https://github.com/example/deseq2-analysis | Analysis script | Data Availability |
+| GEO accession | GSE99999 | Count matrix deposit | Data Availability |
+
+### System Requirements
+| Component | Requirement | Notes | Location in Paper |
+|-----------|-------------|-------|-------------------|
+| OS | Not specified | Linux/macOS compatible | — |
+| Container runtime | Not specified | Docker assumed for bioconductor image | — |
+
 ### Environment Requirements
 | Software | Version | Purpose | Source in Paper |
 |----------|---------|---------|-----------------|
-| R | 4.3.0 | Statistical computing | Methods |
+| R | 4.3.0 | Statistical computing environment | Methods |
 | DESeq2 | 1.42.0 | Differential expression analysis | Methods |
 | ggplot2 | 3.5.0 | Data visualization | Methods |
 | apeglm | 1.24.0 | Log2 fold change shrinkage | Methods |
@@ -68,12 +81,48 @@ Reproduce the differential expression analysis and generate the volcano plot (Fi
 | Volcano plot | Figure 1 | Gene_A and Gene_B highlighted |
 
 ### Figure Reproduction Inventory
-| Figure/Panel | Caption/Source | Plot Type | Required Data | Expected Pattern |
-|--------------|----------------|-----------|---------------|------------------|
-| Figure 1 | Volcano plot of differential expression | volcano | DE results table | Gene_A (right, high), Gene_B (left, mid-high), others centered near zero |
+| Figure/Panel | Original Image | Caption/Source | Scientific Claim | Plot Type | Required Data | Author Plotting Code/Notebook | Expected Pattern | Source |
+|--------------|----------------|----------------|------------------|-----------|---------------|-------------------------------|------------------|--------|
+| Figure 1 | Not provided (no original image) | Volcano plot of differential expression | Gene_A and Gene_B are significantly differentially expressed | volcano | DE results table | Not found after checking GitHub repository (404) | Gene_A (right, high), Gene_B (left, mid-high), others centered near zero | Results |
+
+## Source Files Reviewed
+| File/URL | Type | Local Path | Status | Notes |
+|----------|------|------------|--------|-------|
+| paper.md | Paper (Markdown) | paper.md | Reviewed | Primary paper source; no PDF conversion needed |
+| counts.csv | Data file | data/counts.csv | Reviewed | 10 genes × 6 samples, raw integer counts |
+| https://github.com/example/deseq2-analysis | Code repository | — | Not found | Returns 404; repository does not exist |
+| https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE99999 | GEO record | — | Not found | GSE99999 points to unrelated scleroderma study |
+
+## Supplementary Materials Inventory
+| Item | Type | URL/Path | Mentioned In | Status | Notes |
+|------|------|----------|-------------|--------|-------|
+| Supplementary Table S1 (counts.csv) | CSV | data/counts.csv | Supplementary Materials | Downloaded and reviewed | 10 genes × 6 samples, raw integer counts |
+
+## Resource Locations
+| Resource | Type | URL/Identifier | Purpose | Location in Paper | Access Notes |
+|----------|------|----------------|---------|-------------------|-------------|
+| counts.csv | Data file | data/counts.csv | Count matrix input for DESeq2 | Supplementary Table S1 | Local file; no download needed |
+| GSE99999 | GEO accession | https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE99999 | Count matrix deposit | Data Availability | Points to unrelated study (scleroderma); not usable |
+| https://github.com/example/deseq2-analysis | GitHub repository | https://github.com/example/deseq2-analysis | Analysis script | Data Availability | Returns 404; repository does not exist |
+
+## External Identifier Records
+| Identifier | Database | Resolved Type | Title/Description | Linked IDs | Source API | Retrieved At |
+|------------|----------|---------------|-------------------|------------|------------|-------------|
+| 10.1234/bench.001 | Crossref | DOI (not resolvable) | Benchmark DOI; not registered in Crossref | — | paperutils | DOI not resolvable |
+| GSE99999 | GEO | GEO Series | Unrelated study (scleroderma) | — | paperutils | Mismatch with paper content |
+
+## Source Conflicts And Gaps
+| Item | Paper Statement | External Record | Issue |
+|------|----------------|-----------------|-------|
+| GSE99999 | "The dataset is also deposited at GEO under accession GSE99999" | GSE99999 resolves to an unrelated scleroderma study | Accession mismatch; cannot use for data download |
+| GitHub repository | "The analysis script is available at https://github.com/example/deseq2-analysis" | URL returns 404 | Repository not accessible; analysis script must be reconstructed from Methods |
+| DOI | 10.1234/bench.001 | Not resolvable via Crossref | Constructed benchmark identifier; no external metadata available |
+| No original Figure 1 image | Paper describes volcano plot | No original image file provided | Visual comparison of figures not possible; only pattern-based validation |
 
 ## Uncertainties
 | Item | Issue | Source |
 |------|-------|--------|
 | Exact normalization | "Default parameters" could mean different normalization methods | Methods |
 | ggplot2 version | Listed as 3.5.0, may need compatible R version | Methods |
+| No original figure image | Volcano plot described but no original image file provided for visual comparison | Results |
+| Log2FC precision | Gene_A claimed log2FC = 2.5; actual value may differ due to DESeq2/apeglm version differences | Methods |

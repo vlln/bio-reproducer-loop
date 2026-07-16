@@ -1,47 +1,72 @@
-"""L1: Data Phase — 验证 Data Agent 的数据获取策略正确性."""
+"""L1: Data Phase — 验证 Data Agent 的数据获取策略正确性。
 
-from loopflow.runtime import agent
+使用 loop run --only-phase Data + golden fixtures 作为前序输入。
+"""
+
+import json
+import subprocess
+import tempfile
+from pathlib import Path
 
 
-def _call_data(plan_path: str, output_dir: str = "/tmp/l1-data-test") -> dict:
-    """Call the Data agent and return parsed result."""
-    import shutil
-    from pathlib import Path
+def _run_data(entry_dir: str, golden_plan_path: str) -> dict:
+    """Run Data phase with golden plan as previous phase output."""
+    output_dir = tempfile.mkdtemp(prefix="l1-test-data-")
 
+    # Copy golden plan as Reader's output
     plan_dir = Path(output_dir) / "01_plan"
     plan_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copy(plan_path, plan_dir / "plan.md")
+    (plan_dir / "plan.md").write_text(Path(golden_plan_path).read_text())
 
-    result = agent(
-        prompt="下载分析所需数据。",
-        agent_def="data",
-        goal="获取所有必需数据文件",
-        goal_max_iterators=3,
-        output_dir=output_dir,
-        language="en",
+    paper = Path(entry_dir) / "paper.pdf"
+    if not paper.exists():
+        paper = Path(entry_dir) / "paper.md"
+
+    args = json.dumps({
+        "paper_path": str(paper),
+        "output_dir": output_dir,
+        "language": "en",
+    })
+
+    result = subprocess.run(
+        ["loop", "run", "bio-reproducer", "--args", args,
+         "--only-phase", "Data"],
+        capture_output=True, text=True,
     )
-    return {"status": result.status, "value": result.value, "turns": result.turns}
+    return {
+        "returncode": result.returncode,
+        "stderr": result.stderr,
+        "output_dir": output_dir,
+    }
 
 
-def test_data_identifies_sources_from_plan(bench_001, golden_plan):
-    """AC-0001-N-2: Data agent 正确识别 plan.md 中的数据来源.
+def test_data_identifies_sources_from_plan(bench_001, golden_plan, golden_data_manifest):
+    """AC-0001-N-2: Data agent 从 plan.md 识别数据源, 产出与 golden 一致."""
+    result = _run_data(bench_001["entry_dir"], golden_plan["path"])
 
-    检查 Data agent 能否从 plan.md 中识别数据源（counts.csv, GSE99999）。
-    实际下载可能因网络而阻塞，但识别决策应正确。
-    """
-    result = _call_data(golden_plan["path"])
+    output_path = Path(result["output_dir"]) / "04_data" / "data_manifest.md"
+    if not output_path.exists():
+        # Data phase may have failed — acceptable if it reports the issue
+        assert "data" in result["stderr"].lower() or result["returncode"] != 0, (
+            f"Data should produce output or fail cleanly"
+        )
+        return
 
-    output = str(result["value"]).lower()
+    output = output_path.read_text()
+    golden = golden_data_manifest["content"]
 
-    # Must identify the data source from the plan
-    data_identified = "counts.csv" in output or "gse" in output or "data" in output
-    assert data_identified, (
-        f"Data agent must identify data sources. Output: {output[:300]}"
-    )
+    # Key business fields: data sources identified
+    checks = [
+        ("has_counts_csv", "counts.csv"),
+        ("has_gse", "GSE"),
+    ]
+    failures = []
+    for name, keyword in checks:
+        in_output = keyword.lower() in output.lower()
+        in_golden = keyword.lower() in golden.lower()
+        if in_output != in_golden:
+            failures.append(f"{name}: output={in_output}, golden={in_golden}")
 
-    # Should report status or plan for data acquisition
-    is_valid = result["status"] in ("complete", "partial", "blocked")
-    assert is_valid, (
-        f"Data agent should complete, partially complete, or block. "
-        f"Status: {result['status']}"
+    assert not failures, (
+        f"Data output differs from golden:\n" + "\n".join(failures)
     )

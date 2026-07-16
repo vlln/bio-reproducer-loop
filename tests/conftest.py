@@ -57,3 +57,32 @@ def golden_plan():
 def golden_provision():
     """Golden Provision output for bench-001."""
     return load_golden("bench-001", "provision")
+
+
+@pytest.fixture
+def golden_data_manifest():
+    """Golden Data output for bench-001."""
+    return load_golden("bench-001", "data_manifest")
+
+
+@pytest.fixture
+def golden_run_results():
+    """Golden Run output for bench-001."""
+    return load_golden("bench-001", "run_results")
+
+
+@pytest.fixture
+def golden_report():
+    """Golden Validate output for bench-001."""
+    return load_golden("bench-001", "report")
+
+
+@pytest.fixture
+def golden_metrics():
+    """Golden Validate metrics for bench-001."""
+    golden_path = BENCHMARKS_DIR / "bench-001" / "golden" / "metrics.json"
+    if not golden_path.exists():
+        pytest.skip(f"Golden fixture not found: {golden_path}")
+    import json
+    with open(golden_path) as f:
+        return json.load(f)
