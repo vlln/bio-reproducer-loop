@@ -45,7 +45,7 @@ def _run_phase(entry_dir: str, from_phase: str, setup: dict | None = None) -> di
 
     result = subprocess.run(
         ["loop", "run", "bio-reproducer", "--args", args,
-         "--from-phase", from_phase],
+         "--only-phase", from_phase],
         capture_output=True, text=True,
     )
     return {
