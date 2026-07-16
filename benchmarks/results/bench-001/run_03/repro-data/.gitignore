@@ -1,0 +1,21 @@
+# Task execution logs
+*.log
+.task_status/
+
+# Nextflow work directories (large intermediate files)
+work/
+.nextflow/
+.nextflow.log*
+
+# Container / Singularity images
+*.sif
+*.img
+
+# Editor / OS artifacts
+*~
+.DS_Store
+
+# R session artifacts
+.Rhistory
+.RData
+.Rproj.user/

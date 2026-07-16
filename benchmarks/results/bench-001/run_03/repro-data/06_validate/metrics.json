@@ -1,10 +1,10 @@
 {
-  "verdict": "PARTIAL",
-  "total_score": 63.0,
+  "verdict": "REPRODUCED",
+  "total_score": 87.5,
   "dimension_scores": {
     "data_integrity": 25.0,
-    "process_quality": 18.75,
-    "quantitative_concordance": 18.0,
+    "process_quality": 20.0,
+    "quantitative_concordance": 22.5,
     "figure_and_finding": 20.0
   },
   "checks_total": 17,
