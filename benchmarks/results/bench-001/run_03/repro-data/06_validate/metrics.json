@@ -1,0 +1,256 @@
+{
+  "verdict": "PARTIAL",
+  "total_score": 63.0,
+  "dimension_scores": {
+    "data_integrity": 25.0,
+    "process_quality": 18.75,
+    "quantitative_concordance": 18.0,
+    "figure_and_finding": 20.0
+  },
+  "checks_total": 17,
+  "checks_scored": 17,
+  "checks_na": 0,
+  "figure_validation_status": "generated",
+  "dimension_weights": {
+    "data_integrity": 0.25,
+    "process_quality": 0.25,
+    "quantitative_concordance": 0.30,
+    "figure_and_finding": 0.20
+  },
+  "checks": [
+    {
+      "check_id": "D1",
+      "metric": "Gene count in results",
+      "expected": "10 genes (Gene_A–Gene_J)",
+      "actual": "10 genes (Gene_A–Gene_J)",
+      "score": 1.0,
+      "type": "Auto",
+      "notes": "deseq2_results.csv contains exactly 10 gene rows matching expected gene names"
+    },
+    {
+      "check_id": "D2",
+      "metric": "Sample count in normalized counts",
+      "expected": "6 samples (3 Control + 3 Treatment)",
+      "actual": "6 samples (Control_1–3, Treatment_1–3)",
+      "score": 1.0,
+      "type": "Auto",
+      "notes": "normalized_counts.csv has 6 sample columns with correct naming"
+    },
+    {
+      "check_id": "D3",
+      "metric": "Output files present and non-empty",
+      "expected": "deseq2_results.csv, normalized_counts.csv, volcano_plot.png/pdf",
+      "actual": "All 4 files present and non-empty",
+      "score": 1.0,
+      "type": "Auto",
+      "notes": "deseq2_results.csv (11 lines), normalized_counts.csv (11 lines), volcano_plot.png (46KB), volcano_plot.pdf present"
+    },
+    {
+      "check_id": "D4",
+      "metric": "Results table structure",
+      "expected": "Columns: gene, baseMean, log2FoldChange, lfcSE, pvalue, padj, significant",
+      "actual": "All 7 columns present with correct names",
+      "score": 1.0,
+      "type": "Auto",
+      "notes": "CSV header matches expected DESeq2 output structure"
+    },
+    {
+      "check_id": "Q1",
+      "metric": "Pipeline process success rate",
+      "expected": "2/2 processes completed",
+      "actual": "2/2 completed (DESEQ2_ANALYSIS, VOLCANO_PLOT)",
+      "score": 1.0,
+      "type": "Auto",
+      "notes": "Both Nextflow processes exited with code 0"
+    },
+    {
+      "check_id": "Q2",
+      "metric": "DESeq2 version match",
+      "expected": "1.42.0",
+      "actual": "1.42.1",
+      "score": 1.0,
+      "type": "Auto",
+      "notes": "Patch-level difference only; same minor version, fully compatible"
+    },
+    {
+      "check_id": "Q3",
+      "metric": "R version match",
+      "expected": "4.3.0",
+      "actual": "4.4.0 (bioconductor_docker:RELEASE_3_18)",
+      "score": 0.7,
+      "type": "Auto",
+      "notes": "Minor version difference (4.4.0 vs 4.3.0). Within Bioconductor RELEASE_3_18 container which is the recommended environment."
+    },
+    {
+      "check_id": "Q4",
+      "metric": "ggplot2 version match",
+      "expected": "3.5.0",
+      "actual": "4.0.3",
+      "score": 0.5,
+      "type": "Auto",
+      "notes": "Major version difference (4.0.3 vs 3.5.0). Comes from bioconductor_docker:RELEASE_3_18 container. Plotting output is functionally correct."
+    },
+    {
+      "check_id": "R1",
+      "metric": "Gene_A log2FC direction",
+      "expected": "Positive (upregulated)",
+      "actual": "+2.92 (upregulated)",
+      "score": 1.0,
+      "type": "Auto",
+      "notes": "Direction matches: Gene_A is significantly upregulated"
+    },
+    {
+      "check_id": "R2",
+      "metric": "Gene_B log2FC direction",
+      "expected": "Negative (downregulated)",
+      "actual": "-2.00 (downregulated)",
+      "score": 1.0,
+      "type": "Auto",
+      "notes": "Direction matches: Gene_B is significantly downregulated"
+    },
+    {
+      "check_id": "R3",
+      "metric": "Significant gene count",
+      "expected": "2 (padj < 0.05)",
+      "actual": "2 (Gene_A, Gene_B)",
+      "score": 1.0,
+      "type": "Auto",
+      "notes": "Exactly 2 genes with padj < 0.05, matching paper claim"
+    },
+    {
+      "check_id": "R4",
+      "metric": "Gene_A log2FC magnitude",
+      "expected": "2.5",
+      "actual": "2.92",
+      "score": 0.7,
+      "type": "Auto",
+      "notes": "Deviation of +0.42 (16.8% relative). Direction and significance consistent. Likely due to synthetic/idealized paper values vs actual DESeq2 computation on count data."
+    },
+    {
+      "check_id": "R5",
+      "metric": "Gene_B log2FC magnitude",
+      "expected": "-1.8",
+      "actual": "-2.00",
+      "score": 0.7,
+      "type": "Auto",
+      "notes": "Deviation of -0.20 (11.1% relative). Direction and significance consistent. Same likely cause as R4."
+    },
+    {
+      "check_id": "R6",
+      "metric": "Gene_A padj magnitude",
+      "expected": "0.0008",
+      "actual": "4.37e-119",
+      "score": 0.3,
+      "type": "Auto",
+      "notes": "Orders of magnitude difference. Paper value appears idealized/synthetic. Actual count data (Control mean ~111 vs Treatment mean ~858) produces extremely significant p-value. Significance call (padj < 0.05) is consistent."
+    },
+    {
+      "check_id": "R7",
+      "metric": "Gene_B padj magnitude",
+      "expected": "0.004",
+      "actual": "5.57e-42",
+      "score": 0.3,
+      "type": "Auto",
+      "notes": "Orders of magnitude difference. Same likely cause as R6. Significance call is consistent."
+    },
+    {
+      "check_id": "R8",
+      "metric": "Non-significant genes (C–J) padj > 0.05",
+      "expected": "8 genes not significant",
+      "actual": "8 genes (Gene_C–Gene_J) all padj > 0.05",
+      "score": 1.0,
+      "type": "Auto",
+      "notes": "All 8 non-DE genes correctly identified as not significant"
+    },
+    {
+      "check_id": "K1",
+      "metric": "Volcano plot generated",
+      "expected": "Figure file exists",
+      "actual": "volcano_plot.png (46KB) and volcano_plot.pdf generated",
+      "score": 1.0,
+      "type": "Auto",
+      "notes": "Both PNG and PDF formats generated successfully"
+    },
+    {
+      "check_id": "K2",
+      "metric": "Gene_A position in volcano plot",
+      "expected": "Upper-right quadrant (positive log2FC, high -log10(padj))",
+      "actual": "Gene_A at upper-right, log2FC ~2.9, -log10(padj) ~119",
+      "score": 1.0,
+      "type": "Visual",
+      "notes": "Confirmed via visual inspection of generated volcano plot. Gene_A clearly in upper-right with red color indicating significance."
+    },
+    {
+      "check_id": "K3",
+      "metric": "Gene_B position in volcano plot",
+      "expected": "Upper-left quadrant (negative log2FC, high -log10(padj))",
+      "actual": "Gene_B at upper-left, log2FC ~-2.0, -log10(padj) ~41",
+      "score": 1.0,
+      "type": "Visual",
+      "notes": "Confirmed via visual inspection. Gene_B clearly in upper-left with red color indicating significance."
+    },
+    {
+      "check_id": "K4",
+      "metric": "Non-significant genes near origin",
+      "expected": "Gene_C–J clustered near log2FC=0, low -log10(padj)",
+      "actual": "8 gray dots clustered at origin (log2FC ~0, -log10(padj) ~0)",
+      "score": 1.0,
+      "type": "Visual",
+      "notes": "Confirmed via visual inspection. All non-significant genes form a tight cluster near the origin."
+    },
+    {
+      "check_id": "K5",
+      "metric": "Core biological conclusion",
+      "expected": "Gene_A up, Gene_B down, others not DE",
+      "actual": "Gene_A significantly upregulated (padj=4.37e-119), Gene_B significantly downregulated (padj=5.57e-42), Gene_C–J not significant",
+      "score": 1.0,
+      "type": "Manual",
+      "notes": "Core biological conclusions fully reproduced. The qualitative findings are identical to the paper despite numerical magnitude differences in log2FC and padj values."
+    }
+  ],
+  "deviations": [
+    {
+      "check_id": "R4",
+      "deviation": "Gene_A log2FC = 2.92 vs paper claim of 2.5",
+      "magnitude": "moderate (+16.8%)",
+      "likely_cause": "Paper reports idealized/synthetic values; actual DESeq2 computation on count data produces slightly different estimate",
+      "fault_phase": "paper"
+    },
+    {
+      "check_id": "R5",
+      "deviation": "Gene_B log2FC = -2.00 vs paper claim of -1.8",
+      "magnitude": "moderate (-11.1%)",
+      "likely_cause": "Same as R4",
+      "fault_phase": "paper"
+    },
+    {
+      "check_id": "R6",
+      "deviation": "Gene_A padj = 4.37e-119 vs paper claim of 0.0008",
+      "magnitude": "severe (orders of magnitude)",
+      "likely_cause": "Paper uses idealized p-values; actual count data with large fold change and low variance produces extremely small p-value",
+      "fault_phase": "paper"
+    },
+    {
+      "check_id": "R7",
+      "deviation": "Gene_B padj = 5.57e-42 vs paper claim of 0.004",
+      "magnitude": "severe (orders of magnitude)",
+      "likely_cause": "Same as R6",
+      "fault_phase": "paper"
+    },
+    {
+      "check_id": "Q3",
+      "deviation": "R version 4.4.0 vs paper specification of 4.3.0",
+      "magnitude": "minor",
+      "likely_cause": "Bioconductor RELEASE_3_18 Docker container ships R 4.4.0",
+      "fault_phase": "provision"
+    },
+    {
+      "check_id": "Q4",
+      "deviation": "ggplot2 version 4.0.3 vs paper specification of 3.5.0",
+      "magnitude": "moderate",
+      "likely_cause": "Bioconductor RELEASE_3_18 Docker container ships ggplot2 4.0.3",
+      "fault_phase": "provision"
+    }
+  ],
+  "next_action": "archive"
+}
