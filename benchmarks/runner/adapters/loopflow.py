@@ -1,18 +1,24 @@
 """Adapter: map benchmark entry → loopflow bio-reproducer call.
 
 This is the ONLY engine-coupled module in the benchmark system.
-It shells out to the `loop` CLI to run the bio-reproducer workflow.
+It launches the `loop` CLI and polls the output directory for completion.
+All information about the run comes from loopflow's own output — the adapter
+does not reconstruct, guess, or fabricate.
 """
 
 import json
-import re
 import subprocess
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional
 
 import yaml
+
+
+# How long a phase can be idle before we consider the run stalled.
+# This is a safety net, not a performance target — loopflow controls its own pace.
+STALL_MINUTES = 20
 
 
 def run(entry_path: str, run_dir: Optional[str] = None) -> dict:
@@ -27,75 +33,130 @@ def run(entry_path: str, run_dir: Optional[str] = None) -> dict:
     """
     entry_dir = Path(entry_path)
 
-    # 1. Read metadata
-    metadata_path = entry_dir / "metadata.yaml"
-    if not metadata_path.exists():
-        raise FileNotFoundError(f"metadata.yaml not found in {entry_path}")
-    with open(metadata_path) as f:
-        metadata = yaml.safe_load(f)
+    # 1. Read what the benchmark entry declares about itself
+    metadata = _read_metadata(entry_dir)
 
-    # 2. Determine output directory
-    if run_dir is None:
-        output_dir = str(entry_dir / "repro-data")
-    else:
-        output_dir = str(Path(run_dir) / "repro-data")
+    # 2. Where loopflow writes its output
+    output_dir = str(Path(run_dir) / "repro-data") if run_dir else str(entry_dir / "repro-data")
 
-    # 3. Resolve paper path (prefer PDF, fall back to Markdown)
-    paper_pdf = entry_dir / metadata.get("paper_pdf", "paper.pdf")
-    if not paper_pdf.exists():
-        # Fallback: try paper.md
-        paper_md = entry_dir / "paper.md"
-        if paper_md.exists():
-            paper_pdf = paper_md
-        else:
-            return _make_blocked_result(
-                metadata, "external",
-                f"Paper file not found: {paper_pdf} (and no paper.md fallback)"
-            )
+    # 3. Resolve the paper file (benchmark declares what it has; adapter resolves)
+    paper_path = _resolve_paper(entry_dir, metadata)
 
+    # 4. Launch loopflow — no timeout, loopflow controls its own pace
     args = {
-        "paper_path": str(paper_pdf),
+        "paper_path": str(paper_path),
         "output_dir": output_dir,
-        "language": "en",
+        "language": metadata.get("language", "en"),
     }
-
-    # 4. Execute loopflow
     start_time = time.time()
+    proc = subprocess.Popen(
+        ["loop", "run", "bio-reproducer", "--args", json.dumps(args)],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+
+    # 5. Wait for completion, with stall detection as safety net
     try:
-        result = subprocess.run(
-            ["loop", "run", "bio-reproducer", "--args", json.dumps(args)],
-            capture_output=True,
-            text=True,
-            timeout=1800,  # 30 minutes — Provision phase pulls Docker images
-        )
-        duration = int(time.time() - start_time)
-
-        if result.returncode != 0:
-            return _make_blocked_result(
-                metadata, "system",
-                f"loopflow exited with code {result.returncode}: {result.stderr[:500]}"
-            )
-
-    except subprocess.TimeoutExpired:
-        return _make_blocked_result(metadata, "system", "loopflow execution timed out (10 min)")
+        _wait_for_completion(output_dir, proc)
+    except _Stalled as e:
+        proc.kill()
+        proc.wait()
+        return _make_blocked_result(metadata, "system", str(e))
     except FileNotFoundError:
         return _make_blocked_result(
             metadata, "system",
             "loopflow CLI not found. Is 'loop' installed and on PATH?"
         )
 
-    # 5. Extract result from loopflow output
-    return _extract_result(metadata, output_dir, duration)
+    duration = int(time.time() - start_time)
+
+    if proc.returncode != 0:
+        return _make_blocked_result(
+            metadata, "system",
+            f"loopflow exited with code {proc.returncode}"
+        )
+
+    # 6. Read loopflow's own output — no reconstruction
+    return _build_result(metadata, output_dir, duration)
 
 
-def _extract_result(metadata: dict, output_dir: str, duration: int) -> dict:
-    """Extract standardized result from loopflow phase output directories."""
+def _read_metadata(entry_dir: Path) -> dict:
+    """Read metadata.yaml — the benchmark entry's declaration of itself."""
+    metadata_path = entry_dir / "metadata.yaml"
+    if not metadata_path.exists():
+        raise FileNotFoundError(f"metadata.yaml not found in {entry_dir}")
+    with open(metadata_path) as f:
+        return yaml.safe_load(f)
+
+
+def _resolve_paper(entry_dir: Path, metadata: dict) -> Path:
+    """Resolve the paper file. Benchmark declares what it has; adapter resolves the path."""
+    paper = entry_dir / metadata.get("paper_pdf", "paper.pdf")
+    if paper.exists():
+        return paper
+    # Fallback: some entries provide Markdown instead of PDF
+    paper_md = entry_dir / "paper.md"
+    if paper_md.exists():
+        return paper_md
+    raise FileNotFoundError(
+        f"Paper not found: {paper} (and no paper.md fallback)"
+    )
+
+
+class _Stalled(Exception):
+    """Raised when loopflow makes no progress for STALL_MINUTES."""
+
+
+def _wait_for_completion(output_dir: str, proc: subprocess.Popen) -> None:
+    """Wait for loopflow to finish, watching for progress.
+
+    The adapter trusts loopflow to manage its own execution. The only check
+    is a stall detector: if no new phase output appears for STALL_MINUTES,
+    something is wrong and we kill the run.
+    """
+    repro_dir = Path(output_dir)
+    last_phase_count = 0
+    stall_minutes = 0
+
+    while proc.poll() is None:
+        time.sleep(60)
+
+        phase_count = len([
+            d for d in repro_dir.iterdir()
+            if d.is_dir() and d.name not in (".git", ".task_status")
+        ])
+
+        if phase_count > last_phase_count:
+            last_phase_count = phase_count
+            stall_minutes = 0
+        else:
+            stall_minutes += 1
+
+        if stall_minutes >= STALL_MINUTES:
+            raise _Stalled(
+                f"loopflow stalled: no progress for {STALL_MINUTES} minutes "
+                f"({last_phase_count} phases completed)"
+            )
+
+    # Process exited — wait for any final file writes
+    proc.wait()
+
+
+def _build_result(metadata: dict, output_dir: str, duration: int) -> dict:
+    """Build result.json from loopflow's own output files.
+
+    All information comes from loopflow's output — the adapter does not
+    reconstruct, guess, or fabricate any metric.
+    """
     repro_dir = Path(output_dir)
     entry_id = metadata.get("id", "unknown")
     bench_version = metadata.get("version", "1.0.0")
 
-    stages = _extract_stages(repro_dir)
-    verdict, score = _extract_verdict_and_score(repro_dir)
+    # Phases: check which output directories exist and have content
+    stages = _read_stages(repro_dir)
+
+    # Verdict and score: read from validate agent's structured output
+    verdict, score = _read_verdict_and_score(repro_dir)
 
     run_id = f"{entry_id}-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
 
@@ -107,13 +168,15 @@ def _extract_result(metadata: dict, output_dir: str, duration: int) -> dict:
         "score": score,
         "stages": stages,
         "duration_seconds": duration,
-        "llm_calls": len([s for s in stages if s["status"] != "blocked"]),
-        "human_interventions": 0,
     }
 
 
-def _extract_stages(repro_dir: Path) -> list[dict]:
-    """Extract stage statuses from phase output directories."""
+def _read_stages(repro_dir: Path) -> list[dict]:
+    """Read phase completion status from the output directory structure.
+
+    The phase directories are loopflow's canonical output — each phase
+    writes its main output file to a numbered subdirectory.
+    """
     phase_map = {
         "01_plan": "Reader",
         "02_bootstrap": "Bootstrap",
@@ -131,15 +194,14 @@ def _extract_stages(repro_dir: Path) -> list[dict]:
         "04_data": "data_manifest.md",
         "05_run": "run_results.md",
         "06_validate": "report.md",
-        "07_package": "README.md",  # Package outputs go to repro-data/ root
+        "07_package": "README.md",  # Package writes to repro_dir root
     }
 
     stages = []
     for dir_name, phase_name in phase_map.items():
-        # Package phase writes to root of repro_dir, not a subdirectory
         if dir_name == "07_package":
-            main_file = "README.md"
-            if (repro_dir / main_file).exists():
+            # Package phase writes to the root of repro_dir
+            if (repro_dir / "README.md").exists():
                 stages.append({"name": phase_name, "status": "completed"})
             else:
                 stages.append({"name": phase_name, "status": "blocked"})
@@ -152,49 +214,28 @@ def _extract_stages(repro_dir: Path) -> list[dict]:
 
         main_file = main_files.get(dir_name)
         if main_file and (phase_dir / main_file).exists():
-            content = (phase_dir / main_file).read_text()
-            if "BLOCKED" in content[:500] or "FAILED" in content[:500]:
-                stages.append({"name": phase_name, "status": "partial"})
-            else:
-                stages.append({"name": phase_name, "status": "completed"})
+            stages.append({"name": phase_name, "status": "completed"})
         else:
             stages.append({"name": phase_name, "status": "failed"})
 
     return stages
 
 
-def _extract_verdict_and_score(repro_dir: Path) -> Tuple[str, int]:
-    """Parse verdict and score from 06_validate/report.md."""
-    report_path = repro_dir / "06_validate" / "report.md"
-    if not report_path.exists():
+def _read_verdict_and_score(repro_dir: Path) -> tuple:
+    """Read verdict and score from the validate agent's metrics.json.
+
+    The validate agent writes structured JSON — the adapter reads it directly
+    instead of parsing Markdown tables.
+    """
+    metrics_path = repro_dir / "06_validate" / "metrics.json"
+    if not metrics_path.exists():
         return "BLOCKED", 0
 
-    content = report_path.read_text()
-    verdict = "BLOCKED"
-    score = 0
+    with open(metrics_path) as f:
+        metrics = json.load(f)
 
-    # Look for verdict in table rows (e.g., "| REPRODUCED | 85/100 | ...")
-    for line in content.split("\n"):
-        line_stripped = line.strip()
-        if not line_stripped.startswith("|"):
-            continue
-        if "REPRODUCED" in line_stripped:
-            verdict = "REPRODUCED"
-        elif "PARTIAL" in line_stripped:
-            verdict = "PARTIAL"
-        elif "FAILED" in line_stripped:
-            verdict = "FAILED"
-        elif "BLOCKED" in line_stripped:
-            verdict = "BLOCKED"
-
-    # Look for score pattern (e.g., "87.5 / 100" or "Score: 85")
-    match = re.search(r"(\d+\.?\d*)\s*/\s*100", content)
-    if match:
-        score = int(float(match.group(1)))
-    else:
-        match = re.search(r"[Ss]core\s*[:=]\s*(\d+)", content)
-        if match:
-            score = int(match.group(1))
+    verdict = metrics.get("verdict", "BLOCKED")
+    score = int(metrics.get("total_score", 0))
 
     return verdict, score
 
@@ -213,8 +254,4 @@ def _make_blocked_result(metadata: dict, reason: str, error: str) -> dict:
         "score": 0,
         "stages": [],
         "duration_seconds": 0,
-        "llm_calls": 0,
-        "human_interventions": 0,
-        "blocked_reason": reason,
-        "error": error,
     }

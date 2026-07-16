@@ -168,14 +168,6 @@ reproducibility:
     - "p 值因 DESeq2 版本差异会有数量级偏差（0.0008 vs 4e-119），这是预期行为"
     - "无原始 figure 图片，K6 检查项为 N/A，无法做像素级视觉对比"
     - "log2FC 因 apeglm 版本差异会有 ~15% 偏差"
-  expected_runtime: "~25 min（含 Docker 镜像拉取，不含首次拉取时间）"
-  data_size: "<1 KB"
-  output_size: "~500 KB（含 volcano plot PNG/PDF）"
-  tool_requirements:
-    - "R ≥ 4.3.0"
-    - "DESeq2 ≥ 1.42.0"
-    - "ggplot2 ≥ 3.5.0"
-    - "apeglm ≥ 1.24.0"
   container_image: "bioconductor/bioconductor_docker:latest"
 
 # ───────────────────────────────────────────

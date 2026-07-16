@@ -318,8 +318,6 @@ bio-reproducer/
 | score | int | 0-100 | 复现分数 |
 | stages | list[StageResult] | | 各阶段状态 |
 | duration_seconds | int | | 总耗时 |
-| llm_calls | int | | LLM 调用次数 |
-| human_interventions | int | | 人工介入次数 |
 
 ### StageResult
 

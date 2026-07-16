@@ -161,17 +161,6 @@ reproducibility:
     - "无原始图片，像素级视觉对比不适用"
     - "clusterProfiler/pathview 版本差异可能影响富集结果和通路图渲染"
     - "GO 富集结果依赖 org.Hs.eg.db 版本，术语可能略有不同"
-  expected_runtime: "~30 min（含 Docker 镜像拉取，含 Bioconductor 包安装）"
-  data_size: "<1 KB"
-  output_size: "~1 MB（含 3 张图 + 通路图）"
-  tool_requirements:
-    - "R ≥ 4.3.0"
-    - "DESeq2 ≥ 1.42.0"
-    - "clusterProfiler ≥ 4.0"
-    - "pathview ≥ 1.30"
-    - "ggplot2 ≥ 3.5.0"
-    - "apeglm ≥ 1.24.0"
-    - "org.Hs.eg.db（基因 ID 转换）"
   container_image: "bioconductor/bioconductor_docker:latest"
 
 # ───────────────────────────────────────────
