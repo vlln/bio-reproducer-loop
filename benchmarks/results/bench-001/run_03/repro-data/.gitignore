@@ -2,12 +2,12 @@
 *.log
 .task_status/
 
-# Nextflow work directories (large intermediate files)
+# Nextflow work directory (large intermediate files)
 work/
 .nextflow/
 .nextflow.log*
 
-# Container / Singularity images
+# Containers / Singularity images
 *.sif
 *.img
 
@@ -15,7 +15,7 @@ work/
 *~
 .DS_Store
 
-# R session artifacts
-.Rhistory
+# R session data
 .RData
+.Rhistory
 .Rproj.user/

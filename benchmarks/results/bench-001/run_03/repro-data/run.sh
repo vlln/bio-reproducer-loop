@@ -4,208 +4,185 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 cd "$ROOT"
 
-# Detect Java and set JAVA_HOME if needed
-setup_java() {
-    if [ -n "${JAVA_HOME:-}" ] && command -v java >/dev/null 2>&1; then
-        return 0
-    fi
-    # Try Homebrew OpenJDK 17
-    if [ -d "/opt/homebrew/opt/openjdk@17" ]; then
-        export JAVA_HOME="/opt/homebrew/opt/openjdk@17"
-        export PATH="$JAVA_HOME/bin:$PATH"
-        return 0
-    fi
-    # Try system Java
-    if [ -x "/usr/libexec/java_home" ]; then
-        export JAVA_HOME="$(/usr/libexec/java_home 2>/dev/null || true)"
-        if [ -n "$JAVA_HOME" ]; then
-            export PATH="$JAVA_HOME/bin:$PATH"
-            return 0
-        fi
-    fi
-    echo "WARNING: JAVA_HOME not set and no Java runtime detected. Nextflow may fail."
-    return 1
-}
+# ── image name ───────────────────────────────────────────────────────────────
+IMAGE="bio-reproducer:bench-001"
 
-# Locate the Nextflow launcher script (project-local)
-find_nextflow() {
-    # Search for the nextflow script relative to repro-data root
-    if [ -x "$ROOT/../../../../../nextflow" ]; then
-        echo "$ROOT/../../../../../nextflow"
-    elif command -v nextflow >/dev/null 2>&1; then
-        echo "nextflow"
-    else
-        echo ""
-    fi
-}
-
+# ── check ────────────────────────────────────────────────────────────────────
 check() {
     echo "=== Checking Prerequisites ==="
-    echo ""
+    local ok=1
 
-    # Java
-    setup_java
-    if command -v java >/dev/null 2>&1; then
-        echo "[OK] Java: $(java -version 2>&1 | head -1)"
+    if ! command -v docker >/dev/null 2>&1; then
+        echo "ERROR: docker not found — install Docker or OrbStack"
+        ok=0
     else
-        echo "[FAIL] Java not found. Install OpenJDK 17+ (e.g., brew install openjdk@17)"
-        exit 1
-    fi
-
-    # Nextflow
-    NF=$(find_nextflow)
-    if [ -n "$NF" ]; then
-        echo "[OK] Nextflow: $($NF -version 2>&1 | head -1)"
-    else
-        echo "[FAIL] Nextflow not found. Ensure the project-local 'nextflow' script is present."
-        exit 1
-    fi
-
-    # Container runtime
-    if command -v docker >/dev/null 2>&1; then
-        echo "[OK] Docker: $(docker --version 2>&1)"
-    elif command -v singularity >/dev/null 2>&1; then
-        echo "[OK] Singularity: $(singularity --version 2>&1)"
-    else
-        echo "[FAIL] Neither Docker nor Singularity found. Install one to proceed."
-        exit 1
-    fi
-
-    # Disk space (check for at least 2 GB free)
-    if command -v df >/dev/null 2>&1; then
-        AVAIL=$(df -k . | tail -1 | awk '{print $4}')
-        if [ "$AVAIL" -lt 2097152 ]; then
-            echo "[WARN] Less than 2 GB disk space available. Container pull may fail."
-        else
-            echo "[OK] Disk space: $((AVAIL / 1024 / 1024)) GB available"
-        fi
+        echo "OK: docker ($(docker --version 2>/dev/null | head -1))"
     fi
 
     echo ""
+    if [ "$ok" -eq 0 ]; then
+        echo "Some prerequisites are missing. Please install them and re-run."
+        exit 1
+    fi
     echo "All prerequisites satisfied."
 }
 
-all() {
-    echo "This will run all reproduction phases: bootstrap, provision, data, run, validate."
-    echo "Estimated time: ~5 minutes (first run), ~5 seconds (cached re-run)."
-    echo ""
-    read -r -p "Continue? [y/N] " yn
-    case "$yn" in
-        [Yy]*) ;;
-        *) echo "Aborted."; exit 0 ;;
-    esac
-    bootstrap
-    provision
-    data
-    run
-    validate
-}
-
+# ── bootstrap ────────────────────────────────────────────────────────────────
 bootstrap() {
     echo "=== Phase 2: Bootstrap ==="
-    echo "Environment inventory was already collected during the initial reproduction run."
-    echo "See 02_bootstrap/bootstrap.md for the full report."
+    echo "This phase assesses the system environment."
+    echo "The bootstrap report already exists at 02_bootstrap/bootstrap.md."
     echo ""
-    echo "Running prerequisite check..."
-    check
+    echo "System: macOS (Darwin), Apple M4, 16 GB RAM, 228 GB disk"
+    echo "Docker: available (OrbStack)"
+    echo "R: 4.6.1 (native), 4.3.3 (in container)"
+    echo ""
+    echo "No action needed — bootstrap is informational only."
+    echo "See 02_bootstrap/bootstrap.md for full details."
 }
 
+# ── provision ────────────────────────────────────────────────────────────────
 provision() {
     echo "=== Phase 3: Provision ==="
-    echo "Building the custom Docker image with R, DESeq2, ggplot2, and apeglm."
-    echo "Estimated time: ~5 minutes (first pull + build), ~10 seconds (cached)."
+    echo "Building Docker image: ${IMAGE}"
+    echo "This is a one-time operation (~10 minutes, ~6 GB disk)."
     echo ""
 
-    setup_java
-    NF=$(find_nextflow)
-    if [ -z "$NF" ]; then
-        echo "ERROR: Nextflow not found."
-        exit 1
+    # Check if image already exists
+    if docker image inspect "${IMAGE}" >/dev/null 2>&1; then
+        echo "Image ${IMAGE} already exists."
+        read -rp "Rebuild? [y/N] " yn
+        case "$yn" in [Yy]*) ;; *) echo "Skipping build."; return 0;; esac
     fi
 
-    cd "$ROOT/03_provision"
-    "$NF" run provision.nf -resume
+    docker build \
+        --platform linux/arm64 \
+        -t "${IMAGE}" \
+        -f "${ROOT}/03_provision/Dockerfile" \
+        "${ROOT}/03_provision"
+
     echo ""
-    echo "Provision complete. See 03_provision/provision.md for details."
+    echo "Image built successfully."
+    echo "See 03_provision/provision.md for details."
 }
 
+# ── data ─────────────────────────────────────────────────────────────────────
 data() {
     echo "=== Phase 4: Data ==="
-    echo "Staging the count matrix (counts.csv) for analysis."
-    echo "Estimated time: ~2 seconds."
+    echo "The count matrix already exists at 04_data/raw_data/counts.csv."
+    echo "It was reconstructed from the paper description (10 genes x 6 samples)."
     echo ""
-
-    setup_java
-    NF=$(find_nextflow)
-    if [ -z "$NF" ]; then
-        echo "ERROR: Nextflow not found."
-        exit 1
-    fi
-
-    cd "$ROOT/04_data"
-    "$NF" run data.nf -resume
-    echo ""
-    echo "Data staging complete. See 04_data/data_manifest.md for details."
+    echo "No action needed — data is pre-generated."
+    echo "See 04_data/data_manifest.md for details."
 }
 
+# ── run ──────────────────────────────────────────────────────────────────────
 run() {
-    echo "=== Phase 5: Run ==="
-    echo "Running DESeq2 differential expression analysis and generating the volcano plot."
-    echo "Estimated time: ~30 seconds."
+    echo "=== Phase 5: Run Analysis ==="
+    echo "Running DESeq2 differential expression analysis via Docker."
+    echo "Estimated time: < 1 minute."
     echo ""
 
-    setup_java
-    NF=$(find_nextflow)
-    if [ -z "$NF" ]; then
-        echo "ERROR: Nextflow not found."
+    # Check image exists
+    if ! docker image inspect "${IMAGE}" >/dev/null 2>&1; then
+        echo "ERROR: Docker image ${IMAGE} not found."
+        echo "Run 'bash run.sh provision' first."
         exit 1
     fi
 
-    cd "$ROOT/05_run"
-    "$NF" run main.nf -resume \
-        -with-report reports/run_report.html \
-        -with-timeline reports/timeline.html \
-        -with-trace reports/trace.txt
+    # Ensure output directories exist
+    mkdir -p "${ROOT}/05_run/results" "${ROOT}/05_run/figures"
+
+    # Container network check
+    echo "[Check] Testing container network connectivity..."
+    docker run --rm "${IMAGE}" \
+        Rscript -e 'cat("R OK\n"); if(curl::has_internet()) cat("Internet: OK\n") else cat("Internet: UNAVAILABLE\n")' 2>&1 || true
     echo ""
-    echo "Analysis complete. See 05_run/run_results.md for details."
-    echo "Results: 05_run/results/"
-    echo "Figures: 05_run/figures/"
+
+    # Run analysis
+    echo "[Run] Starting DESeq2 analysis..."
+    docker run --rm \
+        --platform linux/arm64 \
+        -v "${ROOT}:/data:ro" \
+        -v "${ROOT}/05_run/results:/data/05_run/results" \
+        -v "${ROOT}/05_run/figures:/data/05_run/figures" \
+        "${IMAGE}" \
+        Rscript /data/05_run/analysis.R /data/04_data/raw_data /data/05_run
+
+    echo ""
+    echo "Analysis completed."
+    echo "Results: 05_run/results/deseq2_results.csv"
+    echo "Figures: 05_run/figures/figure1_volcano.png"
+    echo "See 05_run/run_results.md for details."
 }
 
+# ── validate ─────────────────────────────────────────────────────────────────
 validate() {
     echo "=== Phase 6: Validate ==="
-    echo "Reviewing validation results from the reproduction run."
+    echo "Validation report already exists at 06_validate/report.md."
     echo ""
 
-    if [ -f "$ROOT/06_validate/report.md" ]; then
-        echo "Validation report: 06_validate/report.md"
-        echo "Figure comparison: 06_validate/figure_comparison.md"
-        echo ""
-        # Extract and display the verdict
-        echo "--- Verdict Summary ---"
-        grep -E "^\| Status" "$ROOT/06_validate/report.md" || true
-        grep "Reproducibility Score" "$ROOT/06_validate/report.md" || true
-        echo ""
-        echo "See 06_validate/report.md for the full validation report."
+    if [ -f "${ROOT}/06_validate/report.md" ]; then
+        # Extract verdict line
+        local verdict
+        verdict=$(grep -E '^\| Status' "${ROOT}/06_validate/report.md" | head -1 || echo "N/A")
+        echo "Validation: ${verdict}"
+        echo "See 06_validate/report.md for full report."
+        echo "See 06_validate/figure_comparison.md for figure comparison."
     else
-        echo "Validation report not found. Run 'bash run.sh run' first."
+        echo "Validation report not found. Ensure Phase 5 completed successfully."
         exit 1
     fi
 }
 
-# Default action: show usage
+# ── all ──────────────────────────────────────────────────────────────────────
+all() {
+    echo "=============================================="
+    echo " Reproduction Pipeline — All Phases"
+    echo " Paper: Differential Expression Analysis of"
+    echo "        Synthetic Gene Response to Treatment"
+    echo "=============================================="
+    echo ""
+    echo "This will run: provision → data → run → validate"
+    echo "Estimated time: ~10 minutes (first run, includes Docker build)"
+    echo "Disk space: ~7 GB for Docker image"
+    echo ""
+    read -rp "Continue? [y/N] " yn
+    case "$yn" in
+        [Yy]*) ;;
+        *) echo "Aborted."; exit 0;;
+    esac
+    echo ""
+
+    provision
+    echo ""
+    data
+    echo ""
+    run
+    echo ""
+    validate
+    echo ""
+
+    echo "=============================================="
+    echo " All phases completed."
+    echo " See 06_validate/report.md for the verdict."
+    echo "=============================================="
+}
+
+# ── dispatch ─────────────────────────────────────────────────────────────────
 if [ $# -eq 0 ]; then
     echo "Usage: run.sh <command>"
     echo ""
     echo "Commands:"
-    echo "  check       Check system prerequisites (nextflow, docker, java, disk)"
-    echo "  all         Run all reproduction phases (provision → data → run → validate)"
-    echo "  bootstrap   Show bootstrap report and run prerequisite check"
-    echo "  provision   Build/pull the Docker container (Phase 3)"
-    echo "  data        Stage input data (Phase 4)"
-    echo "  run         Run DESeq2 analysis and generate volcano plot (Phase 5)"
-    echo "  validate    Display validation report (Phase 6)"
+    echo "  check       Check system prerequisites"
+    echo "  bootstrap   Phase 2: Assess environment (informational)"
+    echo "  provision   Phase 3: Build Docker image"
+    echo "  data        Phase 4: Verify data availability"
+    echo "  run         Phase 5: Run DESeq2 analysis"
+    echo "  validate    Phase 6: Show validation results"
+    echo "  all         Run all executable phases (provision → validate)"
+    echo ""
     exit 0
 fi
 
-"${@}"
+"${@:-check}"

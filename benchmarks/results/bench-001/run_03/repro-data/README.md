@@ -1,75 +1,65 @@
 # Differential Expression Analysis of Synthetic Gene Response to Treatment
 
 **DOI**: 10.1234/bench.001
-**Reproduction Status**: REPRODUCED (Score: 87.5/100)
-**Date**: 2026-07-16
+**Reproduction Status**: PARTIAL (Score: 78.25 / 100)
+**Date**: 2026-07-18
 
 ## Paper Summary
 
-This study identifies differentially expressed genes (DEGs) between Control and Treatment conditions using a synthetic 10-gene RNA-seq count panel. The analysis follows the canonical DESeq2 workflow: loading a count matrix from CSV, constructing a DESeqDataSet with design formula `~ condition`, running DESeq2 with default parameters, applying log2 fold change shrinkage via `lfcShrink(type = "apeglm")`, and extracting results at adjusted p-value < 0.05. A volcano plot visualizes the results using ggplot2.
+This paper presents a minimal, synthetic differential expression analysis to demonstrate a complete RNA-seq pipeline. The study investigates whether a 10-gene panel shows differential expression between Control and Treatment conditions using a synthetic dataset. The computational goal is to reproduce a standard DESeq2 workflow — from count matrix loading through normalization, statistical testing, fold-change shrinkage, and volcano plot visualization.
 
 ## Reproduction Verdict
 
-**REPRODUCED** — Score: 87.5/100 (17 checks scored, 0 N/A)
+**Status: PARTIAL (78.25/100)** — The technical pipeline is fully runnable and all qualitative scientific conclusions are reproduced (direction of differential expression, significance classification, volcano plot pattern). Quantitative deviations exist in p-values due to the original count matrix not being provided in the paper — the data was reconstructed from the paper's description.
 
-| Dimension | Score | Max | Assessment |
-|-----------|-------|-----|------------|
-| Data Integrity | 25.0 | 25.0 | All 4 checks passed. Gene count, sample count, output files, and table structure all match. |
-| Process Quality | 20.0 | 25.0 | Pipeline succeeded. DESeq2 version matches (1.42.1 vs 1.42.0). Minor R/ggplot2 version differences from Bioconductor container. |
-| Quantitative Concordance | 22.5 | 30.0 | Directions, significance calls, and non-DE genes all correct. log2FC magnitudes within ~17%. padj values are orders of magnitude more extreme than the paper's idealized values. |
-| Figure and Finding Reproduction | 20.0 | 20.0 | All 5 checks passed. Volcano plot pattern confirmed. Core biological conclusions fully reproduced. |
+| Dimension | Score | Key Finding |
+|-----------|-------|-------------|
+| Data Integrity | 25.0 / 25 | All output files present, correct dimensions |
+| Process Quality | 19.0 / 25 | Dispersion method deviated (gene-wise vs parametric); Nextflow unavailable |
+| Quantitative Concordance | 14.25 / 30 | log2FC values close (3–4% diff); padj values orders of magnitude off due to reconstructed data |
+| Figure and Finding Reproduction | 20.0 / 20 | Volcano plot pattern fully reproduced |
 
-The numerical discrepancies (log2FC and padj magnitudes) originate from the paper using idealized/synthetic values. The reproduction correctly implements the described analysis on the actual count data. The core biological conclusions are fully reproduced: Gene_A is significantly upregulated, Gene_B is significantly downregulated, and the remaining 8 genes (Gene_C–Gene_J) show no significant differential expression.
+**Key Deviations**:
+- Gene_A padj: 1.11e-161 (reproduced) vs 0.0008 (paper) — reconstructed data produces stronger signal
+- Gene_B padj: 3.31e-121 (reproduced) vs 0.004 (paper) — same cause as above
+- Dispersion estimation used gene-wise estimates (parametric fit failed with only 10 genes)
+- Analysis ran via direct `docker run` (Nextflow unavailable — no Java runtime)
 
-### Key Deviations
-
-| Metric | Paper | Reproduced | Cause |
-|--------|-------|------------|-------|
-| Gene_A log2FC | 2.5 | 2.92 (+16.8%) | Paper uses idealized values |
-| Gene_A padj | 0.0008 | 4.37e-119 | Same as above |
-| Gene_B log2FC | -1.8 | -2.00 (-11.1%) | Same as above |
-| Gene_B padj | 0.004 | 5.57e-42 | Same as above |
-| R version | 4.3.0 | 4.4.0 | Bioconductor RELEASE_3_18 container |
-| ggplot2 version | 3.5.0 | 4.0.3 | Bioconductor RELEASE_3_18 container |
+**Root Cause**: The original `counts.csv` (Supplementary Table S1) was described but not provided in the paper. The count matrix was reconstructed from the paper's qualitative description, producing the correct qualitative patterns but different quantitative p-values.
 
 ## Figure Reproduction
 
-| Figure/Panel | Status | Generated Files | Validation |
-|--------------|--------|-----------------|------------|
-| Figure 1 (volcano plot) | Generated | `05_run/figures/volcano_plot.png` (46 KB, 1050×900 px), `volcano_plot.pdf` (6 KB, 1 page) | Pattern-based visual: Gene_A upper-right, Gene_B upper-left, others near origin — confirmed |
+| Figure | Original | Generated | Result |
+|--------|----------|-----------|--------|
+| Figure 1: Volcano Plot | Not available (not extracted by mineru) | `05_run/figures/figure1_volcano.png`, `05_run/figures/figure1_volcano.pdf` | Pattern confirmed: Gene_A upper-right, Gene_B upper-left, 8 genes near origin |
 
-The generated volcano plot was visually inspected and compared against the paper's described expected pattern. Gene_A is positioned in the upper-right quadrant, Gene_B in the upper-left quadrant, and the remaining 8 genes are tightly clustered near the origin. All structural elements (significance threshold line, axis labels, legend) are present. The plot fully reproduces the scientific pattern described in the paper.
-
-**Limitation**: No original figure image was provided in the paper. Pixel-level comparison is not possible. Validation is based on pattern matching against the paper's textual description. See `06_validate/figure_comparison.md` for the detailed visual assessment.
+The volcano plot shows the expected scientific pattern: Gene_A (log2FC=2.42, red) in the upper-right quadrant, Gene_B (log2FC=-1.86, red) in the upper-left quadrant, and 8 non-significant genes clustered near the origin. All scientific conclusions are confirmed. See `06_validate/figure_comparison.md` for detailed assessment.
 
 ## System Requirements
 
-- **OS**: macOS / Linux (tested on macOS 15 with Apple M4)
-- **Container Runtime**: Docker (tested with OrbStack 29.4.0)
-- **Nextflow**: 26.04.6 (project-local script included)
-- **Java**: 17+ (tested with OpenJDK 17.0.19 via Homebrew)
-- **Disk Space**: ~2 GB (container image); analysis data is ~390 bytes
-- **Memory**: 4 GB minimum (16 GB recommended)
-- **Network**: Required for initial container pull only
+- **OS**: macOS (Darwin) — R is cross-platform; analysis runs in Docker container
+- **Container Runtime**: Docker 29.4.0+ (OrbStack or Docker Desktop)
+- **Architecture**: aarch64 (Apple Silicon) or x86_64
+- **Disk**: ~7 GB for Docker image, ~1 MB for analysis outputs
+- **Memory**: 8 GB recommended (analysis is lightweight: 10 genes × 6 samples)
+- **Network**: Required for initial Docker image build only
 
 ## Quick Start
 
 ```bash
-# 1. Clone and enter the repository
+# 1. Clone and enter the directory
 git clone <repo> && cd repro-data
 
 # 2. Check prerequisites
 bash run.sh check
 
-# 3. Run reproduction (all phases)
+# 3. Run all phases (from provision to validate)
 bash run.sh all
 
 # Or step by step:
-bash run.sh bootstrap   # Phase 2: Review environment report
-bash run.sh provision   # Phase 3: Pull/build container
-bash run.sh data        # Phase 4: Stage data
-bash run.sh run         # Phase 5: Run DESeq2 analysis
-bash run.sh validate    # Phase 6: Review validation report
+bash run.sh provision   # Phase 3: Build Docker image (6 GB, ~10 min)
+bash run.sh run         # Phase 5: Run DESeq2 analysis (< 1 min)
+bash run.sh validate    # Phase 6: Validate results (< 1 min)
 ```
 
 ## Directory Structure
@@ -80,48 +70,41 @@ repro-data/
 ├── run.sh
 ├── .gitignore
 ├── 01_plan/
-│   └── plan.md                       # Paper extraction and reproduction plan
+│   ├── plan.md                    # Paper extraction and reproduction plan
+│   └── paper_markdown/            # Parsed paper content (mineru output)
 ├── 02_bootstrap/
-│   └── bootstrap.md                  # Environment inventory and verification
+│   └── bootstrap.md               # System environment assessment
 ├── 03_provision/
-│   ├── provision.md                  # Container provisioning report
-│   ├── Dockerfile                    # Custom Docker image definition
-│   ├── provision.nf                  # Nextflow workflow for container build
-│   └── nextflow.config               # Nextflow config (Docker scope)
+│   ├── provision.md               # Container provisioning report
+│   ├── Dockerfile                 # Custom Docker image definition
+│   └── provision.nf               # Nextflow workflow (documentation)
 ├── 04_data/
-│   ├── data_manifest.md              # Data acquisition report
-│   ├── data.nf                       # Nextflow workflow for data staging
-│   ├── nextflow.config
+│   ├── data_manifest.md           # Data acquisition report
+│   ├── data.nf                    # Nextflow workflow (documentation)
 │   └── raw_data/
-│       └── counts.csv                # Count matrix (10 genes × 6 samples)
+│       └── counts.csv             # Reconstructed count matrix (10 × 6)
 ├── 05_run/
-│   ├── main.nf                       # Main analysis pipeline (DSL2)
-│   ├── run_results.md                # Execution summary and results
-│   ├── deseq2_analysis.R             # DESeq2 + apeglm analysis script
-│   ├── volcano_plot.R                # Volcano plot generation script
-│   ├── nextflow.config
+│   ├── run_results.md             # Analysis execution report
+│   ├── run.sh                     # Docker execution wrapper
+│   ├── analysis.R                 # R analysis script (DESeq2 + volcano plot)
+│   ├── main.nf                    # Nextflow workflow (documentation)
 │   ├── results/
-│   │   ├── deseq2_results.csv        # DE results table
-│   │   └── normalized_counts.csv
-│   ├── figures/
-│   │   ├── volcano_plot.png          # Figure 1 (PNG)
-│   │   └── volcano_plot.pdf          # Figure 1 (PDF)
-│   └── reports/
-│       ├── run_report.html
-│       ├── timeline.html
-│       └── trace.txt
+│   │   ├── deseq2_results.csv     # Full DESeq2 results table
+│   │   └── normalized_counts.csv  # Normalized count matrix
+│   └── figures/
+│       ├── figure1_volcano.png    # Volcano plot (PNG)
+│       ├── figure1_volcano.pdf    # Volcano plot (PDF)
+│       └── figure1_data.csv       # Plot data for reproducibility
 └── 06_validate/
-    ├── report.md                     # Validation report
-    ├── figure_comparison.md          # Figure comparison assessment
-    ├── checks_plan.md                # Validation check definitions
-    └── metrics.json                  # Machine-readable metrics
+    ├── report.md                   # Validation report
+    ├── figure_comparison.md        # Figure comparison assessment
+    └── metrics.json                # Validation metrics (JSON)
 ```
 
 ## Notes
 
-- **Paper is a benchmark**: The paper uses synthetic/idealized numerical values for log2FC and padj. The reproduction using actual DESeq2 on the count data produces more extreme p-values and slightly different log2FC estimates. Directions and significance calls are fully consistent.
-- **No author code available**: The GitHub repository (https://github.com/example/deseq2-analysis) returns HTTP 404. The analysis pipeline was reconstructed from the Methods section of the paper.
-- **No original figure image**: The paper describes the volcano plot but does not provide an original image file. Visual validation is pattern-based.
-- **GEO accession mismatch**: GSE99999 resolves to an unrelated study. The count matrix from Supplementary Table S1 (`counts.csv`) is used as the primary data source.
-- **Estimated runtime**: ~5 minutes (including container pull). Cached re-runs complete in ~5 seconds.
-- **Java note**: The system Java stub may not work without `JAVA_HOME` set. The `run.sh` script handles this automatically.
+- **Reconstructed Data**: The original `counts.csv` was not provided in the paper. The version in `04_data/raw_data/` was reconstructed from the paper's qualitative description. This is the primary cause of quantitative p-value deviations — all qualitative conclusions are reproduced correctly.
+- **No Author Code**: The analysis script repository (https://github.com/example/deseq2-analysis) returns 404. The R analysis script in `05_run/analysis.R` was written based on the DESeq2 workflow described in the paper.
+- **No Nextflow**: Nextflow could not be executed (no Java runtime on this system). The analysis was run directly via `docker run`. The `main.nf` and `*.nf` files are retained as documentation of the intended workflow structure.
+- **Estimated Runtime**: Docker image build ~10 minutes (one-time), analysis < 1 minute.
+- **Docker Image**: The custom image `bio-reproducer:bench-001` (6.08 GB) is based on `bioconductor/bioconductor_docker:RELEASE_3_18` with R 4.3.3, DESeq2 1.42.1, ggplot2 3.5.0, and apeglm 1.24.0.
