@@ -11,16 +11,11 @@ work/
 *.sif
 *.img
 
-# R package library (if installed locally)
-.renv/
-renv/library/
-renv/staging/
-
-# R session data
-.RData
-.Rhistory
-.Rproj.user/
-
 # Editor / OS artifacts
 *~
 .DS_Store
+
+# Phase-specific temp files
+03_provision/logs/
+05_run/reports/*.html
+05_run/reports/*.svg
