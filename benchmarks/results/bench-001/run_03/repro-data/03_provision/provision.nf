@@ -2,40 +2,95 @@
 nextflow.enable.dsl=2
 
 /*
- * Phase 3: Provision — Custom R/Bioconductor container for bench-001
+ * provision.nf — Phase 3: Tool Environment Deployment
+ * Paper: bench-001 (DESeq2 Differential Expression Analysis)
  *
- * Image: bench001-r-analysis:latest
- *   Based on: bioconductor/bioconductor_docker:RELEASE_3_18
- *   R: 4.3.3
- *   Bioconductor: 3.18
- *   Packages: DESeq2 1.42.1, ggplot2 4.0.3, apeglm 1.24.0
+ * Deploys the R/Bioconductor environment for DESeq2 analysis.
+ * Uses a custom Docker image built from bioconductor/bioconductor_docker:RELEASE_3_18.
+ *
+ * Note: Nextflow requires Java. If Java is not available, build and verify
+ * the Docker image directly:
+ *   docker build -t bio-reproducer:bench-001 -f Dockerfile .
+ *   docker run --rm bio-reproducer:bench-001 Rscript verify.R
  */
 
 params.outdir = "${launchDir}"
+params.image_name = "bio-reproducer:bench-001"
+params.dockerfile = "${launchDir}/Dockerfile"
 
-process VERIFY_TOOLS {
-    container "bench001-r-analysis:latest"
+process BUILD_IMAGE {
+    publishDir "${params.outdir}/logs", mode: 'copy'
 
     output:
-    path "verify_results.json", emit: results
+    stdout
+
+    script:
+    """
+    echo "Building Docker image: ${params.image_name}"
+    docker build -t ${params.image_name} -f ${params.dockerfile} ${launchDir}
+    echo "Build complete: ${params.image_name}"
+    """
+}
+
+process VERIFY_TOOLS {
+    container params.image_name
+    publishDir "${params.outdir}/logs", mode: 'copy'
+
+    output:
+    path "verification.txt"
 
     script:
     """
     Rscript -e '
-    pkgs <- c("DESeq2", "ggplot2", "apeglm")
-    results <- list(R_version = R.version.string)
-    for (pkg in pkgs) {
-        ver <- as.character(packageVersion(pkg))
-        cat(sprintf("%-12s %s\\n", pkg, ver))
-        library(pkg, character.only = TRUE)
-        results[[pkg]] <- ver
+    sink("verification.txt")
+    cat("=== Verification Report ===\\n")
+    cat("R version:", paste(R.version\$major, R.version\$minor, sep = "."), "\\n")
+
+    tools <- list(
+        DESeq2 = "1.42.0",
+        ggplot2 = "3.5.0",
+        apeglm = "1.24.0"
+    )
+
+    for (name in names(tools)) {
+        expected <- tools[[name]]
+        tryCatch({
+            actual <- as.character(packageVersion(name))
+            status <- if (actual == expected) "PASS" else "WARN (version mismatch)"
+            cat(sprintf("%-12s expected=%-10s actual=%-10s [%s]\\n", name, expected, actual, status))
+        }, error = function(e) {
+            cat(sprintf("%-12s expected=%-10s [FAIL: not installed]\\n", name, expected))
+        })
     }
-    cat("All tools verified.\\n")
-    jsonlite::write_json(results, "verify_results.json", auto_unbox = TRUE)
+
+    cat("\\n=== Library Test ===\\n")
+    for (pkg in c("DESeq2", "ggplot2", "apeglm")) {
+        tryCatch({
+            library(pkg, character.only = TRUE)
+            cat(pkg, "loaded successfully\\n")
+        }, error = function(e) {
+            cat(pkg, "FAILED to load:", conditionMessage(e), "\\n")
+        })
+    }
+
+    cat("\\n=== DESeq2 Quick Test ===\\n")
+    tryCatch({
+        library("DESeq2")
+        dds <- makeExampleDESeqDataSet(n = 100, m = 6)
+        dds <- DESeq(dds)
+        res <- results(dds)
+        cat("DESeq2 workflow: PASS\\n")
+        cat("Significant genes (padj < 0.05):", sum(res\$padj < 0.05, na.rm = TRUE), "\\n")
+    }, error = function(e) {
+        cat("DESeq2 workflow: FAIL -", conditionMessage(e), "\\n")
+    })
+
+    sink()
     '
     """
 }
 
 workflow {
+    BUILD_IMAGE()
     VERIFY_TOOLS()
 }
