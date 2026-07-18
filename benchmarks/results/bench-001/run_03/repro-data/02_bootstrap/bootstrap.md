@@ -1,114 +1,88 @@
-# Bootstrap Report — bench-001 run_03
+# Bootstrap Report — Environment Status
 
-**Date**: 2026-07-16
-**Phase**: 02_bootstrap
-**Status**: partial
+## System Overview
 
-## Environment Summary
-
-| Property | Value |
-|----------|-------|
-| OS | macOS (Apple M4) |
+| Attribute | Value |
+|-----------|-------|
+| OS | macOS (Darwin) |
+| Architecture | aarch64 (Apple Silicon) |
 | CPU | Apple M4, 10 cores |
-| Memory | 16 GB |
-| Disk (root) | 228 GiB total, 102 GiB available (12% used) |
-| GPU | Apple M4 integrated GPU |
+| Memory | 16 GB (17,179,869,184 bytes) |
+| Disk (/) | 228 GB total, 83 GB available |
+| Disk (/System/Volumes/Data) | 228 GB total, 83 GB available |
 
 ## Runtime Components
 
-### Java
+### Available
 
-| Component | Status | Version | Provider | Notes |
-|-----------|--------|---------|----------|-------|
-| Java (OpenJDK) | **Available, not on PATH** | 17.0.19 | Homebrew (`/opt/homebrew/opt/openjdk@17`) | `JAVA_HOME` not set; `java` not found on default `$PATH` |
+| Component | Version | Provider | Notes |
+|-----------|---------|----------|-------|
+| R | 4.6.1 | Homebrew (/opt/homebrew/bin/R) | Meets paper requirement (≥ 4.3.0) |
+| Docker | 29.4.0 | OrbStack | Working; `hello-world` runs successfully |
+| Rscript | 4.6.1 | Homebrew | CLI available |
 
-### Nextflow
+### Missing
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| Nextflow | **Not installed** | Required by `provision.nf` and downstream workflow |
+| Component | Required By | Install Option | Notes |
+|-----------|------------|----------------|-------|
+| Java (≥ 11) | Nextflow runtime | Install via Homebrew (`brew install openjdk@17`) or SDKMAN | Not required by this paper (R-based analysis) |
+| Nextflow | Workflow orchestration | Install via `curl -s https://get.nextflow.io \| bash` | Not required by this paper (R-based analysis) |
+| Singularity/Apptainer | Alternative container runtime | N/A | Not required; Docker is available |
+| Conda | Alternative environment manager | N/A | Not required; R is available natively |
 
-### Container Runtime
+## Container Runtime
 
-| Runtime | Status | Version | Notes |
-|---------|--------|---------|-------|
-| Docker | **Available** | 29.4.0 | Primary runtime |
-| Singularity | Not installed | — | — |
-| Apptainer | Not installed | — | — |
-| Conda | Not installed | — | — |
-
-## Host Network
-
-### Interfaces
-
-| Interface | IP/Mask | Notes |
-|-----------|---------|-------|
-| en1 | 172.19.56.134/18 | Primary interface, default route |
-| bridge100 | 192.168.139.3/23 | VM bridge (Docker may use) |
-| lo0 | 127.0.0.1/8 | Loopback |
-
-### Routing
-
-| Destination | Gateway | Interface |
-|-------------|---------|-----------|
-| default | 172.19.63.254 | en1 |
-| 192.168.138/23 | link#24 | bridge100 |
-
-### DNS
-
-| Nameserver |
-|------------|
-| 192.168.53.21 |
-| 192.168.53.20 |
-
-### Proxy
-
-| Variable | Value |
-|----------|-------|
-| `http_proxy` | `http://127.0.0.1:7897` |
-| `https_proxy` | `http://127.0.0.1:7897` |
-| `HTTP_PROXY` | (unset) |
-| `HTTPS_PROXY` | (unset) |
-| `NO_PROXY` | (unset) |
+- **Docker 29.4.0** (OrbStack) — available and verified
+  - Storage Driver: overlayfs
+  - Architecture: aarch64
+  - CPUs available to Docker: 10
+  - Memory available to Docker: 7.818 GiB
+  - `docker run hello-world` — PASSED
 
 ## Resource Assessment
 
-### Against Plan Requirements
-
-The plan (`01_plan/plan.md`) lists the following environment requirements:
-
-| Software | Required Version | Status |
-|----------|-----------------|--------|
-| R | 4.3.0 | Deferred to container (Phase 3) |
-| DESeq2 | 1.42.0 | Deferred to container (Phase 3) |
-| ggplot2 | 3.5.0 | Deferred to container (Phase 3) |
-| apeglm | 1.24.0 | Deferred to container (Phase 3) |
-
-No explicit Java or Nextflow version requirements are stated in the plan. However, the project uses Nextflow as the workflow engine (`provision.nf`, `nextflow` launcher in repo root).
-
 ### Disk
-
-- 102 GiB available — sufficient for Bioconductor Docker image (~2–5 GiB typical) and small analysis data.
+- 83 GB available on root volume — sufficient for R packages and container images
+- No paper-specified disk requirements; DESeq2 analysis is lightweight
 
 ### Memory
-
-- 16 GB — sufficient for the small-scale DESeq2 analysis (10 genes × 6 samples).
+- 16 GB total — sufficient for differential expression analysis of 10 genes × 6 samples
 
 ### CPU
+- 10 cores — more than sufficient for the minimal analysis
 
-- 10 cores — more than sufficient for the workload.
+### GPU
+- Apple M4 integrated GPU — not required for this analysis
 
-## Gaps
+## Host Network
 
-| Item | Status | Resolution |
-|------|--------|------------|
-| Java not on PATH | `JAVA_HOME` unset, `java` not in `$PATH` | Add `/opt/homebrew/opt/openjdk@17/bin` to `$PATH` and set `JAVA_HOME` |
-| Nextflow not installed | `nextflow` command not found | Install Nextflow (recommend: `curl -s https://get.nextflow.io | bash`) |
+### Active Interfaces
 
-## Nextflow Hello Test
+| Interface | IP | Subnet | Notes |
+|-----------|-----|--------|-------|
+| en1 | 172.19.56.134 | 172.19.0.0/18 | Primary network interface |
+| bridge100 | 192.168.139.3 | 192.168.138.0/23 | VM bridge (OrbStack) |
+| bridge101 | 192.168.215.0 | 192.168.215.0/24 | VM bridge |
+| lo0 | 127.0.0.1 | 127.0.0.0/8 | Loopback |
 
-Skipped — Nextflow is not yet installed. Will verify after installation.
+### DNS
+```
+nameserver 192.168.53.21
+nameserver 192.168.53.20
+```
 
-## Container Test
+### Proxy
+No proxy environment variables configured.
 
-Docker daemon appears running (version reported). Full container test deferred to Phase 3 (provision), which pulls the Bioconductor image and verifies R packages.
+### Routing
+- Default route via en1 (172.19.63.254)
+- VM bridge default routes via bridge100 and bridge101
+
+## Environment Suitability
+
+This paper is a minimal R-based differential expression analysis using DESeq2. The analysis does not require Java, Nextflow, or a workflow orchestrator. The core runtime (R 4.6.1) is available and exceeds the paper's requirement (R ≥ 4.3.0). Docker is available as a container runtime for any additional dependencies.
+
+### Recommended Approach
+- Use native R (4.6.1) for the analysis — it meets the paper requirement and is the simplest path
+- Use Docker for R package isolation if needed
+- Java and Nextflow are not needed and can be skipped for this benchmark
