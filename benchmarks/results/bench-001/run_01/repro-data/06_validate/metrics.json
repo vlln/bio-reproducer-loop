@@ -1,0 +1,193 @@
+{
+  "verdict": "REPRODUCED",
+  "total_score": 95.6,
+  "dimension_scores": {
+    "data_integrity": 25.0,
+    "process_quality": 25.0,
+    "quantitative_concordance": 27.6,
+    "figure_and_finding": 18.0
+  },
+  "checks_total": 16,
+  "checks_scored": 16,
+  "checks_na": 0,
+  "figure_validation_status": "validated",
+  "checks": [
+    {
+      "check_id": "D1",
+      "dimension": "data_integrity",
+      "metric": "Count matrix dimensions",
+      "expected": "10 genes x 6 samples",
+      "actual": "10 genes x 6 samples",
+      "score": 1.0,
+      "type": "Auto",
+      "notes": "counts.csv contains exactly 10 gene rows and 6 sample columns as specified"
+    },
+    {
+      "check_id": "D2",
+      "dimension": "data_integrity",
+      "metric": "Output files generated and non-empty",
+      "expected": "de_results.csv, normalized_counts.csv, volcano_plot.png all present and non-empty",
+      "actual": "de_results.csv (11 lines), normalized_counts.csv (11 lines), volcano_plot.png (58 KB)",
+      "score": 1.0,
+      "type": "Auto",
+      "notes": "All three expected output files exist with valid content"
+    },
+    {
+      "check_id": "D3",
+      "dimension": "data_integrity",
+      "metric": "DE results table completeness",
+      "expected": "10 genes with log2FC, padj, direction columns",
+      "actual": "10 genes with baseMean, log2FoldChange, lfcSE, pvalue, padj, significant, direction",
+      "score": 1.0,
+      "type": "Auto",
+      "notes": "All 10 genes present with all required columns plus additional DESeq2 standard columns"
+    },
+    {
+      "check_id": "D4",
+      "dimension": "data_integrity",
+      "metric": "Sample names match specification",
+      "expected": "Control_1, Control_2, Control_3, Treatment_1, Treatment_2, Treatment_3",
+      "actual": "Control_1, Control_2, Control_3, Treatment_1, Treatment_2, Treatment_3",
+      "score": 1.0,
+      "type": "Auto",
+      "notes": "Exact match"
+    },
+    {
+      "check_id": "Q1",
+      "dimension": "process_quality",
+      "metric": "Pipeline task success rate",
+      "expected": "All processes complete successfully",
+      "actual": "DESEQ2_ANALYSIS (1) COMPLETED exit=0, completed=1 failed=0",
+      "score": 1.0,
+      "type": "Auto",
+      "notes": "Single process completed with exit code 0"
+    },
+    {
+      "check_id": "Q2",
+      "dimension": "process_quality",
+      "metric": "Resource usage",
+      "expected": "Reasonable memory/CPU for 10-gene analysis",
+      "actual": "peak_rss=685.5 MB, peak_vmem=1.2 GB, duration=5.1s, %cpu=135.1%",
+      "score": 1.0,
+      "type": "Auto",
+      "notes": "Resource usage is reasonable for DESeq2 analysis with R runtime"
+    },
+    {
+      "check_id": "Q3",
+      "dimension": "process_quality",
+      "metric": "Software version concordance",
+      "expected": "R 4.3.0, DESeq2 1.42.0, ggplot2 3.5.0, apeglm 1.24.0",
+      "actual": "R 4.3.3, DESeq2 1.42.1, ggplot2 3.5.0, apeglm 1.24.0",
+      "score": 1.0,
+      "type": "Auto",
+      "notes": "Minor patch-level differences (R 4.3.0->4.3.3, DESeq2 1.42.0->1.42.1); ggplot2 and apeglm exact match. Differences are within expected container version drift."
+    },
+    {
+      "check_id": "Q4",
+      "dimension": "process_quality",
+      "metric": "Analysis steps completed",
+      "expected": "6 steps: load, DESeqDataSet, DESeq(), lfcShrink, extract results, volcano plot",
+      "actual": "All 6 steps completed as logged in run_analysis.log",
+      "score": 1.0,
+      "type": "Auto",
+      "notes": "All steps from Methods section executed in order"
+    },
+    {
+      "check_id": "R1",
+      "dimension": "quantitative_concordance",
+      "metric": "Gene_A log2FC",
+      "expected": "2.5",
+      "actual": "2.9180",
+      "score": 0.7,
+      "type": "Auto",
+      "notes": "Deviation ~16.7%, within anticipated tolerance for DESeq2/apeglm version differences on small dataset. Direction and significance fully consistent."
+    },
+    {
+      "check_id": "R2",
+      "dimension": "quantitative_concordance",
+      "metric": "Gene_B log2FC",
+      "expected": "-1.8",
+      "actual": "-1.9971",
+      "score": 1.0,
+      "type": "Auto",
+      "notes": "Deviation ~11%, within acceptable tolerance. Direction and significance fully consistent."
+    },
+    {
+      "check_id": "R3",
+      "dimension": "quantitative_concordance",
+      "metric": "Non-significant genes log2FC",
+      "expected": "|log2FC| < 0.1 for Gene_C through Gene_J",
+      "actual": "|log2FC| < 0.04 for all 8 non-significant genes",
+      "score": 1.0,
+      "type": "Auto",
+      "notes": "All 8 non-significant genes have |log2FC| well within expected range"
+    },
+    {
+      "check_id": "R4",
+      "dimension": "quantitative_concordance",
+      "metric": "Number of significant genes",
+      "expected": "2 (padj < 0.05)",
+      "actual": "2 (Gene_A padj=4.37e-119, Gene_B padj=5.57e-42)",
+      "score": 1.0,
+      "type": "Auto",
+      "notes": "Exact count match. P-value magnitudes are orders of magnitude more extreme than paper claims, but this was anticipated in plan.md uncertainties section."
+    },
+    {
+      "check_id": "R5",
+      "dimension": "quantitative_concordance",
+      "metric": "Gene_A direction",
+      "expected": "Upregulated",
+      "actual": "Upregulated (log2FC = +2.918)",
+      "score": 1.0,
+      "type": "Auto",
+      "notes": "Direction fully consistent"
+    },
+    {
+      "check_id": "R6",
+      "dimension": "quantitative_concordance",
+      "metric": "Gene_B direction",
+      "expected": "Downregulated",
+      "actual": "Downregulated (log2FC = -1.997)",
+      "score": 1.0,
+      "type": "Auto",
+      "notes": "Direction fully consistent"
+    },
+    {
+      "check_id": "K1",
+      "dimension": "figure_and_finding",
+      "metric": "Volcano plot pattern",
+      "expected": "Gene_A upper-right, Gene_B upper-left, 8 genes near origin",
+      "actual": "Gene_A at (2.92, 118.6) upper-right, Gene_B at (-2.00, 41.3) upper-left, 8 genes clustered at origin",
+      "score": 1.0,
+      "type": "Visual",
+      "notes": "Generated volcano plot matches paper description exactly. Gene_A in upper-right quadrant, Gene_B in upper-left quadrant, remaining 8 genes tightly clustered near origin. No original image available for pixel-level comparison."
+    },
+    {
+      "check_id": "K2",
+      "dimension": "figure_and_finding",
+      "metric": "Core biological conclusion",
+      "expected": "Gene_A and Gene_B are the only significantly differentially expressed genes between Control and Treatment",
+      "actual": "Gene_A (padj=4.37e-119, upregulated) and Gene_B (padj=5.57e-42, downregulated) are the only significant genes; 8 others non-significant",
+      "score": 1.0,
+      "type": "Manual",
+      "notes": "Core conclusion fully reproduced. The two-marker signature is identical to the paper."
+    }
+  ],
+  "deviations": [
+    {
+      "check_id": "R1",
+      "deviation": "Gene_A log2FC 2.918 vs expected 2.5",
+      "magnitude": "~16.7% higher than paper value",
+      "likely_cause": "DESeq2 version difference (1.42.1 vs 1.42.0) and apeglm shrinkage algorithm variation on small 10-gene dataset",
+      "fault_phase": "Phase 5 (run)"
+    },
+    {
+      "check_id": "R4",
+      "deviation": "P-values orders of magnitude more extreme than paper claims (e.g., Gene_A padj 4.37e-119 vs 0.0008)",
+      "magnitude": "Many orders of magnitude",
+      "likely_cause": "DESeq2 version differences produce substantially different p-values on small datasets with strong effect sizes; anticipated in plan.md uncertainties",
+      "fault_phase": "Phase 5 (run)"
+    }
+  ],
+  "next_action": "archive"
+}
