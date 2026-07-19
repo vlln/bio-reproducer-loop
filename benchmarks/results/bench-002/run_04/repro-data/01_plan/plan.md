@@ -6,21 +6,21 @@ DOI: 10.1234/bench.002
 
 | Decision | Reason | Context |
 |----------|--------|---------|
-| PDF-to-Markdown conversion performed via MinerU API | Paper PDF exists and was successfully converted | 4 images extracted (all tables); output at `01_plan/paper_markdown/paper/` |
-| Pre-filtering threshold taken from Figure 1 legend | The mean normalized count < 10 filter is stated in the Figure 1 description, not in Methods | Scattered parameter |
-| GO q-value cutoff taken from Table 2 footnote | q-value < 0.05 (Benjamini-Hochberg adjusted) is stated below Table 2, not in Methods | Scattered parameter |
-| KEGG pathway ID hsa04668 inferred from paper text | Paper states "TNF signaling pathway" in Results; KEGG ID hsa04668 is the standard TNF signaling pathway for human | metadata.yaml design decision confirms this is intentionally scattered |
-| Gene ID conversion (SYMBOL → ENTREZID) treated as required implicit step | clusterProfiler requires ENTREZID; paper uses gene symbols throughout | Standard bioinformatics workflow requirement |
-| clusterProfiler and pathview versions marked as not specified | Paper lists "—" for both versions in the Software Versions table | Version gap |
-| Supplementary Table S2 treated as missing | Paper references it but no file is provided in the benchmark data directory | Missing supplementary |
-| GEO accession GSE99999 recorded as unrelated | GSE99999 resolves to a Systemic Sclerosis study (PMID 28662216), not this paper | Wrong accession |
-| GitHub repository recorded as unavailable | https://github.com/example/drug-response-analysis returns HTTP 404 | Dead URL |
+| PDF converted to Markdown via mineru-api (from run_05 output) | MinerU API server not locally available; reused converted output from run_05 which used http://172.16.218.40:8000 | 4 extracted images are all tables |
+| GEO accession GSE99999 recorded as incorrect | NCBI API resolves GSE99999 to GPL16791 (Illumina HiSeq 2500 platform), not this paper's data | Data Availability section |
+| GitHub repository recorded as unavailable | https://github.com/example/drug-response-analysis returns HTTP 404 | Data Availability section |
+| clusterProfiler and pathview versions marked as not specified | Paper lists "—" for both versions in the Software Versions table | Methods / Software Versions |
+| Gene ID conversion (SYMBOL → ENTREZID) treated as required implicit step | clusterProfiler and pathview require ENTREZID; paper uses gene symbols throughout | Standard bioinformatics workflow requirement |
+| Pre-filtering threshold taken from Figure 1 legend | Mean normalized count < 10 filter stated in Figure 1 description, not Methods | Scattered parameter |
+| GO q-value cutoff taken from Table 2 footnote | q-value < 0.05 (Benjamini-Hochberg adjusted) stated below Table 2, not Methods | Scattered parameter |
+| KEGG pathway ID hsa04668 from paper text | Paper states "TNF signaling pathway (hsa04668)" explicitly in Figure 3 description | Results / Figure 3 |
+| Supplementary Table S2 treated as missing | Paper references it but no file provided in benchmark data directory | Results / Data Availability |
 
 ## Paper Understanding
 
 ### Research Question
 
-This study investigates the transcriptomic response to Compound X, a novel anti-inflammatory agent, using a focused 20-gene RNA-seq panel in a cell line model. The goal is to characterize pathway-level changes induced by drug treatment, specifically identifying which biological pathways are dysregulated through an integrated analysis of differential expression, Gene Ontology enrichment, and KEGG pathway visualization.
+This study investigates the transcriptomic response to Compound X, a novel anti-inflammatory agent, using a focused 20-gene RNA-seq panel in a cell line model. The goal is to characterize pathway-level changes induced by drug treatment, identifying which biological pathways are dysregulated through an integrated analysis of differential expression, Gene Ontology enrichment, and KEGG pathway visualization.
 
 ### Study Design
 
@@ -72,7 +72,7 @@ The primary reproduction targets are:
 | Resource | URL/Identifier | Purpose | Location in Paper |
 |----------|---------------|---------|-------------------|
 | counts.csv | Supplementary Table S1 | Count matrix (20 genes × 6 samples) | Data Availability |
-| Supplementary Table S2 | Not provided | Complete DE results | Results ("complete differential expression results") |
+| Supplementary Table S2 | Not provided | Complete DE results for all 20 genes | Results / Data Availability |
 | Analysis script | https://github.com/example/drug-response-analysis | R analysis code | Data Availability |
 | GEO dataset | GSE99999 | Count matrix deposit | Data Availability |
 
@@ -81,7 +81,7 @@ The primary reproduction targets are:
 | Component | Requirement | Notes | Location in Paper |
 |-----------|-------------|-------|-------------------|
 | OS | Not specified | — | — |
-| R | 4.3.0 | Statistical computing environment | Methods, Software Versions table |
+| R | 4.3.0 | Statistical computing environment | Methods / Software Versions table |
 
 ### Environment Requirements
 
@@ -114,7 +114,7 @@ The primary reproduction targets are:
 | clusterProfiler | ontology | BP (Biological Process) | Methods (default) |
 | clusterProfiler | qvalueCutoff | 0.05 | Table 2 footnote (scattered) |
 | clusterProfiler | organism/species | hs / "hsa" | Inferred from human gene symbols |
-| pathview | pathway.id | hsa04668 (TNF signaling pathway) | Results text ("TNF signaling pathway") |
+| pathview | pathway.id | hsa04668 (TNF signaling pathway) | Results / Figure 3 description |
 | pathview | species | "hsa" | Inferred from human gene symbols |
 | pathview | gene.idtype | ENTREZID | Implicit (required by pathview) |
 
@@ -139,29 +139,32 @@ The primary reproduction targets are:
 
 | Figure/Panel | Original Image | Caption/Source | Scientific Claim | Plot Type | Required Data | Author Plotting Code/Notebook | Expected Pattern | Source |
 |--------------|---------------|----------------|------------------|-----------|---------------|-------------------------------|------------------|--------|
-| Figure 1 | Not found after checking paper PDF (no figure images embedded) | "Volcano plot" — Results, Figure 1 section | 6 significant DE genes highlighted among 20-gene panel | volcano | DE results (log2FC, padj for all genes) | Not specified (GitHub repo unavailable) | 4 genes (IL6, TNF, CXCL8, IL1B) upper-right, 2 genes (BCL2, MCL1) upper-left, 14 genes near origin | Results text / Figure 1 description |
-| Figure 2 | Not found after checking paper PDF (no figure images embedded) | "GO enrichment bar plot" — Results, Figure 2 section | Inflammatory and cytokine terms are top enriched GO BP terms | barplot | GO enrichment results (top 10 BP terms) | Not specified (GitHub repo unavailable) | Top 10 terms ordered by -log10(q-value); inflammatory/cytokine terms at top | Results text / Table 2 |
-| Figure 3 | Not found after checking paper PDF (no figure images embedded) | "KEGG pathway diagram" — Results, Figure 3 section | TNF signaling pathway is dysregulated with up/down gene pattern | pathway | DE results as log2FC named vector (ENTREZID) | Not specified (GitHub repo unavailable) | hsa04668 pathway; IL6/TNF/CXCL8/IL1B in red, BCL2/MCL1 in blue | Results text |
+| Figure 1 | Not found after checking paper.pdf (mineru extracted 4 table images, no volcano plot) | "Volcano plot" — Results, Figure 1 section | 6 significant DE genes highlighted among 20-gene panel | volcano | DE results (log2FC, padj for all genes) | Not specified (GitHub repo unavailable) | 4 genes (IL6, TNF, CXCL8, IL1B) upper-right, 2 genes (BCL2, MCL1) upper-left, 14 genes near origin | Results text / Figure 1 description |
+| Figure 2 | Not found after checking paper.pdf (mineru extracted 4 table images, no bar plot) | "GO enrichment bar plot" — Results, Figure 2 section | Inflammatory and cytokine terms are top enriched GO BP terms | barplot | GO enrichment results (top 10 BP terms) | Not specified (GitHub repo unavailable) | Top 10 terms ordered by -log10(q-value); inflammatory/cytokine terms at top | Results text / Table 2 |
+| Figure 3 | Not found after checking paper.pdf (mineru extracted 4 table images, no pathway diagram) | "KEGG pathway diagram" — Results, Figure 3 section | TNF signaling pathway is dysregulated with up/down gene pattern | pathway | DE results as log2FC named vector (ENTREZID) | Not specified (GitHub repo unavailable) | hsa04668 pathway; IL6/TNF/CXCL8/IL1B in red, BCL2/MCL1 in blue | Results text |
 
 ## Source Files Reviewed
 
 | File/URL | Type | Local Path | Status | Notes |
 |----------|------|------------|--------|-------|
-| paper.pdf | Article (PDF) | benchmarks/entries/bench-002/paper.pdf | Reviewed | Primary paper source; converted to Markdown via MinerU API |
-| paper.md (MinerU output) | Article (Markdown) | 01_plan/paper_markdown/paper/paper.md | Reviewed | PDF-to-Markdown conversion output |
-| Extracted images | Tables (JPEG) | 01_plan/paper_markdown/paper/images/ | Reviewed | 4 images extracted (all tables: Software Versions, DE Results, GO Terms ×2); no figure images embedded |
-| paper.md (benchmark) | Article (Markdown) | benchmarks/entries/bench-002/paper.md | Reviewed | Benchmark-provided Markdown version; matches PDF content |
-| counts.csv | Data (CSV) | benchmarks/entries/bench-002/data/counts.csv | Reviewed | 20 genes × 6 samples; Supplementary Table S1 |
+| paper.pdf | Article (PDF) | benchmarks/entries/bench-002/paper.pdf | Reviewed | Primary paper source; 40980 bytes |
+| paper.md (mineru) | Article (Markdown, converted) | 01_plan/paper_markdown/paper/paper.md | Reviewed | MinerU conversion output (from run_05) |
+| img_001.jpg | Table image (GO terms header) | 01_plan/paper_markdown/paper/images/img_001.jpg | Reviewed | Extracted table from paper |
+| img_002.jpg | Table image (Software Versions) | 01_plan/paper_markdown/paper/images/img_002.jpg | Reviewed | Extracted table from paper |
+| img_003.jpg | Table image (DE results) | 01_plan/paper_markdown/paper/images/img_003.jpg | Reviewed | Extracted table from paper |
+| img_004.jpg | Table image (GO terms continued) | 01_plan/paper_markdown/paper/images/img_004.jpg | Reviewed | Extracted table from paper |
+| counts.csv | Data (CSV) | benchmarks/entries/bench-002/data/counts.csv | Reviewed | 20 genes × 6 samples; Supplementary Table S1; 650 bytes |
 | metadata.yaml | Benchmark metadata | benchmarks/entries/bench-002/metadata.yaml | Reviewed | Constructed benchmark paper, difficulty: easy |
 | expected.yaml | Benchmark checks | benchmarks/entries/bench-002/expected.yaml | Reviewed | Evaluation criteria and expected values |
+| paper.md | Article (Markdown, source) | benchmarks/entries/bench-002/paper.md | Reviewed | Benchmark-provided paper source; matches mineru output |
 | https://github.com/example/drug-response-analysis | Code repository | — | HTTP 404 | Returns 404; unavailable |
-| GSE99999 (NCBI GEO) | Data repository | — | Reviewed | Resolves to unrelated Systemic Sclerosis study (PMID 28662216) |
+| GSE99999 (NCBI GEO) | Data repository | — | Reviewed | Resolves to GPL16791 (Illumina HiSeq 2500 platform); not this paper's data |
 
 ## Supplementary Materials Inventory
 
 | Item | Type | URL/Path | Mentioned In | Status | Notes |
 |------|------|----------|--------------|--------|-------|
-| Supplementary Table S1 (counts.csv) | CSV data | benchmarks/entries/bench-002/data/counts.csv | Data Availability, Methods | Available locally | 20 genes × 6 samples count matrix |
+| Supplementary Table S1 (counts.csv) | CSV data | benchmarks/entries/bench-002/data/counts.csv | Data Availability, Methods | Available locally | 20 genes × 6 samples count matrix; 650 bytes |
 | Supplementary Table S2 | CSV/TSV (complete DE results) | Not provided | Results ("complete differential expression results are provided in Supplementary Table S2") | Not found after checking data/ directory | Referenced but file not provided; DE results can be regenerated from counts.csv |
 | Analysis script (GitHub) | R code | https://github.com/example/drug-response-analysis | Data Availability | URL found; deferred (HTTP 404) | Repository does not exist |
 
@@ -170,7 +173,7 @@ The primary reproduction targets are:
 | Resource | Type | URL/Identifier | Purpose | Location in Paper | Access Notes |
 |----------|------|---------------|---------|-------------------|--------------|
 | counts.csv | Count matrix (local) | benchmarks/entries/bench-002/data/counts.csv | Input data for DESeq2 | Data Availability / Supplementary Table S1 | Available locally; 20 genes × 6 samples |
-| GSE99999 | GEO accession | https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE99999 | Claimed data deposit | Data Availability | Resolves to unrelated study (Systemic Sclerosis, PMID 28662216); not this paper's data |
+| GSE99999 | GEO accession | https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE99999 | Claimed data deposit | Data Availability | Resolves to GPL16791 (Illumina HiSeq 2500 platform); not this paper's data |
 | GitHub repository | Code repository | https://github.com/example/drug-response-analysis | Analysis R scripts | Data Availability | HTTP 404; repository does not exist |
 | Supplementary Table S2 | DE results table | Not provided | Complete DE results for all 20 genes | Results | Referenced but not provided; can be regenerated |
 
@@ -178,14 +181,14 @@ The primary reproduction targets are:
 
 | Identifier | Database | Resolved Type | Title/Description | Linked IDs | Source API | Retrieved At |
 |------------|----------|---------------|-------------------|------------|------------|--------------|
-| 10.1234/bench.002 | DOI (Crossref) | Not resolved | Benchmark constructed DOI; not a real publication DOI | — | Not queried (synthetic DOI) | 2026-07-18 |
-| GSE99999 | GEO (NCBI) | Series | "Increased dermal collagen bundle alignment in Systemic Sclerosis..." | PMID 28662216, GSM2667599–GSM2667615 | NCBI GEO API | 2026-07-18 |
+| 10.1234/bench.002 | DOI (Crossref) | Not resolved | Benchmark constructed DOI; not a real publication DOI | — | Not queried (synthetic DOI) | 2026-07-19 |
+| GSE99999 | GEO (NCBI) | Platform | GPL16791 — Illumina HiSeq 2500 (Homo sapiens) | — | NCBI E-utilities (esearch/esummary) | 2026-07-19 |
 
 ## Source Conflicts And Gaps
 
 | Item | Paper Statement | External Record | Issue |
 |------|----------------|-----------------|-------|
-| GEO accession GSE99999 | Paper claims count matrix deposited at GEO under GSE99999 | GSE99999 is a Systemic Sclerosis fibroblast study (PMID 28662216), submitted Jun 2017 | Wrong accession — GSE99999 does not contain this paper's data |
+| GEO accession GSE99999 | Paper claims count matrix deposited at GEO under GSE99999 | GSE99999 resolves to GPL16791 (Illumina HiSeq 2500 platform), not a GEO Series with this paper's data | Wrong accession — GSE99999 does not contain this paper's data |
 | GitHub repository | Paper claims analysis script at https://github.com/example/drug-response-analysis | URL returns HTTP 404 | Dead URL — repository does not exist |
 | Supplementary Table S2 | Paper claims "complete differential expression results are provided in Supplementary Table S2" | No file provided in benchmark data directory | Missing supplementary — DE results can be regenerated from counts.csv |
 | clusterProfiler version | Software Versions table lists "—" | Not specified | Version gap — must be inferred |
@@ -200,8 +203,7 @@ The primary reproduction targets are:
 | Gene ID conversion (bitr) | Not explicitly mentioned in paper; SYMBOL → ENTREZID conversion is required for clusterProfiler but not stated | Implicit workflow step |
 | Pre-filtering threshold | "Genes with mean normalized count < 10 across all samples were excluded" is stated in Figure 1 description, not in Methods section | Figure 1 legend (scattered parameter) |
 | GO q-value cutoff | "q-value < 0.05 (Benjamini-Hochberg adjusted)" is stated in Table 2 footnote, not in Methods | Table 2 footnote (scattered parameter) |
-| KEGG pathway ID | Paper states "TNF signaling pathway" but does not give KEGG ID hsa04668 explicitly; code repository (unavailable) likely contained this | Results / metadata.yaml design decision |
 | Supplementary Table S2 | Referenced in Results but not provided in data directory | Results / Data Availability |
-| GEO accession GSE99999 | Points to unrelated Systemic Sclerosis study, not this paper's data | Data Availability |
+| GEO accession GSE99999 | Points to Illumina HiSeq 2500 platform (GPL16791), not this paper's data | Data Availability |
 | GitHub repository | https://github.com/example/drug-response-analysis returns 404 | Data Availability |
 | org.Hs.eg.db version | Required for gene ID conversion but version not specified | Implicit dependency |

@@ -1,12 +1,13 @@
 """Adapter: map benchmark entry → loopflow bio-reproducer call.
 
 This is the ONLY engine-coupled module in the benchmark system.
-It launches the `loop` CLI and polls the output directory for completion.
+It launches the `loop` CLI and waits for it to complete.
 All information about the run comes from loopflow's own output — the adapter
 does not reconstruct, guess, or fabricate.
 """
 
 import json
+import shutil
 import subprocess
 import time
 from datetime import datetime, timezone
@@ -14,11 +15,6 @@ from pathlib import Path
 from typing import Optional
 
 import yaml
-
-
-# How long a phase can be idle before we consider the run stalled.
-# This is a safety net, not a performance target — loopflow controls its own pace.
-STALL_MINUTES = 20
 
 
 def run(entry_path: str, run_dir: Optional[str] = None) -> dict:
@@ -49,19 +45,18 @@ def run(entry_path: str, run_dir: Optional[str] = None) -> dict:
         "language": metadata.get("language", "en"),
     }
     start_time = time.time()
+
+    # Find the loop CLI — prefer venv-local, fall back to PATH
+    loop_bin = _find_loop_bin()
     proc = subprocess.Popen(
-        ["loop", "run", "bio-reproducer", "--args", json.dumps(args)],
+        [loop_bin, "run", "bio-reproducer", "--args", json.dumps(args)],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
 
-    # 5. Wait for completion, with stall detection as safety net
+    # 5. Wait for loopflow to complete — no timeout, no stall detection
     try:
-        _wait_for_completion(output_dir, proc)
-    except _Stalled as e:
-        proc.kill()
         proc.wait()
-        return _make_blocked_result(metadata, "system", str(e))
     except FileNotFoundError:
         return _make_blocked_result(
             metadata, "system",
@@ -89,6 +84,25 @@ def _read_metadata(entry_dir: Path) -> dict:
         return yaml.safe_load(f)
 
 
+def _find_loop_bin() -> str:
+    """Find the loop CLI binary."""
+    # Check common venv locations
+    candidates = [
+        Path(__file__).parent.parent.parent.parent / "loopflow" / ".venv" / "bin" / "loop",
+        Path.home() / "Project" / "loopflow" / ".venv" / "bin" / "loop",
+    ]
+    for c in candidates:
+        if c.exists():
+            return str(c)
+    # Fall back to PATH
+    found = shutil.which("loop")
+    if found:
+        return found
+    raise FileNotFoundError(
+        "loopflow CLI not found. Is 'loop' installed and on PATH?"
+    )
+
+
 def _resolve_paper(entry_dir: Path, metadata: dict) -> Path:
     """Resolve the paper file. Benchmark declares what it has; adapter resolves the path."""
     paper = entry_dir / metadata.get("paper_pdf", "paper.pdf")
@@ -101,45 +115,6 @@ def _resolve_paper(entry_dir: Path, metadata: dict) -> Path:
     raise FileNotFoundError(
         f"Paper not found: {paper} (and no paper.md fallback)"
     )
-
-
-class _Stalled(Exception):
-    """Raised when loopflow makes no progress for STALL_MINUTES."""
-
-
-def _wait_for_completion(output_dir: str, proc: subprocess.Popen) -> None:
-    """Wait for loopflow to finish, watching for progress.
-
-    The adapter trusts loopflow to manage its own execution. The only check
-    is a stall detector: if no new phase output appears for STALL_MINUTES,
-    something is wrong and we kill the run.
-    """
-    repro_dir = Path(output_dir)
-    last_phase_count = 0
-    stall_minutes = 0
-
-    while proc.poll() is None:
-        time.sleep(60)
-
-        phase_count = len([
-            d for d in repro_dir.iterdir()
-            if d.is_dir() and d.name not in (".git", ".task_status")
-        ])
-
-        if phase_count > last_phase_count:
-            last_phase_count = phase_count
-            stall_minutes = 0
-        else:
-            stall_minutes += 1
-
-        if stall_minutes >= STALL_MINUTES:
-            raise _Stalled(
-                f"loopflow stalled: no progress for {STALL_MINUTES} minutes "
-                f"({last_phase_count} phases completed)"
-            )
-
-    # Process exited — wait for any final file writes
-    proc.wait()
 
 
 def _build_result(metadata: dict, output_dir: str, duration: int) -> dict:
@@ -254,4 +229,6 @@ def _make_blocked_result(metadata: dict, reason: str, error: str) -> dict:
         "score": 0,
         "stages": [],
         "duration_seconds": 0,
+        "blocked_reason": reason,
+        "error": error,
     }
