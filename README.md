@@ -1,53 +1,48 @@
 # bio-reproducer
 
-复现生物信息学论文的 7 阶段 workflow loop。
+AI Agent 驱动的生物信息学论文复现系统，配套内部测试体系和公开 benchmark。
+
+## 项目组成
+
+| 部分 | 路径 | 说明 |
+|------|------|------|
+| 复现系统 | `loops/bio-reproducer/` | 7 阶段 workflow，输入论文自动完成复现全流程 |
+| 内部测试 | `tests/` | L1 单 Phase 测试 + L2 跨 Phase 集成测试 |
+| 公开 benchmark | `benchmarks/` | L3-L5 引擎无关的论文复现基准，6 个 entry |
+
+## 版本
+
+| 组件 | 版本 |
+|------|------|
+| 项目 | `0.1.0` |
+| Benchmark | `0.1.0`（独立版本） |
 
 ## 前置依赖
 
 - [pixi](https://pixi.sh) — 环境和依赖管理
 - [loop](https://github.com/vlln/loopflow) — workflow 运行时
+- Python ≥ 3.10
 
-## 快速开始
+## 复现系统
 
 ```bash
-# 1. 安装 pixi 和 loop（如未安装）
-curl -fsSL https://pixi.sh/install.sh | sh
-pip install git+https://github.com/vlln/loopflow.git
-
-# 2. 安装 loop 到 ~/.loopflow/loops/
+# 安装
 git clone git@github.com:vlln/bio-reproducer-loop.git
 mkdir -p ~/.loopflow/loops
 cp -r bio-reproducer-loop/loops/bio-reproducer ~/.loopflow/loops/bio-reproducer
 
-# 3. 安装工具链和 skills
-#    pixi run 会自动创建 conda 环境并安装 openjdk、nextflow、python
+# 安装依赖
 cd ~/.loopflow/loops/bio-reproducer
-pixi run install-skit      # 安装 skit 到 .local/bin
-pixi run install-mip        # 安装 mip 到 .local/bin
-pixi run install-skills     # 安装 skill 依赖到 .skills/
+pixi run install-skit
+pixi run install-mip
+pixi run install-skills
 
-# 4. 切换到工作目录，激活环境
-cd ~/my-paper-project       # 你的论文复现工作目录
-pixi shell -m ~/.loopflow/loops/bio-reproducer
-# ↓ 以下命令在 pixi shell 内执行
-
-# 5. 验证环境
-pixi run check-env          # 确认 Java、Nextflow、mip、paperutils 可用
-
-# 6. 运行复现
-loop run bio-reproducer \
-  --args '{"paper_path": "paper.pdf", "language": "zh"}'
+# 运行复现
+pixi shell
+loop run bio-reproducer --args '{"paper_path": "paper.pdf", "language": "zh"}'
 ```
 
-也可以指定 DOI 而非本地 PDF：
-
-```bash
-# 在 pixi shell 内
-loop run bio-reproducer \
-  --args '{"paper_doi": "10.1101/2025.01.01.123456", "language": "zh"}'
-```
-
-## 阶段
+### 阶段
 
 | Phase | 名称 | 描述 |
 |-------|------|------|
@@ -59,20 +54,68 @@ loop run bio-reproducer \
 | 6 | Validate | 验证复现结果 |
 | 7 | Package | 打包复现产物 |
 
+## Benchmark 系统
+
+```bash
+# 运行 L1 单元测试
+make test-l1
+
+# 运行 L2 集成测试
+make test-l2
+
+# 运行 L3 benchmark（5 次）
+make bench-l3
+
+# 评估结果
+python3 -m benchmarks.runner.cli eval --entry bench-001
+
+# 生成报告
+python3 -m benchmarks.runner.cli report
+```
+
+### 测试层级
+
+| 层级 | 说明 | 路径 |
+|------|------|------|
+| L1 | 单 Phase Agent 业务逻辑 | `tests/unit/` |
+| L2 | 跨 Phase 信息流 | `tests/integration/` |
+| L3 | 构造论文端到端（6 entries） | `benchmarks/entries/` |
+| L4 | 真实论文 + 冻结环境（规划中） | — |
+| L5 | 生产基准（规划中） | — |
+
+### Benchmark Entries
+
+| Entry | 场景 | 难度 | 期望 |
+|-------|------|------|------|
+| bench-001 | 差异表达分析（DESeq2） | easy | REPRODUCED |
+| bench-002 | 多工具编排（DESeq2 + clusterProfiler + pathview） | easy | REPRODUCED |
+| bench-003 | 真实论文（Himes et al. 2014, airway） | easy | REPRODUCED |
+| bench-004 | 跨平台转录组（Python + R） | medium | REPRODUCED |
+| bench-005 | 环境漂移 + 冲突信息 | medium | REPRODUCED |
+| bench-006 | 数据降级 + 故障注入 | medium | REPRODUCED |
+
+## 文档
+
+- [AGENTS.md](AGENTS.md) — 项目入口地图
+- [CONTRIBUTING.md](CONTRIBUTING.md) — 编码/Commit/分支规范
+- [CHANGELOG.md](CHANGELOG.md) — 版本变更记录
+- [docs/](docs/) — 设计文档（vision, spec, ADR, AC, plans）
+
 ## 结构
 
 ```
-loops/bio-reproducer/
-├── workflow.py      # 阶段编排和 phase gating
-├── pixi.toml        # 环境和 skill 依赖
-├── pixi.lock        # 锁定依赖版本
-└── agents/          # 各阶段 agent 定义
-    ├── _base.md     # 公共约定和输出 schema
-    ├── reader.md
-    ├── bootstrap.md
-    ├── provision.md
-    ├── data.md
-    ├── run.md
-    ├── validate.md
-    └── package.md
+bio-reproducer/
+├── loops/bio-reproducer/     # 复现系统（7 阶段 workflow）
+│   ├── workflow.py
+│   ├── pixi.toml
+│   └── agents/
+├── tests/                    # L1-L2 内部测试
+│   ├── unit/
+│   └── integration/
+├── benchmarks/               # L3-L5 公开 benchmark
+│   ├── VERSION
+│   ├── entries/              # 6 个论文包
+│   └── runner/               # 执行器 + 适配器
+├── docs/                     # devloop 设计文档
+└── .github/workflows/        # CI 静态检查
 ```
