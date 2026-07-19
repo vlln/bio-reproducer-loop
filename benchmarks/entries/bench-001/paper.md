@@ -84,7 +84,7 @@ Gene_A showed strong upregulation with log2FC = 2.5 and padj = 0.0008, indicatin
 
 ### Figure 1: Volcano Plot
 
-**Figure 1** is a volcano plot showing -log10(adjusted p-value) vs log2 fold change for all 10 genes. Gene_A appears in the upper-right quadrant (high log2FC, high significance). Gene_B appears in the upper-left quadrant (negative log2FC, high significance). The remaining 8 genes cluster near the origin (log2FC ≈ 0, low significance).
+![Figure 1: Volcano plot showing -log10(adjusted p-value) vs log2 fold change for all 10 genes. Gene_A appears in the upper-right quadrant (high log2FC, high significance). Gene_B appears in the upper-left quadrant (negative log2FC, high significance). The remaining 8 genes cluster near the origin.](figures/figure1_volcano.png)
 
 ---
 

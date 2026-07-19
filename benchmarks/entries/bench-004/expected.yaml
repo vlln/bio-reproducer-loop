@@ -1,0 +1,104 @@
+id: bench-004
+version: "1.0.0"
+expected_verdict: REPRODUCED
+min_score: 80
+runs_required: 5
+verdict_match_threshold: 0.6
+
+checks:
+  data_integrity:
+    - check_id: D1
+      description: "Count matrix has 50 genes and 16 samples"
+      type: auto
+      expected:
+        n_genes: 50
+        n_samples: 16
+    - check_id: D2
+      description: "All expected output files generated (non-empty)"
+      type: auto
+      expected:
+        files_non_empty: true
+    - check_id: D3
+      description: "Supplementary Table S2 is missing; system should detect and proceed"
+      type: auto
+      expected:
+        supplementary_missing: "Supplementary Table S2"
+        handling: "detected_or_proceeded"
+
+  process_quality:
+    - check_id: Q1
+      description: "DESeq2 differential expression analysis completed"
+      type: auto
+      expected:
+        status: success
+    - check_id: Q2
+      description: "Multi-language workflow: Python preprocessing + R analysis executed"
+      type: auto
+      expected:
+        languages: ["python", "r"]
+    - check_id: Q3
+      description: "R version is 4.3.x or compatible"
+      type: auto
+      expected:
+        r_version_pattern: "4\\.3"
+    - check_id: Q4
+      description: "Region-based design formula used in analysis"
+      type: auto
+      expected:
+        design_factor: "region"
+
+  quantitative_concordance:
+    - check_id: R1
+      description: "Neurod6 is cortex-enriched (upregulated in Cortex vs Thalamus)"
+      type: auto
+      expected:
+        gene: Neurod6
+        direction: up
+        log2fc_min: 1.0
+        padj_max: 0.05
+    - check_id: R2
+      description: "Drd2 is striatum-enriched (downregulated in Cortex vs Thalamus)"
+      type: auto
+      expected:
+        gene: Drd2
+        direction: down
+        log2fc_max: -1.0
+        padj_max: 0.05
+    - check_id: R3
+      description: "Prox1 is hippocampus-enriched"
+      type: auto
+      expected:
+        gene: Prox1
+        direction: down
+        log2fc_max: -1.0
+        padj_max: 0.05
+    - check_id: R4
+      description: "Gapdh and Actb are stably expressed (not significant)"
+      type: auto
+      expected:
+        genes: ["Gapdh", "Actb"]
+        max_abs_log2fc: 1.0
+    - check_id: R5
+      description: "At least 20 significant genes found (padj < 0.05)"
+      type: auto
+      expected:
+        min_sig_genes: 20
+
+  figure_and_finding:
+    - check_id: F1
+      description: "Volcano plot generated"
+      type: auto
+      expected:
+        figure_exists: true
+        figure_type: volcano
+    - check_id: F2
+      description: "Volcano plot shows region-specific genes highlighted"
+      type: visual
+      expected:
+        highlighted_genes: ["Neurod6", "Drd2", "Prox1"]
+    - check_id: F3
+      description: "Heatmap generated showing region-specific clustering"
+      type: auto
+      expected:
+        figure_exists: true
+        figure_type: heatmap

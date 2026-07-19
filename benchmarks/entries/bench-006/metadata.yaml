@@ -1,0 +1,150 @@
+id: bench-006
+version: "1.0.0"
+title: "Data Recovery and Quality Assessment Pipeline for Gene Expression Signatures"
+scenario: data_degradation
+difficulty: medium
+expected_verdict: REPRODUCED
+paper_pdf: paper.pdf
+data_dir: null
+expected_yaml: expected.yaml
+description: >
+  Constructed paper with extreme data degradation. 15 genes × 8 samples.
+  data/ directory exists but is empty. The counts.csv file is provided in
+  TSV format (not CSV as declared). The file is truncated (last 3 rows
+  missing). Paper references a non-existent tool (DataIntegrityR) and a
+  dead GEO accession. Tests system ability to recover from data issues.
+
+# ───────────────────────────────────────────
+# 评估设计
+# ───────────────────────────────────────────
+
+evaluation_design:
+  dimensions:
+    data_integrity:
+      weight: 30
+      what_it_tests: "系统能否检测并处理空 data 目录、格式不匹配、文件截断"
+      tolerance: "系统必须检测到至少 1 个数据问题并尝试恢复"
+    process_quality:
+      weight: 20
+      what_it_tests: "系统能否在数据恢复后正确运行 DESeq2"
+      tolerance: "R/DESeq2 版本允许正则匹配"
+    quantitative_concordance:
+      weight: 35
+      what_it_tests: "系统能否正确识别 5 个显著差异表达基因"
+      tolerance: "padj 用上限，log2FC 方向必须一致"
+    figure_and_finding:
+      weight: 15
+      what_it_tests: "系统能否产出 volcano plot"
+      tolerance: "定性检查"
+
+  scoring_rationale: >
+    定量一致性权重最高（35%），因为基因签名是核心产出。
+    数据完整性（30%）反映数据恢复能力——这是本 bench 的核心测试维度。
+    流程质量（20%）和图表（15%）。
+
+# ───────────────────────────────────────────
+# 复杂度画像
+# ───────────────────────────────────────────
+
+complexity_profile:
+  data:
+    data_size: tiny
+    data_source: synthetic
+    data_format: mixed
+    supplementary: none
+  environment:
+    tool_count: 1-2
+    tool_chain: single_language
+    version_sensitivity: moderate
+    container: existing_image
+  analysis:
+    design: two_group
+    method_complexity: standard
+    compute: light
+  figure:
+    figure_count: 1
+    figure_type: statistical
+    figure_layout: simple
+    figure_rendering: standard
+  evaluation:
+    ground_truth: fully_known
+    claim_type: directional
+    tolerance: strict
+  paper:
+    paper_type: constructed
+    paper_format: markdown
+    multi_version: none
+    missing_info: version_gaps
+
+# ───────────────────────────────────────────
+# 鲁棒性画像
+# ───────────────────────────────────────────
+
+robustness_profile:
+  resource_unavailability:
+    database_down: true
+    registry_down: false
+    tool_not_found: true
+    repo_gone: true
+    doi_dead: true
+    image_missing: true
+  data_degradation:
+    empty_data_dir: true
+    truncated_file: true
+    format_mismatch: true
+    wrong_accession: true
+  information_degradation:
+    missing_supplementary: true
+    version_gaps: true
+    implicit_steps: false
+    scattered_params: false
+    conflicting_info: false
+  environment_drift:
+    version_mismatch: false
+    os_mismatch: false
+    arch_mismatch: false
+    missing_system_dep: false
+
+# ───────────────────────────────────────────
+# 系统能力覆盖
+# ───────────────────────────────────────────
+
+capability_coverage:
+  covers:
+    - empty_data_directory: "data/ 目录存在但为空，系统需从 paper 提取数据或从 GEO 下载"
+    - truncated_file: "counts.csv 被截断，最后几行缺失"
+    - format_mismatch: "论文说 CSV 但实际文件是 TSV（制表符分隔）"
+    - tool_not_found: "DataIntegrityR 包不存在，系统需回退"
+    - database_down: "GEO 不可访问"
+    - wrong_accession: "GSE 指向其他研究"
+  does_not_cover:
+    - multi_language: "纯 R 流程"
+    - large_data: "15 基因 × 8 样本"
+
+design_decisions:
+  - decision: "data/ 目录为空"
+    intent: "测试系统能否从 paper 文本中提取数据或从 GEO 下载——最极端的数据降级场景"
+  - decision: "counts.csv 实际是 TSV 格式且被截断"
+    intent: "测试系统能否检测格式不匹配并处理不完整数据"
+  - decision: "DataIntegrityR 工具不存在"
+    intent: "测试系统能否检测工具不可用并回退到替代方案"
+  - decision: "GEO 和 GitHub 均不可用"
+    intent: "测试系统能否仅依赖本地信息和 paper 文本完成分析"
+
+reproducibility:
+  known_limitations:
+    - "空 data 目录是最极端的场景——系统必须从 paper 文本提取数据"
+    - "DataIntegrityR 包不存在，系统需要回退到 base R 函数"
+    - "GEO 不可访问意味着无法从外部获取数据"
+  expected_runtime: "~5 min"
+  data_size: "< 1 KB"
+  tool_requirements:
+    - "R ≥ 4.3.0"
+    - "DESeq2 ≥ 1.42.0"
+  container_image: "bioconductor/bioconductor_docker:latest"
+
+baseline:
+  established: "2026-07-19"
+  runs: 0
+  verdict: null
+  score: null

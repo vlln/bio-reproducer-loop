@@ -112,15 +112,15 @@ Gene Ontology enrichment analysis of the 6 significant genes revealed enrichment
 
 ### Figure 1: Volcano Plot
 
-**Figure 1** is a volcano plot showing -log10(adjusted p-value) vs log2 fold change for all genes passing the expression filter. The four upregulated genes (IL6, TNF, CXCL8, IL1B) appear in the upper-right quadrant. The two downregulated genes (BCL2, MCL1) appear in the upper-left quadrant. The remaining 14 genes cluster near the origin.
+![Figure 1: Volcano plot showing -log10(adjusted p-value) vs log2 fold change for all genes passing the expression filter. The four upregulated genes (IL6, TNF, CXCL8, IL1B) appear in the upper-right quadrant. The two downregulated genes (BCL2, MCL1) appear in the upper-left quadrant.](figures/figure1_volcano.png)
 
 ### Figure 2: GO Enrichment Bar Plot
 
-**Figure 2** is a bar plot of the top 10 enriched GO Biological Process terms, ordered by -log10(q-value). Terms related to inflammatory response and cytokine signaling show the strongest enrichment.
+![Figure 2: Bar plot of the top 10 enriched GO Biological Process terms, ordered by -log10(q-value). Terms related to inflammatory response and cytokine signaling show the strongest enrichment.](figures/figure2_go_barplot.png)
 
 ### Figure 3: KEGG Pathway Diagram
 
-**Figure 3** is a KEGG pathway diagram of the TNF signaling pathway (hsa04668). Upregulated genes (IL6, TNF, CXCL8, IL1B) are shown in red, and downregulated genes (BCL2, MCL1) are shown in blue, confirming pathway-level dysregulation consistent with the GO enrichment results.
+![Figure 3: KEGG pathway diagram of the TNF signaling pathway (hsa04668). Upregulated genes (IL6, TNF, CXCL8, IL1B) are shown in red, and downregulated genes (BCL2, MCL1) are shown in blue.](figures/figure3_kegg_pathway.png)
 
 ---
 

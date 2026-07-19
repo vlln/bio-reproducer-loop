@@ -1,0 +1,203 @@
+# Paper Claims extracted from paper.md
+# Entry: bench-001
+# Paper: "Differential Expression Analysis of Synthetic Gene Response to Treatment"
+# DOI: 10.1234/bench.001
+
+id: bench-001
+paper_title: "Differential Expression Analysis of Synthetic Gene Response to Treatment"
+paper_doi: "10.1234/bench.001"
+
+# ───────────────────────────────────────────
+# 实验设计 Claims
+# ───────────────────────────────────────────
+experimental_design:
+  - claim_id: ED-1
+    description: "RNA-seq count data for 10 genes were profiled across 6 samples"
+    source: "Abstract, Methods"
+    details:
+      n_genes: 10
+      n_samples: 6
+      genes: ["Gene_A", "Gene_B", "Gene_C", "Gene_D", "Gene_E", "Gene_F", "Gene_G", "Gene_H", "Gene_I", "Gene_J"]
+      samples:
+        control: ["Control_1", "Control_2", "Control_3"]
+        treatment: ["Treatment_1", "Treatment_2", "Treatment_3"]
+
+  - claim_id: ED-2
+    description: "3 biological replicates per condition"
+    source: "Methods"
+    details:
+      control_replicates: 3
+      treatment_replicates: 3
+
+# ───────────────────────────────────────────
+# 方法 Claims
+# ───────────────────────────────────────────
+methods:
+  - claim_id: M-1
+    description: "Differential expression analysis was performed using DESeq2 v1.42.0 in R v4.3.0"
+    source: "Abstract, Methods"
+    details:
+      software: DESeq2
+      version: "1.42.0"
+      r_version: "4.3.0"
+
+  - claim_id: M-2
+    description: "Significance was defined as adjusted p-value < 0.05"
+    source: "Abstract, Methods"
+    details:
+      threshold: 0.05
+      metric: adjusted p-value
+
+  - claim_id: M-3
+    description: "Log2 fold change shrinkage was applied using the apeglm method"
+    source: "Abstract, Methods"
+    details:
+      method: apeglm
+      function: lfcShrink
+      parameter: "type = 'apeglm'"
+
+  - claim_id: M-4
+    description: "Analysis followed the standard DESeq2 workflow: load count matrix, create DESeqDataSet with design formula ~ condition, run DESeq2 with default parameters, apply lfcShrink, extract results at padj < 0.05"
+    source: "Methods"
+    details:
+      workflow:
+        - "Load count matrix from CSV"
+        - "Create DESeqDataSet with design formula ~ condition"
+        - "Run DESeq2 with default parameters"
+        - "Apply log2 fold change shrinkage with lfcShrink(type = 'apeglm')"
+        - "Extract results at adjusted p-value < 0.05"
+
+  - claim_id: M-5
+    description: "Volcano plot was generated using ggplot2 v3.5.0"
+    source: "Methods"
+    details:
+      software: ggplot2
+      version: "3.5.0"
+      x_axis: log2 fold change
+      y_axis: "-log10(adjusted p-value)"
+      highlight: "Significant genes (padj < 0.05) highlighted in red"
+
+  - claim_id: M-6
+    description: "Software versions used"
+    source: "Methods"
+    details:
+      software:
+        R: "4.3.0"
+        DESeq2: "1.42.0"
+        ggplot2: "3.5.0"
+        apeglm: "1.24.0"
+
+# ───────────────────────────────────────────
+# 定量结果 Claims
+# ───────────────────────────────────────────
+quantitative_results:
+  - claim_id: R-1
+    description: "Gene_A showed strong upregulation with log2FC = 2.5 (padj = 0.0008)"
+    source: "Abstract, Results"
+    details:
+      gene: Gene_A
+      log2fc: 2.5
+      padj: 0.0008
+      direction: upregulated
+      significance: true
+
+  - claim_id: R-2
+    description: "Gene_B showed strong downregulation with log2FC = -1.8 (padj = 0.004)"
+    source: "Abstract, Results"
+    details:
+      gene: Gene_B
+      log2fc: -1.8
+      padj: 0.004
+      direction: downregulated
+      significance: true
+
+  - claim_id: R-3
+    description: "The remaining 8 genes showed no significant change"
+    source: "Abstract, Results"
+    details:
+      non_significant_genes:
+        - gene: Gene_C
+          log2fc: 0.02
+          padj: 0.95
+        - gene: Gene_D
+          log2fc: 0.05
+          padj: 0.88
+        - gene: Gene_E
+          log2fc: -0.03
+          padj: 0.92
+        - gene: Gene_F
+          log2fc: 0.08
+          padj: 0.78
+        - gene: Gene_G
+          log2fc: -0.01
+          padj: 0.97
+        - gene: Gene_H
+          log2fc: 0.04
+          padj: 0.90
+        - gene: Gene_I
+          log2fc: 0.01
+          padj: 0.98
+        - gene: Gene_J
+          log2fc: 0.03
+          padj: 0.93
+
+  - claim_id: R-4
+    description: "DESeq2 identified 2 significantly differentially expressed genes (padj < 0.05)"
+    source: "Results"
+    details:
+      n_significant: 2
+      threshold: 0.05
+
+# ───────────────────────────────────────────
+# 图表 Claims
+# ───────────────────────────────────────────
+figures:
+  - claim_id: F-1
+    description: "Volcano plot (Figure 1) showing -log10(adjusted p-value) vs log2 fold change"
+    source: "Abstract, Results"
+    details:
+      figure_id: "Figure 1"
+      type: volcano
+      x_axis: log2 fold change
+      y_axis: "-log10(adjusted p-value)"
+      gene_a_position: "upper-right quadrant (high log2FC, high significance)"
+      gene_b_position: "upper-left quadrant (negative log2FC, high significance)"
+      other_genes: "cluster near the origin (log2FC ≈ 0, low significance)"
+
+# ───────────────────────────────────────────
+# 结论 Claims
+# ───────────────────────────────────────────
+conclusions:
+  - claim_id: C-1
+    description: "Gene_A and Gene_B are robust markers of Treatment response in this synthetic dataset"
+    source: "Abstract, Conclusions"
+
+  - claim_id: C-2
+    description: "The analysis successfully identified two differentially expressed genes"
+    source: "Conclusions"
+
+# ───────────────────────────────────────────
+# 数据可用性 Claims
+# ───────────────────────────────────────────
+data_availability:
+  - claim_id: DA-1
+    description: "Count matrix available as Supplementary Table S1 (counts.csv), 10 rows × 6 columns"
+    source: "Data Availability, Supplementary Materials"
+    details:
+      file: counts.csv
+      rows: 10
+      columns: 6
+      values: "Raw integer counts"
+
+  - claim_id: DA-2
+    description: "Dataset deposited at GEO under accession GSE99999"
+    source: "Data Availability"
+    details:
+      database: GEO
+      accession: GSE99999
+
+  - claim_id: DA-3
+    description: "Analysis script available at https://github.com/example/deseq2-analysis"
+    source: "Data Availability"
+    details:
+      url: "https://github.com/example/deseq2-analysis"
