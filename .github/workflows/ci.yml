@@ -20,8 +20,10 @@ jobs:
 
       - name: Check frontmatter
         run: |
-          for f in docs/vision.md docs/spec/*.md docs/ac/*.md docs/adr/*.md; do
+          for f in docs/vision.md docs/spec/*.md docs/ac/*.md docs/adr/*.md docs/plans/*/*.md; do
             [ -f "$f" ] || continue
+            # Skip README.md — devloop spec says README.md should NOT have frontmatter
+            [[ "$f" == */README.md ]] && continue
             head -1 "$f" | grep -q "^---$" || { echo "ERROR: $f missing frontmatter"; exit 1; }
           done
 
