@@ -47,7 +47,7 @@ def _run_validate(entry_dir: str, golden_plan_path: str,
 
 
 def test_validate_produces_report(bench_001, golden_plan, golden_run_results,
-                                   golden_report, golden_metrics):
+                                   golden_report):
     """AC-0001-N-2: Validate agent 产出完整验证报告, 与 golden 一致."""
     result = _run_validate(
         bench_001["entry_dir"],
