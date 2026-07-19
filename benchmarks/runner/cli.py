@@ -52,7 +52,7 @@ def cmd_eval(args: argparse.Namespace) -> None:
         print(f"ERROR: No result.json files found in {results_dir}", file=sys.stderr)
         sys.exit(2)
 
-    evaluation = evaluate(expected, results)
+    evaluation = evaluate(expected, results, str(results_dir))
 
     # Write evaluation to file
     eval_path = results_dir / "evaluation.json"
