@@ -2,8 +2,9 @@
 
 | 字段 | 值 |
 |------|-----|
-| **当前阶段** | `TEST_INFRA` |
+| **当前阶段** | `DEVELOP` |
 | **设计评估** | DESIGN 通过，契约已冻结 |
+| **基建评估** | TEST_INFRA 追溯确认通过（见 0001-benchmark-infra/01-report） |
 
 ## 子目录
 

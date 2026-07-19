@@ -2,6 +2,6 @@
 
 | 容器 | 分支 | 状态 |
 |------|------|------|
-| [0001-benchmark-infra](0001-benchmark-infra/) | — | pending |
+| [0001-benchmark-infra](0001-benchmark-infra/) | — | done |
 
-当前阶段：TEST_INFRA。基建就绪后进入 DEVELOP 创建业务 Plan。
+当前阶段：DEVELOP。TEST_INFRA 基建已就绪（追溯确认），进入业务开发。

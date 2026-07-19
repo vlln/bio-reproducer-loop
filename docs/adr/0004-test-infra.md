@@ -2,7 +2,7 @@
 title: ADR-0004 — 测试基建：CI 静态检查 + 本地测试
 description: 测试基础设施选型：CI 仅做静态检查（YAML/JSON Schema/frontmatter），L1/L2/L3 测试在本地运行，LLM 调用不可在 CI 自动化。
 type: adr
-status: proposed
+status: accepted
 created: 2026-07-15T00:00:00Z
 ---
 
