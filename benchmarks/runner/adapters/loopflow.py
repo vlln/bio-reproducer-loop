@@ -221,12 +221,12 @@ def _read_verdict_and_score(repro_dir: Path) -> tuple:
     if report_path.exists():
         report = report_path.read_text()
         import re
-        # Extract verdict from "Status | REPRODUCED" pattern
+        # Extract verdict from "| Status | REPRODUCED |"
         v_match = re.search(r"Status\s*\|\s*(\w+)", report)
         if v_match:
             verdict = v_match.group(1)
-        # Extract total score from "Total | 90.0 | 100" pattern
-        s_match = re.search(r"\*\*Total\*\*\s*\|\s*([\d.]+)\s*\|\s*\d+", report)
+        # Extract total score from "| **Total** | **90.0** | **100** |"
+        s_match = re.search(r"\*\*Total\*\*\s*\|\s*\*{0,2}([\d.]+)\*{0,2}\s*\|\s*\*{0,2}\d+\*{0,2}", report)
         if s_match:
             score = int(float(s_match.group(1)))
             return verdict or "BLOCKED", score
