@@ -200,7 +200,7 @@ def _read_verdict_and_score(repro_dir: Path) -> tuple:
     """Read verdict and score from the validate agent's metrics.json.
 
     The validate agent writes structured JSON — the adapter reads it directly
-    instead of parsing Markdown tables.
+    instead of parsing Markdown tables. Handles both flat and nested formats.
     """
     metrics_path = repro_dir / "06_validate" / "metrics.json"
     if not metrics_path.exists():
@@ -209,10 +209,29 @@ def _read_verdict_and_score(repro_dir: Path) -> tuple:
     with open(metrics_path) as f:
         metrics = json.load(f)
 
-    verdict = metrics.get("verdict", "BLOCKED")
-    score = int(metrics.get("total_score", 0))
+    # Format 1 (flat): {"verdict": "REPRODUCED", "total_score": 88, ...}
+    verdict = metrics.get("verdict")
+    score = metrics.get("total_score")
 
-    return verdict, score
+    if verdict is not None and score is not None:
+        return verdict, int(score)
+
+    # Format 2 (nested): dimensions contain scores, extract from report.md
+    report_path = repro_dir / "06_validate" / "report.md"
+    if report_path.exists():
+        report = report_path.read_text()
+        import re
+        # Extract verdict from "Status | REPRODUCED" pattern
+        v_match = re.search(r"Status\s*\|\s*(\w+)", report)
+        if v_match:
+            verdict = v_match.group(1)
+        # Extract total score from "Total | 90.0 | 100" pattern
+        s_match = re.search(r"\*\*Total\*\*\s*\|\s*([\d.]+)\s*\|\s*\d+", report)
+        if s_match:
+            score = int(float(s_match.group(1)))
+            return verdict or "BLOCKED", score
+
+    return "BLOCKED", 0
 
 
 def _make_blocked_result(metadata: dict, reason: str, error: str) -> dict:
