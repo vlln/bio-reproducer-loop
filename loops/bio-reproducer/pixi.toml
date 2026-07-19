@@ -26,6 +26,7 @@ install-skill-paperutils = { cmd = "skit install --dir .skills https://github.co
 install-skill-mineru-api = { cmd = "skit install --dir .skills https://github.com/vlln/mineru-api-skill/skills/mineru-api" }
 install-skill-background-task = { cmd = "skit install --dir .skills https://github.com/vlln/background-task-skill/skills/background-task" }
 install-skill-image-mirror = { cmd = "skit install --dir .skills https://github.com/vlln/mip/skills/image-mirror-skill" }
+install-skill-github-mirror = { cmd = "skit install --dir .skills https://github.com/vlln/mip/skills/github-mirror-skill" }
 install-skill-bioskills = { cmd = "skit install --dir .skills https://github.com/vlln/bio-skills --all" }
 
 install-skills = { cmd = "echo 'All skills installed'", depends-on = [
@@ -33,7 +34,8 @@ install-skills = { cmd = "echo 'All skills installed'", depends-on = [
     "install-skill-mineru-api",
     "install-skill-background-task",
     "install-skill-image-mirror",
+    "install-skill-github-mirror",
     "install-skill-bioskills",
 ] }
 
-check-env = { cmd = "echo 'Java:' && java -version && echo 'Nextflow:' && nextflow -version && echo 'mip:' && mip version && echo 'paperutils:' && paperutils --help" }
+check-env = { cmd = "echo 'Java:' && java -version && echo 'Nextflow:' && nextflow -version && echo 'mip:' && mip version && echo 'gip:' && gip version && echo 'paperutils:' && paperutils --help" }

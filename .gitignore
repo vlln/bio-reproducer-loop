@@ -8,6 +8,12 @@
 # Python
 __pycache__/
 *.pyc
+*.egg-info/
+
+# Benchmark results
+benchmarks/results/
 
 # OS
-.DS_Store
+.DS_Store.nextflow*
+nextflow
+repro-data/

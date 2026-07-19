@@ -1,0 +1,211 @@
+{
+  "verdict": "PARTIAL",
+  "total_score": 78.25,
+  "dimension_scores": {
+    "data_integrity": 25.0,
+    "process_quality": 19.0,
+    "quantitative_concordance": 14.25,
+    "figure_and_finding": 20.0
+  },
+  "checks_total": 21,
+  "checks_scored": 20,
+  "checks_na": 1,
+  "figure_validation_status": "generated",
+  "checks": [
+    {
+      "id": "D1",
+      "dimension": "data_integrity",
+      "metric": "Output files exist and non-empty",
+      "expected": "deseq2_results.csv, normalized_counts.csv, figure1_volcano.png, figure1_volcano.pdf, figure1_data.csv",
+      "actual": "All 5 files present and non-empty",
+      "score": 1.0,
+      "type": "Auto"
+    },
+    {
+      "id": "D2",
+      "dimension": "data_integrity",
+      "metric": "Count matrix dimensions",
+      "expected": "10 genes x 6 samples",
+      "actual": "10 genes x 6 samples (normalized_counts.csv)",
+      "score": 1.0,
+      "type": "Auto"
+    },
+    {
+      "id": "D3",
+      "dimension": "data_integrity",
+      "metric": "Normalized counts file present",
+      "expected": "Non-empty normalized count matrix",
+      "actual": "1187 bytes, 10 genes x 6 samples",
+      "score": 1.0,
+      "type": "Auto"
+    },
+    {
+      "id": "D4",
+      "dimension": "data_integrity",
+      "metric": "Results table completeness",
+      "expected": "10 genes with log2FC, padj, significance",
+      "actual": "10 genes (Gene_A–J) with all fields populated",
+      "score": 1.0,
+      "type": "Auto"
+    },
+    {
+      "id": "Q1",
+      "dimension": "process_quality",
+      "metric": "Pipeline step success rate",
+      "expected": "All 6 steps succeed",
+      "actual": "6/6 steps succeeded",
+      "score": 1.0,
+      "type": "Auto"
+    },
+    {
+      "id": "Q2",
+      "dimension": "process_quality",
+      "metric": "Dispersion estimation method",
+      "expected": "Default parametric curve fit",
+      "actual": "Gene-wise estimates (parametric fit failed with 10 genes)",
+      "score": 0.3,
+      "type": "Auto"
+    },
+    {
+      "id": "Q3",
+      "dimension": "process_quality",
+      "metric": "DESeq2 version",
+      "expected": "1.42.0",
+      "actual": "1.42.0 (in bio-reproducer:bench-001 container)",
+      "score": 1.0,
+      "type": "Auto"
+    },
+    {
+      "id": "Q4",
+      "dimension": "process_quality",
+      "metric": "Execution orchestrator",
+      "expected": "Nextflow workflow",
+      "actual": "Direct docker run (Nextflow unavailable; no Java runtime)",
+      "score": 0.5,
+      "type": "Auto"
+    },
+    {
+      "id": "Q5",
+      "dimension": "process_quality",
+      "metric": "Significant gene count",
+      "expected": "2",
+      "actual": "2 (Gene_A, Gene_B)",
+      "score": 1.0,
+      "type": "Auto"
+    },
+    {
+      "id": "R1",
+      "dimension": "quantitative_concordance",
+      "metric": "Gene_A log2FC",
+      "expected": "2.5",
+      "actual": "2.416",
+      "score": 0.7,
+      "type": "Auto",
+      "notes": "3.4% difference; within mild deviation range"
+    },
+    {
+      "id": "R2",
+      "dimension": "quantitative_concordance",
+      "metric": "Gene_A padj",
+      "expected": "0.0008",
+      "actual": "1.11e-161",
+      "score": 0.0,
+      "type": "Auto",
+      "notes": "Orders of magnitude difference; expected given reconstructed count data. Direction (significant) matches."
+    },
+    {
+      "id": "R3",
+      "dimension": "quantitative_concordance",
+      "metric": "Gene_A direction",
+      "expected": "Upregulated",
+      "actual": "Upregulated (log2FC = +2.416)",
+      "score": 1.0,
+      "type": "Auto"
+    },
+    {
+      "id": "R4",
+      "dimension": "quantitative_concordance",
+      "metric": "Gene_B log2FC",
+      "expected": "-1.8",
+      "actual": "-1.865",
+      "score": 0.7,
+      "type": "Auto",
+      "notes": "3.6% difference; within mild deviation range"
+    },
+    {
+      "id": "R5",
+      "dimension": "quantitative_concordance",
+      "metric": "Gene_B padj",
+      "expected": "0.004",
+      "actual": "3.31e-121",
+      "score": 0.0,
+      "type": "Auto",
+      "notes": "Orders of magnitude difference; expected given reconstructed count data. Direction (significant) matches."
+    },
+    {
+      "id": "R6",
+      "dimension": "quantitative_concordance",
+      "metric": "Gene_B direction",
+      "expected": "Downregulated",
+      "actual": "Downregulated (log2FC = -1.865)",
+      "score": 1.0,
+      "type": "Auto"
+    },
+    {
+      "id": "R7",
+      "dimension": "quantitative_concordance",
+      "metric": "Genes C-J significance",
+      "expected": "All padj > 0.05 (not significant)",
+      "actual": "All 8 genes padj > 0.05 (range 0.12-0.75)",
+      "score": 1.0,
+      "type": "Auto"
+    },
+    {
+      "id": "R8",
+      "dimension": "quantitative_concordance",
+      "metric": "Genes C-J padj range",
+      "expected": "0.78-0.98",
+      "actual": "0.12-0.75",
+      "score": 0.3,
+      "type": "Auto",
+      "notes": "All non-significant but values shifted lower than paper range; reconstructed data produces different null distribution"
+    },
+    {
+      "id": "K1",
+      "dimension": "figure_and_finding",
+      "metric": "Volcano plot pattern",
+      "expected": "Gene_A upper-right, Gene_B upper-left, 8 genes near origin, significant in red",
+      "actual": "Confirmed: Gene_A at (2.4, 161), Gene_B at (-1.9, 120), 8 genes clustered near y=0",
+      "score": 1.0,
+      "type": "Visual"
+    },
+    {
+      "id": "K2",
+      "dimension": "figure_and_finding",
+      "metric": "Original vs generated image comparison",
+      "expected": "Panel-level visual match",
+      "actual": "N/A - original figure not extracted by mineru",
+      "score": null,
+      "type": "Visual",
+      "notes": "Original volcano plot image unavailable; only table images were captured by mineru"
+    },
+    {
+      "id": "K3",
+      "dimension": "figure_and_finding",
+      "metric": "Core scientific conclusion",
+      "expected": "2 DE genes: Gene_A upregulated, Gene_B downregulated",
+      "actual": "Confirmed: 2 significant genes with correct directions",
+      "score": 1.0,
+      "type": "Manual"
+    },
+    {
+      "id": "K4",
+      "dimension": "figure_and_finding",
+      "metric": "Negative controls (Genes C-J)",
+      "expected": "Non-significant, clustered near origin",
+      "actual": "All 8 genes non-significant, log2FC near 0, low -log10(padj)",
+      "score": 1.0,
+      "type": "Visual"
+    }
+  ]
+}

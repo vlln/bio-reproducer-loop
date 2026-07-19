@@ -1,0 +1,68 @@
+id: bench-001
+version: "1.0.0"
+expected_verdict: REPRODUCED
+min_score: 85
+runs_required: 5
+verdict_match_threshold: 0.6
+
+checks:
+  data_integrity:
+    - check_id: D1
+      description: "Count matrix has 10 genes and 6 samples"
+      type: auto
+      expected:
+        n_genes: 10
+        n_samples: 6
+    - check_id: D2
+      description: "All expected output files generated (non-empty)"
+      type: auto
+      expected:
+        files_non_empty: true
+
+  process_quality:
+    - check_id: Q1
+      description: "DESeq2 analysis completed without error"
+      type: auto
+      expected:
+        status: success
+    - check_id: Q2
+      description: "R version is 4.3.x or compatible"
+      type: auto
+      expected:
+        r_version_pattern: "4\\.3"
+
+  quantitative_concordance:
+    - check_id: R1
+      description: "Gene_A is significantly upregulated"
+      type: auto
+      expected:
+        gene: Gene_A
+        direction: up
+        log2fc_min: 1.5
+        padj_max: 0.01
+    - check_id: R2
+      description: "Gene_B is significantly downregulated"
+      type: auto
+      expected:
+        gene: Gene_B
+        direction: down
+        log2fc_max: -1.0
+        padj_max: 0.01
+    - check_id: R3
+      description: "At least 2 significant genes found (padj < 0.05)"
+      type: auto
+      expected:
+        min_sig_genes: 2
+
+  figure_and_finding:
+    - check_id: F1
+      description: "Volcano plot generated"
+      type: auto
+      expected:
+        figure_exists: true
+        figure_type: volcano
+    - check_id: F2
+      description: "Volcano plot shows Gene_A and Gene_B as highlighted significant points"
+      type: visual
+      expected:
+        highlighted_genes: ["Gene_A", "Gene_B"]

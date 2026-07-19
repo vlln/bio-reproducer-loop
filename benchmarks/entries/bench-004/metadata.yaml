@@ -1,0 +1,153 @@
+id: bench-004
+version: "1.0.0"
+title: "Cross-Platform Transcriptomic Profiling of Mouse Brain Regions"
+scenario: real_data
+difficulty: medium
+expected_verdict: REPRODUCED
+paper_pdf: paper.pdf
+data_dir: null
+expected_yaml: expected.yaml
+description: >
+  Constructed paper simulating real regional transcriptomic data. 50 mouse
+  genes × 16 samples across 4 brain regions. Multi-language workflow:
+  Python (data download + QC) + R (DESeq2 paired design). Tests system
+  ability to handle real gene names, multi-platform analysis, and
+  paired experimental design.
+
+# ───────────────────────────────────────────
+# 评估设计
+# ───────────────────────────────────────────
+
+evaluation_design:
+  dimensions:
+    data_integrity:
+      weight: 25
+      what_it_tests: "系统能否正确加载 50 基因 × 16 样本数据，识别 4 个脑区分组"
+      tolerance: "精确匹配——基因数、样本数、分组结构固定"
+    process_quality:
+      weight: 25
+      what_it_tests: "系统能否正确执行多语言流程（Python QC + R DESeq2）和配对设计"
+      tolerance: "Python/R 版本号允许正则匹配"
+    quantitative_concordance:
+      weight: 35
+      what_it_tests: "系统能否正确识别区域特异性标志基因"
+      tolerance: "padj 用上限，log2FC 方向必须一致"
+    figure_and_finding:
+      weight: 15
+      what_it_tests: "系统能否产出 volcano plot 和 heatmap"
+      tolerance: "定性检查——有图即可，不要求精确匹配"
+
+  scoring_rationale: >
+    定量一致性权重最高（35%），因为区域特异性基因是核心可验证产出。
+    流程质量（25%）反映多语言编排能力。数据完整性（25%）是基础。
+    图表（15%）验证可视化能力。
+
+# ───────────────────────────────────────────
+# 复杂度画像
+# ───────────────────────────────────────────
+
+complexity_profile:
+  data:
+    data_size: medium
+    data_source: real
+    data_format: csv
+    supplementary: none
+  environment:
+    tool_count: 3-5
+    tool_chain: multi_language
+    version_sensitivity: moderate
+    container: existing_image
+  analysis:
+    design: paired
+    method_complexity: multi_step
+    compute: medium
+  figure:
+    figure_count: 2-5
+    figure_type: mixed
+    figure_layout: moderate
+    figure_rendering: standard
+  evaluation:
+    ground_truth: fully_known
+    claim_type: directional
+    tolerance: moderate
+  paper:
+    paper_type: constructed
+    paper_format: markdown
+    multi_version: none
+    missing_info: implicit_steps
+
+# ───────────────────────────────────────────
+# 鲁棒性画像
+# ───────────────────────────────────────────
+
+robustness_profile:
+  resource_unavailability:
+    database_down: false
+    registry_down: false
+    tool_not_found: false
+    repo_gone: true
+    doi_dead: true
+    image_missing: true
+  data_degradation:
+    empty_data_dir: false
+    truncated_file: false
+    format_mismatch: false
+    wrong_accession: true
+  information_degradation:
+    missing_supplementary: true
+    version_gaps: false
+    implicit_steps: true
+    scattered_params: false
+    conflicting_info: false
+  environment_drift:
+    version_mismatch: false
+    os_mismatch: false
+    arch_mismatch: false
+    missing_system_dep: false
+
+# ───────────────────────────────────────────
+# 系统能力覆盖
+# ───────────────────────────────────────────
+
+capability_coverage:
+  covers:
+    - multi_language_workflow: "Python 数据预处理 + R 统计分析"
+    - real_gene_names: "50 个真实小鼠基因名"
+    - paired_design: "4 脑区配对设计"
+    - geo_download: "从 GEO 下载数据"
+    - heatmap_visualization: "热图可视化"
+    - python_environment: "Python + pandas + numpy"
+  does_not_cover:
+    - large_data: "50 基因 × 16 样本，~1 MB"
+    - custom_dockerfile: "使用现有 Bioconductor 镜像"
+    - multi_factor: "仅单因子设计（region）"
+
+design_decisions:
+  - decision: "使用真实小鼠基因名和脑区结构"
+    intent: "测试系统对真实生物学背景的处理能力，不同于 bench-001/002 的通用基因名"
+  - decision: "Python + R 多语言流程"
+    intent: "测试系统能否正确处理跨语言分析流程，Python 环境设置作为 implicit_steps"
+  - decision: "配对设计使用 ~ region 而非 ~ region + replicate"
+    intent: "简化设计，聚焦区域间比较，避免 blocking factor 复杂化"
+  - decision: "Supplementary Table S2 引用但缺失"
+    intent: "测试系统能否检测并处理缺失补充材料"
+
+reproducibility:
+  known_limitations:
+    - "数据为构造数据，但基因名和脑区结构为真实"
+    - "Python 环境设置（pandas, numpy）未在论文中显式说明，作为 implicit_steps 故障"
+  expected_runtime: "~10 min"
+  data_size: "~1 MB"
+  tool_requirements:
+    - "Python ≥ 3.10"
+    - "pandas"
+    - "numpy"
+    - "R ≥ 4.3.0"
+    - "DESeq2 ≥ 1.42.0"
+  container_image: "bioconductor/bioconductor_docker:latest"
+
+baseline:
+  established: "2026-07-19"
+  runs: 0
+  verdict: null
+  score: null

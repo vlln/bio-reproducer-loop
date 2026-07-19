@@ -1,0 +1,11 @@
+[2026-07-15 04:51:01] Starting R package installation for bench-002
+[2026-07-15 04:51:06] BiocManager version: 1.30.27
+[2026-07-15 04:51:06] clusterProfiler NOT installed — will install
+[2026-07-15 04:51:06] pathview NOT installed — will install
+[2026-07-15 04:51:06] org.Hs.eg.db NOT installed — will install
+[2026-07-15 04:51:06] Installing 3 packages: clusterProfiler, pathview, org.Hs.eg.db
+[2026-07-15 05:00:58] Installation completed
+[2026-07-15 05:00:58] Verifying package loading...
+[2026-07-15 05:01:00] OK: clusterProfiler 4.20.0
+[2026-07-15 05:01:00] OK: pathview 1.52.0
+[2026-07-15 05:01:00] OK: org.Hs.eg.db 3.23.1

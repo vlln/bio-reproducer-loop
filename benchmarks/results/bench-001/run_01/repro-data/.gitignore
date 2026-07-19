@@ -1,0 +1,21 @@
+# Task execution logs
+*.log
+.task_status/
+
+# Nextflow work directory (large intermediate files)
+work/
+.nextflow/
+.nextflow.log*
+
+# Container / Singularity images
+*.sif
+*.img
+
+# Editor / OS artifacts
+*~
+.DS_Store
+
+# Phase-specific temp files
+03_provision/logs/
+05_run/reports/*.html
+05_run/reports/*.svg

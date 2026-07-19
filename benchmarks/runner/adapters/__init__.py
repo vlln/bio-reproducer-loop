@@ -1,0 +1,1 @@
+"""Engine adapters — bridge between engine-agnostic benchmarks and specific engines."""

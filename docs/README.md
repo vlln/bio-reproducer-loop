@@ -1,0 +1,19 @@
+## 当前系统状态
+
+| 字段 | 值 |
+|------|-----|
+| **当前阶段** | `RELEASE` |
+| **设计评估** | DESIGN 通过，契约已冻结 |
+| **基建评估** | TEST_INFRA 追溯确认通过（见 0001-benchmark-infra/01-report） |
+| **系统测试** | SYSTEM_TEST 通过（见 0001-benchmark-infra/system-test/01-report） |
+
+## 子目录
+
+| 路径 | 用途 |
+|------|------|
+| [vision.md](vision.md) | 全局顶层愿景 |
+| [spec/](spec/) | Spec 需求规格（用户故事、模块划分、数据模型、非功能指标） |
+| [interface/](interface/) | 接口定义（入参/出参/错误码） |
+| [adr/](adr/) | 架构决策记录 |
+| [plans/](plans/) | 任务执行计划 |
+| [ac/](ac/) | 验收标准 |

@@ -1,0 +1,181 @@
+id: bench-003
+version: "1.0.0"
+title: "RNA-Seq Transcriptome Profiling Identifies CRISPLD2 as a Glucocorticoid Responsive Gene"
+scenario: data
+difficulty: easy
+expected_verdict: REPRODUCED
+paper_pdf: paper.md
+data_dir: null
+expected_yaml: expected.yaml
+description: >
+  Real published paper (Himes et al. 2014, PLOS ONE). Differential expression
+  analysis of dexamethasone-treated vs untreated airway smooth muscle cells.
+  4 paired cell lines, 8 samples. Uses DESeq2 with paired design
+  (~ cell + dex). Data from Bioconductor airway package (GSE52778).
+  Known answer: 7 dexamethasone-responsive genes verifiable from paper.
+  This is the DESeq2 vignette example — the most classic bioinformatics
+  tutorial case.
+
+# ───────────────────────────────────────────
+# 评估设计
+# ───────────────────────────────────────────
+
+evaluation_design:
+  dimensions:
+    data_integrity:
+      weight: 25
+      what_it_tests: "系统能否正确加载 Bioconductor airway 数据（8 样本，4 细胞系，配对设计）"
+      tolerance: "精确匹配——airway 数据集是标准 R 包，结构性字段固定"
+    process_quality:
+      weight: 25
+      what_it_tests: "系统能否正确使用配对设计公式 ~ cell + dex 运行 DESeq2"
+      tolerance: "R/DESeq2 版本号允许正则匹配，不要求精确版本"
+    quantitative_concordance:
+      weight: 40
+      what_it_tests: "系统能否正确识别 7 个关键基因的差异表达方向和显著性"
+      tolerance: "padj 用上限（< 0.05），log2FC 方向必须一致，log2FC 值允许版本差异"
+    figure_and_finding:
+      weight: 10
+      what_it_tests: "系统能否产出 DE 分析结果报告"
+      tolerance: "定性检查——有结果输出即可，不要求图表"
+
+  scoring_rationale: >
+    定量一致性权重最高（40%），因为这是真实论文的核心可验证产出——7 个关键基因
+    的差异表达方向和显著性。数据完整性（25%）和流程质量（25%）是基础保障。
+    图表权重较低（10%），因为论文未要求特定图表复现。
+
+# ───────────────────────────────────────────
+# 复杂度画像
+# ───────────────────────────────────────────
+
+complexity_profile:
+  data:
+    data_size: small
+    data_source: public_db
+    data_format: rds
+    supplementary: none
+  environment:
+    tool_count: 1-2
+    tool_chain: single_language
+    version_sensitivity: moderate
+    container: existing_image
+  analysis:
+    design: paired
+    method_complexity: standard
+    compute: light
+  figure:
+    figure_count: 1
+    figure_type: statistical
+    figure_layout: simple
+    figure_rendering: standard
+  evaluation:
+    ground_truth: fully_known
+    claim_type: directional
+    tolerance: moderate
+  paper:
+    paper_type: real_published
+    paper_format: pdf
+    multi_version: none
+    missing_info: version_gaps
+
+# ───────────────────────────────────────────
+# 鲁棒性画像（注入故障）
+# ───────────────────────────────────────────
+
+robustness_profile:
+  resource_unavailability:
+    database_down: false
+    registry_down: false
+    tool_not_found: false
+    repo_gone: false
+    doi_dead: false
+    image_missing: false
+  data_degradation:
+    empty_data_dir: false
+    truncated_file: false
+    format_mismatch: false
+    wrong_accession: false
+  information_degradation:
+    missing_supplementary: false
+    version_gaps: true
+    implicit_steps: false
+    scattered_params: false
+    conflicting_info: false
+  environment_drift:
+    version_mismatch: true
+    os_mismatch: false
+    arch_mismatch: false
+    missing_system_dep: false
+
+# ───────────────────────────────────────────
+# 系统能力覆盖
+# ───────────────────────────────────────────
+
+capability_coverage:
+  covers:
+    - paper_reading: "从真实论文中提取实验设计、分析方法、参数、数据来源"
+    - tool_provisioning: "部署 R + DESeq2 环境"
+    - bioconductor_data_loading: "从 Bioconductor airway 包加载 RangedSummarizedExperiment 数据"
+    - paired_design: "配对设计 ~ cell + dex，处理 blocking factor"
+    - statistical_analysis: "DESeq2 差异表达分析（Wald test）"
+    - result_validation: "对比 7 个已知 glucocorticoid 响应基因的复现结果"
+  does_not_cover:
+    - raw_data_download: "数据通过 Bioconductor 包获取，无需 SRA 下载"
+    - multi_tool_pipeline: "仅使用 DESeq2，无多步骤流程"
+    - large_data_handling: "~64k 转录本 × 8 样本，~10 MB"
+    - figure_generation: "无特定图表复现要求"
+    - custom_dockerfile: "使用现有 Bioconductor 镜像"
+
+# ───────────────────────────────────────────
+# 构造决策记录
+# ───────────────────────────────────────────
+
+design_decisions:
+  - decision: "使用真实论文而非构造论文"
+    intent: "这是第一个 L4 级别（工程基准）的 entry，测试系统对真实论文的处理能力"
+
+  - decision: "只验证 7 个命名基因，不验证全部 316 DEGs"
+    intent: "论文明确列出了 7 个关键基因，这些是复现核心。316 DEGs 因 DESeq2 版本差异会波动"
+
+  - decision: "数据通过 Bioconductor airway 包获取，不要求 GEO 下载"
+    intent: "airway 包是标准 R 包，`BiocManager::install('airway')` 即可。测试系统能否识别 Bioconductor 数据源"
+
+  - decision: "paired design (~ cell + dex) 而非简单两组比较"
+    intent: "测试系统能否正确理解配对设计并从 paper 中提取 blocking factor"
+
+  - decision: "version_gaps=true（不含版本号）"
+    intent: "论文发表于 2014 年，未指定精确版本号，测试系统能否推断合理版本"
+
+  - decision: "无 figure 复现要求"
+    intent: "论文核心产出是基因列表，非图表。测试系统能否正确判断复现目标"
+
+# ───────────────────────────────────────────
+# 可复现性声明
+# ───────────────────────────────────────────
+
+reproducibility:
+  known_limitations:
+    - "316 DEGs 总数因 DESeq2 版本差异会波动（±20%），不作为严格检查项"
+    - "padj 值因 DESeq2 版本差异会有数量级变化，只用方向+显著性判断"
+    - "论文不提供精确版本号（2014 年发表），R/DESeq2 版本需推断"
+  expected_runtime: "~5 min（含 Docker 镜像拉取和 BiocManager 包安装）"
+  data_size: "~10 MB"
+  output_size: "~100 KB（DE 结果表）"
+  tool_requirements:
+    - "R ≥ 4.3.0"
+    - "DESeq2 ≥ 1.42.0"
+    - "airway (Bioconductor data package)"
+  container_image: "bioconductor/bioconductor_docker:latest"
+
+# ───────────────────────────────────────────
+# 基准线
+# ───────────────────────────────────────────
+
+baseline:
+  established: "2026-07-15"
+  runs: 0
+  verdict: null
+  score: null
+  score_breakdown: {}
+  notes: >
+    尚未运行。这是第一个 L4 级别（真实论文）entry。

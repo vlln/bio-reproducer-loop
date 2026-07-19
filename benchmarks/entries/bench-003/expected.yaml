@@ -1,0 +1,109 @@
+id: bench-003
+version: "1.0.0"
+expected_verdict: REPRODUCED
+min_score: 80
+runs_required: 5
+verdict_match_threshold: 0.6
+
+checks:
+  data_integrity:
+    - check_id: D1
+      description: "airway dataset loaded with 8 samples"
+      type: auto
+      expected:
+        n_samples: 8
+    - check_id: D2
+      description: "airway dataset has 4 cell lines (paired design)"
+      type: auto
+      expected:
+        n_cell_lines: 4
+    - check_id: D3
+      description: "DESeq2 analysis output is non-empty"
+      type: auto
+      expected:
+        results_non_empty: true
+
+  process_quality:
+    - check_id: Q1
+      description: "DESeq2 paired design analysis completed without error"
+      type: auto
+      expected:
+        status: success
+    - check_id: Q2
+      description: "Design formula ~ cell + dex used (paired design)"
+      type: auto
+      expected:
+        design_formula_contains: ["cell", "dex"]
+    - check_id: Q3
+      description: "R version is 4.x or compatible"
+      type: auto
+      expected:
+        r_version_pattern: "4\\."
+
+  quantitative_concordance:
+    - check_id: R1
+      description: "DUSP1 is significantly upregulated"
+      type: auto
+      expected:
+        gene: DUSP1
+        direction: up
+        padj_max: 0.05
+    - check_id: R2
+      description: "KLF15 is significantly upregulated"
+      type: auto
+      expected:
+        gene: KLF15
+        direction: up
+        padj_max: 0.05
+    - check_id: R3
+      description: "PER1 is significantly upregulated"
+      type: auto
+      expected:
+        gene: PER1
+        direction: up
+        padj_max: 0.05
+    - check_id: R4
+      description: "TSC22D3 (GILZ) is significantly upregulated"
+      type: auto
+      expected:
+        gene: TSC22D3
+        direction: up
+        padj_max: 0.05
+    - check_id: R5
+      description: "CRISPLD2 is significantly upregulated"
+      type: auto
+      expected:
+        gene: CRISPLD2
+        direction: up
+        padj_max: 0.05
+    - check_id: R6
+      description: "C7 is significantly downregulated"
+      type: auto
+      expected:
+        gene: C7
+        direction: down
+        padj_max: 0.05
+    - check_id: R7
+      description: "CCDC69 is significantly upregulated"
+      type: auto
+      expected:
+        gene: CCDC69
+        direction: up
+        padj_max: 0.05
+    - check_id: R8
+      description: "At least 200 significant DEGs found (padj < 0.05)"
+      type: auto
+      expected:
+        min_sig_genes: 200
+
+  figure_and_finding:
+    - check_id: F1
+      description: "DE analysis results file generated"
+      type: auto
+      expected:
+        results_file_exists: true
+    - check_id: F2
+      description: "Qualitative conclusion: 7 named genes are among the DEGs"
+      type: qualitative
+      expected:
+        genes_verified: ["DUSP1", "KLF15", "PER1", "TSC22D3", "CRISPLD2", "C7", "CCDC69"]
