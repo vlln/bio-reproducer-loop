@@ -1,0 +1,11 @@
+id: provision-standard-de
+level: L1
+phase: Provision
+capabilities: [tool_identification]
+input: {benchmark: bench-001}
+upstream:
+  01_plan/plan.md: phase-states/valid/bench-001/01_plan/plan.md
+output: 03_provision/provision.md
+checks:
+  min_chars: 50
+  contains: [R, DESeq2, ggplot2, apeglm, bioconductor]

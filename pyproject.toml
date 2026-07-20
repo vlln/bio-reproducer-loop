@@ -1,12 +1,17 @@
 [project]
 name = "bio-reproducer"
 version = "0.1.0"
-description = "AI Agent 驱动的生物信息学论文复现系统，配套内部测试体系和公开 benchmark"
+description = "AI Agent 驱动的生物信息学论文复现系统，配套确定性测试、内部评测和公开 benchmark"
 requires-python = ">=3.10"
 license = {text = "MIT"}
+dependencies = ["PyYAML>=6.0"]
 
 [project.optional-dependencies]
 test = ["pytest>=8.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["llm: requires a real LLM backend and loopflow runtime"]
 
 [build-system]
 requires = ["setuptools>=64"]

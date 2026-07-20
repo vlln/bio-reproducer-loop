@@ -1,12 +1,12 @@
 id: bench-001
-version: "1.0.0"
+version: "2.0.0"
+protocol_version: "2.0"
+oracle_version: "1.0.0"
 title: "Differential Expression Analysis of Synthetic Gene Response to Treatment"
 scenario: mixed
 difficulty: easy
-expected_verdict: REPRODUCED
-paper_pdf: paper.pdf
-data_dir: data/
-expected_yaml: expected.yaml
+input_dir: input/
+oracle_dir: oracle/
 description: >
   A constructed paper about differential expression analysis of 10 genes
   across 2 conditions (Control/Treatment) with 3 replicates each.
@@ -14,37 +14,6 @@ description: >
   expression table. This is a minimal smoke test for the system's
   ability to read a paper, provision tools, and run analysis.
 
-# ───────────────────────────────────────────
-# 评估设计
-# ───────────────────────────────────────────
-
-evaluation_design:
-  dimensions:
-    data_integrity:
-      weight: 25
-      what_it_tests: "系统能否正确加载和校验输入数据（基因数、样本数、文件产出）"
-      tolerance: "精确匹配——输入数据是我们构造的，不存在歧义"
-    process_quality:
-      weight: 25
-      what_it_tests: "系统能否使用正确的工具和参数完成分析流程"
-      tolerance: "版本号用正则匹配而非精确值（如 R 4\\.3 而非 4.3.0），因为环境版本漂移是预期内的"
-    quantitative_concordance:
-      weight: 30
-      what_it_tests: "系统产出的数值是否在可接受范围内（方向、log2FC、p 值）"
-      tolerance: >
-        log2FC 用范围值（min/max）而非精确值，因为 DESeq2 版本差异和 apeglm
-        shrinkage 算法变化会导致 ~15% 偏差。p 值只设上限不设下限，因为新版
-        DESeq2 在小样本上会产生更极端的 p 值。
-    figure_and_finding:
-      weight: 20
-      what_it_tests: "系统能否复现关键图表（volcano plot）和定性结论"
-      tolerance: "视觉检查基因位置和模式，不做像素级对比（无原始图片）"
-
-  scoring_rationale: |
-    四个维度权重不同：定量一致性（30%）权重最高，因为它直接反映分析结果的
-    正确性；数据完整性（25%）和流程质量（25%）是基础保障；图表复现（20%）
-    是定性验证。总分 ≥ 85 为 REPRODUCED——允许版本差异导致的轻微数值偏差，
-    但方向和显著性必须一致。
 
 # ───────────────────────────────────────────
 # 复杂度画像
@@ -154,7 +123,7 @@ design_decisions:
     intent: "验证功能正确性，不测性能/规模；使单次运行 ≤ 30 分钟"
 
   - decision: "计数矩阵中 Gene_A 实际 log2FC ~2.95 但论文声称 2.5"
-    intent: "模拟真实场景中归一化和 shrinkage 导致的数值偏差，测试 expected.yaml 容忍度设计的有效性"
+    intent: "模拟真实场景中归一化和 shrinkage 导致的数值偏差，测试 rubric 容忍度设计的有效性"
 
   - decision: "无原始 Figure 1 图片"
     intent: "测试系统在缺少原始参考图时的降级评估能力（模式对比而非像素对比）"
@@ -169,21 +138,3 @@ reproducibility:
     - "无原始 figure 图片，K6 检查项为 N/A，无法做像素级视觉对比"
     - "log2FC 因 apeglm 版本差异会有 ~15% 偏差"
   container_image: "bioconductor/bioconductor_docker:latest"
-
-# ───────────────────────────────────────────
-# 基准线
-# ───────────────────────────────────────────
-
-baseline:
-  established: "2026-07-15"
-  updated: "2026-07-19"
-  runs: 5
-  verdict: REPRODUCED
-  verdict_distribution: {REPRODUCED: 5, PARTIAL: 0, BLOCKED: 0, FAILED: 0}
-  match_rate: 1.0
-  score_min: 91
-  score_max: 96
-  score_mean: 94.2
-  score_median: 95.0
-  backend: deepseek-v4-pro
-  platform: Linux x86_64 (Ubuntu 22.04, Docker 29.2.0)

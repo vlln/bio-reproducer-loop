@@ -1,0 +1,11 @@
+id: handoff-blocked-plan
+level: L2
+phase: Data
+capabilities: [blocked_upstream_propagation]
+input: {benchmark: bench-001}
+upstream:
+  01_plan/plan.md: handoff/plan_blocked.md
+output: 04_data/data_manifest.md
+checks:
+  contains_any: [[blocked, unavailable]]
+  not_contains: [downloaded, verified]

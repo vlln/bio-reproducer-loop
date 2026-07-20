@@ -1,0 +1,9 @@
+id: reader-basic-de
+level: L1
+phase: Reader
+capabilities: [paper_fact_extraction]
+input: {benchmark: bench-001}
+output: 01_plan/plan.md
+checks:
+  min_chars: 100
+  contains: [DESeq2, 4.3.0, Gene_A, Gene_B, counts.csv, volcano]

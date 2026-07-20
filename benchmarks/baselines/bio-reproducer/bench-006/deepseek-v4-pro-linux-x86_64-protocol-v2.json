@@ -1,0 +1,19 @@
+{
+  "bench_id": "bench-006",
+  "benchmark_version": "2.0.0",
+  "oracle_version": "1.0.0",
+  "system": "bio-reproducer",
+  "backend": "deepseek-v4-pro",
+  "platform": "Linux x86_64 (Ubuntu 22.04, Docker 29.2.0)",
+  "runs": 5,
+  "verdict_distribution": {
+    "REPRODUCED": 4,
+    "PARTIAL": 0,
+    "FAILED": 1,
+    "BLOCKED": 0
+  },
+  "score": {"min": 20, "max": 100, "mean": 84.0, "median": 100},
+  "verdict_match_rate": 0.8,
+  "claimed_verdict_match_rate": 0.8,
+  "note": "Protocol v2 independent evaluation of the preserved run artifacts. Run 05 claimed REPRODUCED but did not submit a differential-expression result table."
+}

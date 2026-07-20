@@ -12,6 +12,7 @@ __pycache__/
 
 # Benchmark results
 benchmarks/results/
+evals/results/
 
 # OS
 .DS_Store

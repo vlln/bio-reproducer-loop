@@ -1,0 +1,8 @@
+{
+  "bench_id": "bench-003",
+  "benchmark_version": "2.0.0",
+  "oracle_version": "1.0.0",
+  "system": "bio-reproducer",
+  "runs": 0,
+  "note": "No protocol v2 baseline has been established; a five-run first execution is in progress on the remote Linux x86_64 benchmark host."
+}

@@ -1,0 +1,51 @@
+id: bench-005
+benchmark_version: "2.0.0"
+oracle_version: "1.0.0"
+expected_verdict: REPRODUCED
+verdict_match_threshold: 0.6
+verdict_thresholds: {reproduced: 75, partial: 50}
+
+checks:
+  - id: D1
+    description: Differential expression table is non-empty
+    evidence: {artifact_role: result_table}
+    comparison: {comparator: file_nonempty}
+    weight: 10
+  - id: R1
+    description: Drug-response genes have expected direction and significance
+    evidence: {artifact_role: result_table}
+    comparison:
+      comparator: csv_rows
+      key_columns: [gene, Gene, symbol, SYMBOL, ""]
+      rows:
+        - key_equals: ERBB2
+          assertions: &up
+            - {columns: &lfc [log2FoldChange, log2FC, logFC], operator: greater_than, value: 1.0}
+            - {columns: &padj [padj, FDR, adj.P.Val], operator: less_than, value: 0.05}
+        - {key_equals: MYC, assertions: *up}
+        - {key_equals: JUN, assertions: *up}
+        - key_equals: BCL2
+          assertions: &down
+            - {columns: *lfc, operator: less_than, value: -1.0}
+            - {columns: *padj, operator: less_than, value: 0.05}
+        - {key_equals: MCL1, assertions: *down}
+    weight: 60
+  - id: R2
+    description: At least eight genes are significant
+    evidence: {artifact_role: result_table}
+    comparison:
+      comparator: csv_count
+      where:
+        - {columns: *padj, operator: less_than, value: 0.05}
+      assertion: {operator: greater_than_or_equal, value: 8}
+    weight: 10
+  - id: F1
+    description: Volcano plot exists
+    evidence: {artifact_role: figure, artifact_id: volcano}
+    comparison: {comparator: png_valid}
+    weight: 10
+  - id: F2
+    description: PCA plot exists
+    evidence: {artifact_role: figure, artifact_id: pca}
+    comparison: {comparator: png_valid}
+    weight: 10

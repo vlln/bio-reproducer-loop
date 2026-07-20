@@ -1,0 +1,18 @@
+{
+  "bench_id": "bench-001",
+  "benchmark_version": "1.0.0",
+  "system": "bio-reproducer",
+  "backend": "deepseek-v4-pro",
+  "platform": "Linux x86_64 (Ubuntu 22.04, Docker 29.2.0)",
+  "established": "2026-07-15",
+  "updated": "2026-07-19",
+  "runs": 5,
+  "verdict_distribution": {
+    "REPRODUCED": 5,
+    "PARTIAL": 0,
+    "BLOCKED": 0,
+    "FAILED": 0
+  },
+  "score": {"min": 91, "max": 96, "mean": 94.2, "median": 95.0},
+  "note": "Legacy self-evaluated baseline; not comparable to protocol v2 independent scores."
+}

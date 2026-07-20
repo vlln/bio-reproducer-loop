@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "submission.schema.json",
+  "type": "object",
+  "required": ["submission_id", "bench_id", "system", "artifacts", "execution"],
+  "properties": {
+    "submission_id": {"type": "string", "minLength": 1},
+    "bench_id": {"type": "string", "minLength": 1},
+    "claimed_verdict": {
+      "type": ["string", "null"],
+      "enum": ["REPRODUCED", "PARTIAL", "FAILED", "BLOCKED", null]
+    },
+    "system": {
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": {
+        "name": {"type": "string"},
+        "version": {"type": "string"}
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["role", "path"],
+        "properties": {
+          "role": {"type": "string"},
+          "id": {"type": "string"},
+          "path": {"type": "string"}
+        }
+      }
+    },
+    "execution": {"type": "object"}
+  }
+}

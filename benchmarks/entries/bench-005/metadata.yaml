@@ -1,12 +1,12 @@
 id: bench-005
-version: "1.0.0"
+version: "2.0.0"
+protocol_version: "2.0"
+oracle_version: "1.0.0"
 title: "Integrative Analysis of Pharmacogenomic Response in Cancer Cell Lines"
 scenario: environment_drift
 difficulty: medium
-expected_verdict: REPRODUCED
-paper_pdf: paper.pdf
-data_dir: null
-expected_yaml: expected.yaml
+input_dir: input/
+oracle_dir: oracle/
 description: >
   Constructed paper with injected environment drift and conflicting
   information. 30 cancer genes × 12 samples (3 drug treatments). Paper
@@ -14,32 +14,6 @@ description: >
   different. Methods says ~condition but code fragment shows ~treatment.
   Tests system ability to detect and resolve conflicting information.
 
-# ───────────────────────────────────────────
-# 评估设计
-# ───────────────────────────────────────────
-
-evaluation_design:
-  dimensions:
-    data_integrity:
-      weight: 20
-      what_it_tests: "系统能否正确加载 30 基因 × 12 样本数据"
-      tolerance: "精确匹配"
-    process_quality:
-      weight: 25
-      what_it_tests: "系统能否在环境漂移和冲突信息下正确配置分析流程"
-      tolerance: "R/DESeq2 版本允许正则匹配，不要求精确版本"
-    quantitative_concordance:
-      weight: 35
-      what_it_tests: "系统能否正确识别 Drug A 和 Drug B 的差异表达基因"
-      tolerance: "padj 用上限，log2FC 方向必须一致"
-    figure_and_finding:
-      weight: 20
-      what_it_tests: "系统能否产出 volcano plot 和 PCA 图"
-      tolerance: "定性检查"
-
-  scoring_rationale: >
-    定量一致性权重最高（35%），因为药物响应基因是核心产出。
-    流程质量（25%）反映环境适应能力。数据完整性（20%）和图表（20%）。
 
 # ───────────────────────────────────────────
 # 复杂度画像
@@ -142,21 +116,3 @@ reproducibility:
     - "DESeq2 (论文声明 1.34.0，实际可用 ≥ 1.42.0)"
     - "ggplot2"
   container_image: "bioconductor/bioconductor_docker:RELEASE_3_14"
-
-baseline:
-  established: "2026-07-19"
-  runs: 5
-  verdict: PARTIAL
-  verdict_distribution: {REPRODUCED: 1, PARTIAL: 4, BLOCKED: 0, FAILED: 0}
-  match_rate: 0.2
-  score_min: 73
-  score_max: 86
-  score_mean: 79.2
-  score_median: 80.0
-  score_breakdown:
-    data_integrity: 25.0
-    process_quality: 22.9
-    quantitative_concordance: 16.7
-    figure_and_finding: 15.2
-  backend: deepseek-v4-pro
-  platform: Linux x86_64 (Ubuntu 22.04, Docker 29.2.0)

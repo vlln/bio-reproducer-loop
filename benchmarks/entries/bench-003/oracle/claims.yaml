@@ -1,0 +1,40 @@
+id: bench-003
+paper_title: "RNA-Seq Transcriptome Profiling Identifies CRISPLD2 as a Glucocorticoid Responsive Gene that Modulates Cytokine Function in Airway Smooth Muscle Cells"
+paper_doi: "10.1371/journal.pone.0099625"
+
+experimental_design:
+  - claim_id: ED-1
+    description: "Four primary airway smooth muscle cell lines were measured untreated and after dexamethasone exposure"
+    source: "Abstract, Methods"
+    details: {n_cell_lines: 4, n_samples: 8, treatment: "1 micromolar dexamethasone for 18 hours", paired: true}
+
+methods:
+  - claim_id: M-1
+    description: "RNA-seq counts were analyzed with DESeq2 using a paired design"
+    source: "Methods"
+    details: {software: DESeq2, design: "~ cell + dex", correction: Benjamini-Hochberg, padj_threshold: 0.05}
+
+quantitative_results:
+  - claim_id: R-1
+    description: "The study identified 316 differentially expressed genes"
+    source: "Abstract, Results"
+    details: {n_significant: 316, padj_threshold: 0.05}
+  - claim_id: R-2
+    description: "DUSP1, KLF15, PER1, TSC22D3, CRISPLD2, and CCDC69 were dexamethasone-induced"
+    source: "Abstract, Results"
+    details: {genes: [DUSP1, KLF15, PER1, TSC22D3, CRISPLD2, CCDC69], direction: upregulated}
+  - claim_id: R-3
+    description: "C7 was dexamethasone-repressed"
+    source: "Abstract, Results"
+    details: {gene: C7, direction: downregulated}
+
+conclusions:
+  - claim_id: C-1
+    description: "CRISPLD2 is a glucocorticoid-responsive asthma pharmacogenetics candidate that modulates cytokine function"
+    source: "Abstract, Conclusions"
+
+data_availability:
+  - claim_id: DA-1
+    description: "The eight-sample RNA-seq dataset is available from GEO and the airway Bioconductor package"
+    source: "Data Availability"
+    details: {geo_accession: GSE52778, bioconductor_package: airway, n_samples: 8}

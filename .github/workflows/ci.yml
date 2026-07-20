@@ -12,9 +12,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install test dependencies
+        run: python -m pip install -e '.[test]'
+
+      - name: Run deterministic tests
+        run: python -m pytest tests/ -q
+
       - name: Check YAML syntax
         run: |
-          find benchmarks/entries -name "*.yaml" -o -name "*.yml" | while read f; do
+          find benchmarks/entries evals \( -name "*.yaml" -o -name "*.yml" \) | while read f; do
             python3 -c "import yaml; yaml.safe_load(open('$f'))" || exit 1
           done
 
@@ -51,31 +61,12 @@ with open('$f') as fh:
 " || exit 1
           done
 
-      - name: Check result.json schema
+      - name: Check protocol schema definitions
         run: |
           python3 -c "
-import json
-schema = {
-  'type': 'object',
-  'required': ['run_id', 'bench_id', 'bench_version', 'verdict', 'score', 'stages'],
-  'properties': {
-    'run_id': {'type': 'string'},
-    'bench_id': {'type': 'string'},
-    'bench_version': {'type': 'string'},
-    'verdict': {'type': 'string', 'enum': ['REPRODUCED', 'PARTIAL', 'FAILED', 'BLOCKED']},
-    'score': {'type': 'integer', 'minimum': 0, 'maximum': 100},
-    'stages': {
-      'type': 'array',
-      'items': {
-        'type': 'object',
-        'required': ['name', 'status'],
-        'properties': {
-          'name': {'type': 'string'},
-          'status': {'type': 'string', 'enum': ['completed', 'partial', 'blocked', 'failed']}
-        }
-      }
-    }
-  }
-}
-print('result.json schema: OK')
+import json, pathlib
+for directory in ('benchmarks/schemas', 'evals/schemas'):
+    for path in pathlib.Path(directory).glob('*.json'):
+        json.load(path.open())
+print('protocol schemas: OK')
 "

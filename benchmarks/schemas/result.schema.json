@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "result.schema.json",
+  "type": "object",
+  "required": ["run_id", "bench_id", "benchmark_version", "submission_id", "verdict", "score", "checks", "provenance"],
+  "properties": {
+    "run_id": {"type": "string"},
+    "bench_id": {"type": "string"},
+    "benchmark_version": {"type": "string"},
+    "submission_id": {"type": "string"},
+    "verdict": {"enum": ["REPRODUCED", "PARTIAL", "FAILED", "BLOCKED"]},
+    "score": {"type": "number", "minimum": 0, "maximum": 100},
+    "checks": {"type": "array"},
+    "calibration": {"type": "object"},
+    "provenance": {"type": "object"}
+  }
+}

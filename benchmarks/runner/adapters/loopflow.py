@@ -6,6 +6,8 @@ All information about the run comes from loopflow's own output — the adapter
 does not reconstruct, guess, or fabricate.
 """
 
+from __future__ import annotations
+
 import json
 import shutil
 import subprocess
@@ -25,18 +27,23 @@ def run(entry_path: str, run_dir: Optional[str] = None) -> dict:
         run_dir: Where to write loopflow output (defaults to entry_path/repro-data/)
 
     Returns:
-        Standardized result.json dict per the benchmark spec.
+        Standardized submission.json dict per the benchmark protocol.
     """
     entry_dir = Path(entry_path)
 
     # 1. Read what the benchmark entry declares about itself
     metadata = _read_metadata(entry_dir)
 
-    # 2. Where loopflow writes its output
-    output_dir = str(Path(run_dir) / "repro-data") if run_dir else str(entry_dir / "repro-data")
+    if str(metadata.get("protocol_version")) != "2.0":
+        raise ValueError("Only benchmark protocol 2.0 is supported")
 
-    # 3. Resolve the paper file (benchmark declares what it has; adapter resolves)
-    paper_path = _resolve_paper(entry_dir, metadata)
+    # 2. Where loopflow writes its output
+    run_root = Path(run_dir) if run_dir else entry_dir
+    output_dir = str((run_root / "repro-data").resolve())
+
+    # 3. Stage only public input and resolve the paper inside that bundle
+    input_dir = _stage_input(entry_dir, run_root)
+    paper_path = _resolve_v2_paper(input_dir)
 
     # 4. Launch loopflow — no timeout, loopflow controls its own pace
     args = {
@@ -48,31 +55,54 @@ def run(entry_path: str, run_dir: Optional[str] = None) -> dict:
 
     # Find the loop CLI — prefer venv-local, fall back to PATH
     loop_bin = _find_loop_bin()
+    workspace = run_root / "workspace"
+    workspace.mkdir(parents=True, exist_ok=True)
     proc = subprocess.Popen(
         [loop_bin, "run", "bio-reproducer", "--args", json.dumps(args)],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
+        cwd=str(workspace),
     )
 
     # 5. Wait for loopflow to complete — no timeout, no stall detection
     try:
         proc.wait()
     except FileNotFoundError:
-        return _make_blocked_result(
-            metadata, "system",
+        return _make_blocked_output(
+            metadata, run_root, "system",
             "loopflow CLI not found. Is 'loop' installed and on PATH?"
         )
 
     duration = int(time.time() - start_time)
 
     if proc.returncode != 0:
-        return _make_blocked_result(
-            metadata, "system",
+        return _make_blocked_output(
+            metadata, run_root, "system",
             f"loopflow exited with code {proc.returncode}"
         )
 
-    # 6. Read loopflow's own output — no reconstruction
-    return _build_result(metadata, output_dir, duration)
+    # 6. Describe loopflow's artifacts without assigning evaluator-owned scores
+    return _build_submission(metadata, run_root, Path(output_dir), duration)
+
+
+def _stage_input(entry_dir: Path, run_root: Path) -> Path:
+    """Copy only the public input bundle into the system-visible run tree."""
+    source = entry_dir / "input"
+    if not source.is_dir():
+        raise FileNotFoundError(f"InputBundle not found: {source}")
+    staged = run_root / "input"
+    shutil.copytree(source, staged, dirs_exist_ok=True)
+    if (staged / "oracle").exists():
+        raise ValueError("InputBundle must not contain an oracle directory")
+    return staged.resolve()
+
+
+def _resolve_v2_paper(input_dir: Path) -> Path:
+    for name in ("paper.pdf", "paper.md"):
+        paper = input_dir / name
+        if paper.is_file():
+            return paper
+    raise FileNotFoundError(f"Paper not found in InputBundle: {input_dir}")
 
 
 def _read_metadata(entry_dir: Path) -> dict:
@@ -103,47 +133,179 @@ def _find_loop_bin() -> str:
     )
 
 
-def _resolve_paper(entry_dir: Path, metadata: dict) -> Path:
-    """Resolve the paper file. Benchmark declares what it has; adapter resolves the path."""
-    paper = entry_dir / metadata.get("paper_pdf", "paper.pdf")
-    if paper.exists():
-        return paper
-    # Fallback: some entries provide Markdown instead of PDF
-    paper_md = entry_dir / "paper.md"
-    if paper_md.exists():
-        return paper_md
-    raise FileNotFoundError(
-        f"Paper not found: {paper} (and no paper.md fallback)"
+def build_submission_from_existing(
+    entry_path: str | Path,
+    run_dir: str | Path,
+) -> dict:
+    """Build a v2 submission manifest for an already completed loopflow run."""
+    entry_dir = Path(entry_path)
+    run_root = Path(run_dir)
+    metadata = _read_metadata(entry_dir)
+    if str(metadata.get("protocol_version")) != "2.0":
+        raise ValueError("Existing-run submission import requires protocol v2")
+
+    legacy_result = run_root / "result.json"
+    duration = 0
+    claimed_verdict = None
+    stages = None
+    if legacy_result.is_file():
+        previous = json.loads(legacy_result.read_text())
+        if "provenance" not in previous:
+            duration = int(previous.get("duration_seconds", 0))
+            claimed_verdict = previous.get("verdict")
+            stages = previous.get("stages")
+
+    return _build_submission(
+        metadata,
+        run_root,
+        run_root / "repro-data",
+        duration,
+        submission_id=f"{metadata.get('id', entry_dir.name)}-{run_root.name}",
+        claimed_verdict=claimed_verdict,
+        stages=stages,
     )
 
 
-def _build_result(metadata: dict, output_dir: str, duration: int) -> dict:
-    """Build result.json from loopflow's own output files.
-
-    All information comes from loopflow's output — the adapter does not
-    reconstruct, guess, or fabricate any metric.
-    """
-    repro_dir = Path(output_dir)
+def _build_submission(
+    metadata: dict,
+    run_root: Path,
+    repro_dir: Path,
+    duration: int,
+    submission_id: str | None = None,
+    claimed_verdict: str | None = None,
+    stages: list[dict] | None = None,
+) -> dict:
+    """Describe actual artifacts; score and verdict remain evaluator-owned."""
     entry_id = metadata.get("id", "unknown")
-    bench_version = metadata.get("version", "1.0.0")
+    submission_id = submission_id or f"{entry_id}-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
+    artifacts = []
+    candidates = _artifact_candidates(entry_id, repro_dir)
+    root = run_root.resolve()
+    for role, artifact_id, paths in candidates:
+        path = next((candidate for candidate in paths if candidate.is_file()), None)
+        if path is None:
+            continue
+        item = {"role": role, "path": str(path.resolve().relative_to(root))}
+        if artifact_id is not None:
+            item["id"] = artifact_id
+        artifacts.append(item)
 
-    # Phases: check which output directories exist and have content
-    stages = _read_stages(repro_dir)
-
-    # Verdict and score: read from validate agent's structured output
-    verdict, score = _read_verdict_and_score(repro_dir)
-
-    run_id = f"{entry_id}-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
-
+    if claimed_verdict is None:
+        claimed_verdict, _ = _read_verdict_and_score(repro_dir)
     return {
-        "run_id": run_id,
+        "submission_id": submission_id,
         "bench_id": entry_id,
-        "bench_version": bench_version,
-        "verdict": verdict,
-        "score": score,
-        "stages": stages,
-        "duration_seconds": duration,
+        "system": {"name": "bio-reproducer", "version": "0.1.0"},
+        "claimed_verdict": claimed_verdict,
+        "artifacts": artifacts,
+        "execution": {
+            "duration_seconds": duration,
+            "stages": stages if stages is not None else _read_stages(repro_dir),
+        },
     }
+
+
+def _artifact_candidates(entry_id: str, repro_dir: Path) -> list[tuple[str, str | None, list[Path]]]:
+    """Map loopflow output conventions to protocol-level artifact roles."""
+    run = repro_dir / "05_run"
+    results = run / "results"
+    figures = run / "figures"
+
+    result_tables = [
+        results / "de_results.csv",
+        results / "deseq_results.csv",
+        results / "deseq2_results.csv",
+        results / "deseq2" / "deseq2_results.csv",
+        results / "differential_expression.csv",
+    ]
+    if entry_id == "bench-005":
+        result_tables = [
+            results / "results" / "results_DrugA_vs_DMSO.csv",
+            results / "DE_DrugA_vs_DMSO.csv",
+            results / "DrugA_vs_DMSO.csv",
+            results / "DrugA_vs_DMSO_full.csv",
+        ]
+
+    candidates = [
+        ("result_table", None, [
+            *result_tables,
+        ]),
+        ("normalized_counts", None, [
+            results / "normalized_counts.csv",
+            results / "counts_filtered_norm.csv",
+            results / "cleaned_counts.csv",
+        ]),
+        ("environment", None, [
+            results / "sessionInfo.txt",
+            results / "session_info.txt",
+            results / "results" / "session_info.txt",
+            results / "r_session_info.txt",
+        ]),
+        ("figure", "volcano", [
+            figures / "volcano_plot.png",
+            figures / "figure1_volcano.png",
+            figures / "figures" / "figure1_volcano.png",
+            results / "figures" / "figure1_volcano.png",
+        ]),
+        ("figure", "go_barplot", [
+            figures / "figure2_go_barplot.png",
+            figures / "go_barplot.png",
+        ]),
+        ("figure", "kegg_pathway", [
+            figures / "figure3_kegg_pathway.png",
+            figures / "kegg_pathway.png",
+        ]),
+        ("figure", "heatmap", [
+            figures / "figure2_heatmap.png",
+            figures / "heatmap.png",
+        ]),
+        ("figure", "pca", [
+            figures / "figure2_pca.png",
+            figures / "figures" / "figure2_pca.png",
+            results / "figures" / "figure2_pca.png",
+            figures / "pca.png",
+        ]),
+        ("go_enrichment", None, [
+            results / "go_enrichment.csv",
+        ]),
+        ("run_report", None, [
+            run / "run_results.md",
+        ]),
+        ("analysis_log", None, [
+            results / "analysis.log",
+            run / "reports" / "run_analysis.log",
+            run / "p5_analysis.log",
+        ]),
+        ("run_log", None, [
+            run / "reports" / "run_analysis.log",
+        ]),
+    ]
+
+    if entry_id == "bench-004":
+        candidates.extend([
+            ("result_table", "cortex_vs_thalamus", [
+                results / "de_results_cortex_vs_thalamus.csv",
+                results / "cortex_vs_thalamus_de_results.csv",
+            ]),
+            ("result_table", "thalamus_vs_cortex", [
+                results / "results" / "de_Thalamus_vs_Cortex.csv",
+                results / "Thalamus_vs_Cortex.csv",
+            ]),
+            ("result_table", "hippocampus_vs_cortex", [
+                results / "results" / "de_Hippocampus_vs_Cortex.csv",
+                results / "Hippocampus_vs_Cortex.csv",
+            ]),
+            ("result_table", "striatum_vs_cortex", [
+                results / "results" / "de_Striatum_vs_Cortex.csv",
+                results / "Striatum_vs_Cortex.csv",
+            ]),
+            ("result_table", "all_contrasts", [
+                results / "results" / "all_degs.csv",
+                results / "de_results_all_contrasts.csv",
+                results / "de_results.csv",
+            ]),
+        ])
+    return candidates
 
 
 def _read_stages(repro_dir: Path) -> list[dict]:
@@ -234,20 +396,18 @@ def _read_verdict_and_score(repro_dir: Path) -> tuple:
     return "BLOCKED", 0
 
 
-def _make_blocked_result(metadata: dict, reason: str, error: str) -> dict:
-    """Create a BLOCKED result when loopflow cannot be executed."""
+def _make_blocked_output(metadata: dict, run_root: Path, reason: str, error: str) -> dict:
     entry_id = metadata.get("id", "unknown")
-    bench_version = metadata.get("version", "1.0.0")
-    run_id = f"{entry_id}-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
-
+    submission_id = f"{entry_id}-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
     return {
-        "run_id": run_id,
+        "submission_id": submission_id,
         "bench_id": entry_id,
-        "bench_version": bench_version,
-        "verdict": "BLOCKED",
-        "score": 0,
-        "stages": [],
-        "duration_seconds": 0,
-        "blocked_reason": reason,
-        "error": error,
+        "system": {"name": "bio-reproducer", "version": "0.1.0"},
+        "artifacts": [],
+        "execution": {
+            "duration_seconds": 0,
+            "stages": [],
+            "blocked_reason": reason,
+            "error": error,
+        },
     }

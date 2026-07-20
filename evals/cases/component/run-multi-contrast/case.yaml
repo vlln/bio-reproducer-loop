@@ -1,0 +1,15 @@
+id: run-multi-contrast
+level: L1
+phase: Run
+capabilities: [multi_contrast_execution]
+input: {benchmark: bench-004}
+upstream:
+  01_plan/plan.md: phase-states/valid/bench-004/01_plan/plan.md
+  03_provision/provision.md: phase-states/valid/bench-004/03_provision/provision.md
+  04_data/data_manifest.md: phase-states/valid/bench-004/04_data/data_manifest.md
+  raw_data/counts.csv: {input: data/counts.csv}
+output: 05_run/run_results.md
+checks:
+  min_chars: 100
+  contains: [Cortex, Hippocampus, Striatum, Thalamus, contrast]
+  min_result_tables: 3

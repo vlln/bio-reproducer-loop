@@ -2,6 +2,7 @@
 
 Usage:
     bench-run run --entry bench-001 --runs 5
+    bench-run submit --entry bench-001
     bench-run eval --entry bench-001
     bench-run report [--output summary.json]
 """
@@ -28,39 +29,84 @@ def cmd_run(args: argparse.Namespace) -> None:
 
 
 def cmd_eval(args: argparse.Namespace) -> None:
-    """Evaluate benchmark results against expected.yaml."""
-    from .evaluator import evaluate
+    """Evaluate protocol v2 submissions with the private oracle."""
+    entry_path = BENCHMARKS_DIR / args.entry
+    metadata_path = entry_path / "metadata.yaml"
+    if not metadata_path.exists():
+        print(f"ERROR: metadata.yaml not found for {args.entry}", file=sys.stderr)
+        sys.exit(2)
+    results_dir = Path(args.results_dir or f"benchmarks/results/{args.entry}")
+    _evaluate_submissions(entry_path, results_dir)
+
+
+def cmd_submit(args: argparse.Namespace) -> None:
+    """Create v2 submissions for already completed run directories."""
+    from .adapters.loopflow import build_submission_from_existing
 
     entry_path = BENCHMARKS_DIR / args.entry
-    expected_path = entry_path / "expected.yaml"
-    if not expected_path.exists():
-        print(f"ERROR: expected.yaml not found for {args.entry}", file=sys.stderr)
+    if not entry_path.exists():
+        print(f"ERROR: Benchmark entry not found: {entry_path}", file=sys.stderr)
         sys.exit(2)
+    results_dir = Path(args.results_dir or f"benchmarks/results/{args.entry}")
+    run_dirs = sorted(path for path in results_dir.glob("run_*") if (path / "repro-data").is_dir())
+    if not run_dirs:
+        print(f"ERROR: No completed run directories found in {results_dir}", file=sys.stderr)
+        sys.exit(2)
+
+    for run_dir in run_dirs:
+        submission = build_submission_from_existing(entry_path, run_dir)
+        submission_path = run_dir / "submission.json"
+        submission_path.write_text(json.dumps(submission, indent=2))
+        print(f"Wrote {submission_path}")
+
+
+def _evaluate_submissions(entry_path: Path, results_dir: Path) -> None:
+    from .independent_evaluator import (
+        EvaluationError,
+        evaluate_submission,
+        summarize_evaluations,
+    )
 
     import yaml
-    with open(expected_path) as f:
-        expected = yaml.safe_load(f)
 
-    results_dir = Path(args.results_dir or f"benchmarks/results/{args.entry}")
-    results = []
-    if results_dir.exists():
-        for rf in sorted(results_dir.glob("run_*/result.json")):
-            with open(rf) as f:
-                results.append(json.load(f))
-
-    if not results:
-        print(f"ERROR: No result.json files found in {results_dir}", file=sys.stderr)
+    submission_files = sorted(results_dir.glob("run_*/submission.json"))
+    if not submission_files:
+        print(f"ERROR: No submission.json files found in {results_dir}", file=sys.stderr)
         sys.exit(2)
 
-    evaluation = evaluate(expected, results, str(results_dir))
+    results = []
+    for submission_file in submission_files:
+        try:
+            result = evaluate_submission(entry_path, submission_file)
+        except EvaluationError as exc:
+            print(f"ERROR [{exc.code}]: {exc}", file=sys.stderr)
+            sys.exit(2)
+        result_path = submission_file.parent / "result.json"
+        _preserve_legacy_result(result_path)
+        result_path.write_text(json.dumps(result, indent=2))
+        results.append(result)
 
-    # Write evaluation to file
+    rubric = yaml.safe_load((entry_path / "oracle" / "rubric.yaml").read_text())
+    evaluation = summarize_evaluations(results, rubric)
     eval_path = results_dir / "evaluation.json"
-    with open(eval_path, "w") as f:
-        json.dump(evaluation, f, indent=2)
-
+    eval_path.write_text(json.dumps(evaluation, indent=2))
     print(json.dumps(evaluation, indent=2))
     print(f"\nEvaluation written to {eval_path}")
+
+
+def _preserve_legacy_result(result_path: Path) -> None:
+    """Keep pre-v2 system-scored results when evaluator ownership begins."""
+    if not result_path.is_file():
+        return
+    try:
+        previous = json.loads(result_path.read_text())
+    except json.JSONDecodeError:
+        previous = {}
+    if "provenance" in previous:
+        return
+    legacy_path = result_path.with_name("legacy-result.json")
+    if not legacy_path.exists():
+        result_path.replace(legacy_path)
 
 
 def cmd_report(args: argparse.Namespace) -> None:
@@ -110,6 +156,13 @@ def main() -> None:
     eval_parser.add_argument("--entry", required=True, help="Benchmark entry ID")
     eval_parser.add_argument("--results-dir", default=None, help="Results directory path")
 
+    # bench-run submit
+    submit_parser = subparsers.add_parser(
+        "submit", help="Build submissions from existing loopflow results"
+    )
+    submit_parser.add_argument("--entry", required=True, help="Benchmark entry ID")
+    submit_parser.add_argument("--results-dir", default=None, help="Results directory path")
+
     # bench-run report
     report_parser = subparsers.add_parser("report", help="Generate summary report")
     report_parser.add_argument(
@@ -122,6 +175,8 @@ def main() -> None:
 
     if args.command == "run":
         cmd_run(args)
+    elif args.command == "submit":
+        cmd_submit(args)
     elif args.command == "eval":
         cmd_eval(args)
     elif args.command == "report":

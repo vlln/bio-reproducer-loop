@@ -1,0 +1,31 @@
+capabilities:
+  paper_fact_extraction:
+    cases: [reader-basic-de]
+  missing_input_handling:
+    cases: [reader-missing-paper]
+  runtime_detection:
+    cases: [bootstrap-runtime-detection]
+  tool_identification:
+    cases: [provision-standard-de]
+  local_data_discovery:
+    cases: [data-local-counts]
+  single_contrast_execution:
+    cases: [run-single-contrast]
+  evidence_based_validation:
+    cases: [validate-complete-result]
+  package_completeness:
+    cases: [package-standard]
+  multi_language_toolchain:
+    cases: [provision-multi-language]
+  multi_contrast_execution:
+    cases: [run-multi-contrast]
+  corrupted_data_recovery:
+    cases: [data-corrupted-input]
+  missing_result_table_validation:
+    cases: [validate-missing-result-table]
+  blocked_upstream_propagation:
+    cases: [handoff-blocked-plan]
+  failed_upstream_propagation:
+    cases: [handoff-failed-provision]
+
+gaps: []

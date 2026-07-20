@@ -1,0 +1,11 @@
+id: provision-multi-language
+level: L1
+phase: Provision
+capabilities: [multi_language_toolchain]
+input: {benchmark: bench-004}
+upstream:
+  01_plan/plan.md: phase-states/valid/bench-004/01_plan/plan.md
+output: 03_provision/provision.md
+checks:
+  min_chars: 50
+  contains: [Python, pandas, R, DESeq2]

@@ -1,46 +1,19 @@
 id: bench-004
-version: "1.0.0"
+version: "2.0.0"
+protocol_version: "2.0"
+oracle_version: "1.0.0"
 title: "Cross-Platform Transcriptomic Profiling of Mouse Brain Regions"
 scenario: real_data
 difficulty: medium
-expected_verdict: REPRODUCED
-paper_pdf: paper.pdf
-data_dir: null
-expected_yaml: expected.yaml
+input_dir: input/
+oracle_dir: oracle/
 description: >
   Constructed paper simulating real regional transcriptomic data. 50 mouse
   genes × 16 samples across 4 brain regions. Multi-language workflow:
-  Python (data download + QC) + R (DESeq2 paired design). Tests system
+  Python (data download + QC) + R (DESeq2 region-only design). Tests system
   ability to handle real gene names, multi-platform analysis, and
-  paired experimental design.
+  independent multi-group comparisons.
 
-# ───────────────────────────────────────────
-# 评估设计
-# ───────────────────────────────────────────
-
-evaluation_design:
-  dimensions:
-    data_integrity:
-      weight: 25
-      what_it_tests: "系统能否正确加载 50 基因 × 16 样本数据，识别 4 个脑区分组"
-      tolerance: "精确匹配——基因数、样本数、分组结构固定"
-    process_quality:
-      weight: 25
-      what_it_tests: "系统能否正确执行多语言流程（Python QC + R DESeq2）和配对设计"
-      tolerance: "Python/R 版本号允许正则匹配"
-    quantitative_concordance:
-      weight: 35
-      what_it_tests: "系统能否正确识别区域特异性标志基因"
-      tolerance: "padj 用上限，log2FC 方向必须一致"
-    figure_and_finding:
-      weight: 15
-      what_it_tests: "系统能否产出 volcano plot 和 heatmap"
-      tolerance: "定性检查——有图即可，不要求精确匹配"
-
-  scoring_rationale: >
-    定量一致性权重最高（35%），因为区域特异性基因是核心可验证产出。
-    流程质量（25%）反映多语言编排能力。数据完整性（25%）是基础。
-    图表（15%）验证可视化能力。
 
 # ───────────────────────────────────────────
 # 复杂度画像
@@ -58,7 +31,7 @@ complexity_profile:
     version_sensitivity: moderate
     container: existing_image
   analysis:
-    design: paired
+    design: multi_group
     method_complexity: multi_step
     compute: medium
   figure:
@@ -113,7 +86,7 @@ capability_coverage:
   covers:
     - multi_language_workflow: "Python 数据预处理 + R 统计分析"
     - real_gene_names: "50 个真实小鼠基因名"
-    - paired_design: "4 脑区配对设计"
+    - multi_group_design: "4 个独立脑区组，使用 ~ region 设计"
     - geo_download: "从 GEO 下载数据"
     - heatmap_visualization: "热图可视化"
     - python_environment: "Python + pandas + numpy"
@@ -127,8 +100,8 @@ design_decisions:
     intent: "测试系统对真实生物学背景的处理能力，不同于 bench-001/002 的通用基因名"
   - decision: "Python + R 多语言流程"
     intent: "测试系统能否正确处理跨语言分析流程，Python 环境设置作为 implicit_steps"
-  - decision: "配对设计使用 ~ region 而非 ~ region + replicate"
-    intent: "简化设计，聚焦区域间比较，避免 blocking factor 复杂化"
+  - decision: "使用 ~ region 的四组独立样本设计"
+    intent: "聚焦区域间比较；样本之间不存在配对或 blocking factor"
   - decision: "Supplementary Table S2 引用但缺失"
     intent: "测试系统能否检测并处理缺失补充材料"
 
@@ -145,21 +118,3 @@ reproducibility:
     - "R ≥ 4.3.0"
     - "DESeq2 ≥ 1.42.0"
   container_image: "bioconductor/bioconductor_docker:latest"
-
-baseline:
-  established: "2026-07-19"
-  runs: 5
-  verdict: REPRODUCED
-  verdict_distribution: {REPRODUCED: 4, PARTIAL: 0, BLOCKED: 0, FAILED: 0}
-  match_rate: 1.0
-  score_min: 85
-  score_max: 98
-  score_mean: 90.2
-  score_median: 89.0
-  score_breakdown:
-    data_integrity: 25.0
-    process_quality: 25.0
-    quantitative_concordance: 21.6
-    figure_and_finding: 16.4
-  backend: deepseek-v4-pro
-  platform: Linux x86_64 (Ubuntu 22.04, Docker 29.2.0)

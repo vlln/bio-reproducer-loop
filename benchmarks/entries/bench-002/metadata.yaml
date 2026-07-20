@@ -1,12 +1,12 @@
 id: bench-002
-version: "1.0.0"
+version: "2.0.0"
+protocol_version: "2.0"
+oracle_version: "1.0.0"
 title: "Transcriptomic Profiling of Drug Response Reveals Dysregulated Pathways"
 scenario: mixed
 difficulty: easy
-expected_verdict: REPRODUCED
-paper_pdf: paper.pdf
-data_dir: data/
-expected_yaml: expected.yaml
+input_dir: input/
+oracle_dir: oracle/
 description: >
   A constructed paper about transcriptomic drug response profiling.
   20 genes, 2 conditions (Control/Drug), 3 replicates each. Three-stage
@@ -15,34 +15,6 @@ description: >
   GO bar plot, KEGG pathway diagram). Tests multi-tool orchestration and
   information degradation handling.
 
-# ───────────────────────────────────────────
-# 评估设计
-# ───────────────────────────────────────────
-
-evaluation_design:
-  dimensions:
-    data_integrity:
-      weight: 25
-      what_it_tests: "系统能否正确加载和校验输入数据，检测缺失的补充材料"
-      tolerance: "精确匹配——输入数据是我们构造的，不存在歧义"
-    process_quality:
-      weight: 25
-      what_it_tests: "系统能否正确执行多步骤分析流程（DE → GO → KEGG），处理隐含步骤和版本缺失"
-      tolerance: "流程步骤必须完整，但工具版本允许推断；ID 转换（bitr）必须执行"
-    quantitative_concordance:
-      weight: 30
-      what_it_tests: "系统产出的 DE 基因列表、方向、log2FC、GO 术语、KEGG 通路是否正确"
-      tolerance: "log2FC 用范围值，padj 用上限，GO 术语用模糊匹配（any_of）"
-    figure_and_finding:
-      weight: 20
-      what_it_tests: "系统能否生成三种不同类型的图表（volcano、bar、pathway）和定性结论"
-      tolerance: "视觉检查模式和基因位置，不做像素级对比（无原始图片）"
-
-  scoring_rationale: >
-    定量一致性权重最高（30%），因为多步骤分析中数值错误会级联放大。
-    流程质量覆盖了隐含步骤（bitr）和缺失版本号，扣分但不阻断。
-    图表维度增加了类型多样性（统计图 + 柱状图 + 通路图），检验系统对不同
-    可视化库的掌握。
 
 # ───────────────────────────────────────────
 # 复杂度画像
@@ -162,21 +134,3 @@ reproducibility:
     - "clusterProfiler/pathview 版本差异可能影响富集结果和通路图渲染"
     - "GO 富集结果依赖 org.Hs.eg.db 版本，术语可能略有不同"
   container_image: "bioconductor/bioconductor_docker:latest"
-
-# ───────────────────────────────────────────
-# 基准线
-# ───────────────────────────────────────────
-
-baseline:
-  established: "2026-07-15"
-  updated: "2026-07-19"
-  runs: 5
-  verdict: REPRODUCED
-  verdict_distribution: {REPRODUCED: 3, PARTIAL: 1, BLOCKED: 1, FAILED: 0}
-  match_rate: 0.6
-  score_min: 0
-  score_max: 100
-  score_mean: 72.6
-  score_median: 87.0
-  backend: deepseek-v4-pro
-  platform: Linux x86_64 (Ubuntu 22.04, Docker 29.2.0)

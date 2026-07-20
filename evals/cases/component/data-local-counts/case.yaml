@@ -1,0 +1,11 @@
+id: data-local-counts
+level: L1
+phase: Data
+capabilities: [local_data_discovery]
+input: {benchmark: bench-001}
+upstream:
+  01_plan/plan.md: phase-states/valid/bench-001/01_plan/plan.md
+output: 04_data/data_manifest.md
+checks:
+  min_chars: 50
+  contains: [counts.csv, GSE]

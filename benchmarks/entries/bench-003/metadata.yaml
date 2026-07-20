@@ -1,12 +1,12 @@
 id: bench-003
-version: "1.0.0"
+version: "2.0.0"
+protocol_version: "2.0"
+oracle_version: "1.0.0"
 title: "RNA-Seq Transcriptome Profiling Identifies CRISPLD2 as a Glucocorticoid Responsive Gene"
 scenario: data
 difficulty: easy
-expected_verdict: REPRODUCED
-paper_pdf: paper.md
-data_dir: null
-expected_yaml: expected.yaml
+input_dir: input/
+oracle_dir: oracle/
 description: >
   Real published paper (Himes et al. 2014, PLOS ONE). Differential expression
   analysis of dexamethasone-treated vs untreated airway smooth muscle cells.
@@ -16,33 +16,6 @@ description: >
   This is the DESeq2 vignette example — the most classic bioinformatics
   tutorial case.
 
-# ───────────────────────────────────────────
-# 评估设计
-# ───────────────────────────────────────────
-
-evaluation_design:
-  dimensions:
-    data_integrity:
-      weight: 25
-      what_it_tests: "系统能否正确加载 Bioconductor airway 数据（8 样本，4 细胞系，配对设计）"
-      tolerance: "精确匹配——airway 数据集是标准 R 包，结构性字段固定"
-    process_quality:
-      weight: 25
-      what_it_tests: "系统能否正确使用配对设计公式 ~ cell + dex 运行 DESeq2"
-      tolerance: "R/DESeq2 版本号允许正则匹配，不要求精确版本"
-    quantitative_concordance:
-      weight: 40
-      what_it_tests: "系统能否正确识别 7 个关键基因的差异表达方向和显著性"
-      tolerance: "padj 用上限（< 0.05），log2FC 方向必须一致，log2FC 值允许版本差异"
-    figure_and_finding:
-      weight: 10
-      what_it_tests: "系统能否产出 DE 分析结果报告"
-      tolerance: "定性检查——有结果输出即可，不要求图表"
-
-  scoring_rationale: >
-    定量一致性权重最高（40%），因为这是真实论文的核心可验证产出——7 个关键基因
-    的差异表达方向和显著性。数据完整性（25%）和流程质量（25%）是基础保障。
-    图表权重较低（10%），因为论文未要求特定图表复现。
 
 # ───────────────────────────────────────────
 # 复杂度画像
@@ -166,16 +139,3 @@ reproducibility:
     - "DESeq2 ≥ 1.42.0"
     - "airway (Bioconductor data package)"
   container_image: "bioconductor/bioconductor_docker:latest"
-
-# ───────────────────────────────────────────
-# 基准线
-# ───────────────────────────────────────────
-
-baseline:
-  established: "2026-07-15"
-  runs: 0
-  verdict: null
-  score: null
-  score_breakdown: {}
-  notes: >
-    尚未运行。这是第一个 L4 级别（真实论文）entry。
