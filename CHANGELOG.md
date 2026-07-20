@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 内部 eval 改为 capability case + execution profile，移除多用途 exemplar 和硬编码重复次数
 - 清理 protocol v1 entry 残留，拆分科学 claims 与评分 rubric，并明确标识 legacy/unestablished baseline
 - 从远端保留的 artifacts 离线建立 bench-001/002 的 protocol v2 独立评分 baseline
+- 完成 bench-003 的五次远端首跑并建立 protocol v2 独立评分 baseline
 
 ## [0.1.0] — 2026-07-19
 

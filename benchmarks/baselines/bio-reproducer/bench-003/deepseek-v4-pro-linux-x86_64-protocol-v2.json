@@ -1,0 +1,19 @@
+{
+  "bench_id": "bench-003",
+  "benchmark_version": "2.0.0",
+  "oracle_version": "1.0.0",
+  "system": "bio-reproducer",
+  "backend": "deepseek-v4-pro",
+  "platform": "Linux x86_64 (Ubuntu 22.04, Docker 29.2.0)",
+  "runs": 5,
+  "verdict_distribution": {
+    "REPRODUCED": 5,
+    "PARTIAL": 0,
+    "FAILED": 0,
+    "BLOCKED": 0
+  },
+  "score": {"min": 100, "max": 100, "mean": 100.0, "median": 100},
+  "verdict_match_rate": 1.0,
+  "claimed_verdict_match_rate": 1.0,
+  "note": "Fresh protocol v2 five-run execution on the remote benchmark host. Run 04 resumed from Provision after a Claude Code background-task completion notification stalled; all submitted scientific artifacts were independently evaluated after completion."
+}

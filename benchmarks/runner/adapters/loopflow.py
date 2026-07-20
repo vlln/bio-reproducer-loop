@@ -216,6 +216,7 @@ def _artifact_candidates(entry_id: str, repro_dir: Path) -> list[tuple[str, str 
         results / "deseq_results.csv",
         results / "deseq2_results.csv",
         results / "full_deseq2_results.csv",
+        results / "deseq2_dex_vs_untreated_full_results.csv",
         results / "deseq2" / "deseq2_results.csv",
         results / "differential_expression.csv",
         run / "output" / "deseq2" / "deseq2_all_results.csv",
@@ -234,6 +235,7 @@ def _artifact_candidates(entry_id: str, repro_dir: Path) -> list[tuple[str, str 
         ]),
         ("normalized_counts", None, [
             results / "normalized_counts.csv",
+            results / "deseq2_dex_vs_untreated_normalized_counts.csv",
             results / "counts_filtered_norm.csv",
             results / "cleaned_counts.csv",
         ]),
@@ -248,6 +250,7 @@ def _artifact_candidates(entry_id: str, repro_dir: Path) -> list[tuple[str, str 
         ("figure", "volcano", [
             figures / "volcano_plot.png",
             figures / "volcano_plot.pdf",
+            figures / "deseq2_dex_vs_untreated_volcano.pdf",
             figures / "figure1_volcano.png",
             figures / "figures" / "figure1_volcano.png",
             results / "figures" / "figure1_volcano.png",

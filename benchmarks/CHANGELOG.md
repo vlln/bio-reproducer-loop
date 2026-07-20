@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Independent artifact evaluator with versioned claims, rubrics, submissions, and results.
 - Tracked baseline summaries separated from gitignored raw run results.
 - Protocol v2 independently evaluated baselines for bench-001, bench-002, and bench-004 through bench-006.
+- Fresh five-run protocol v2 baseline for bench-003 on Linux x86_64 with deepseek-v4-pro.
 
 ### Changed
 - Entry layout is now exactly `input/`, `oracle/`, and `metadata.yaml`.

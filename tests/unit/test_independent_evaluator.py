@@ -399,3 +399,43 @@ def test_existing_run_submission_discovers_flat_nextflow_results(tmp_path):
             "id": "volcano",
         },
     ]
+
+
+def test_existing_run_submission_discovers_contrast_named_results(tmp_path):
+    entry = tmp_path / "bench-003"
+    entry.mkdir()
+    (entry / "metadata.yaml").write_text("id: bench-003\nprotocol_version: '2.0'\n")
+    run_dir = tmp_path / "run_05"
+    run = run_dir / "repro-data" / "05_run"
+    (run / "results").mkdir(parents=True)
+    (run / "figures").mkdir()
+    (run / "results" / "deseq2_dex_vs_untreated_full_results.csv").write_text(
+        "gene,log2FoldChange,padj\nDUSP1,1.7,0.01\n"
+    )
+    (run / "results" / "deseq2_dex_vs_untreated_normalized_counts.csv").write_text(
+        "gene,sample_1\nDUSP1,10\n"
+    )
+    (run / "figures" / "deseq2_dex_vs_untreated_volcano.pdf").write_bytes(
+        b"%PDF-1.4\n"
+    )
+
+    submission = build_submission_from_existing(entry, run_dir)
+
+    assert submission["artifacts"] == [
+        {
+            "role": "result_table",
+            "path": "repro-data/05_run/results/deseq2_dex_vs_untreated_full_results.csv",
+        },
+        {
+            "role": "normalized_counts",
+            "path": (
+                "repro-data/05_run/results/"
+                "deseq2_dex_vs_untreated_normalized_counts.csv"
+            ),
+        },
+        {
+            "role": "figure",
+            "path": "repro-data/05_run/figures/deseq2_dex_vs_untreated_volcano.pdf",
+            "id": "volcano",
+        },
+    ]
