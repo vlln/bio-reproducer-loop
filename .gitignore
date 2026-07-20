@@ -20,3 +20,4 @@ benchmarks/results/
 .nextflow*
 nextflow
 repro-data/
+work/
