@@ -2,10 +2,10 @@
 
 | 字段 | 值 |
 |------|-----|
-| **当前阶段** | `RELEASE` |
-| **设计评估** | DESIGN 通过，契约已冻结 |
-| **基建评估** | TEST_INFRA 追溯确认通过（见 0001-benchmark-infra/01-report） |
-| **系统测试** | SYSTEM_TEST 通过（见 0001-benchmark-infra/system-test/01-report） |
+| **当前阶段** | `TEST_INFRA`（评估信任边界重构） |
+| **设计评估** | Spec v2、Interface 0001、ADR-0005/0006 已确认并冻结 |
+| **基建评估** | Benchmark 协议 v2 与确定性测试已完成；真实 LLM eval 和强隔离仍待执行 |
+| **系统测试** | 29 个确定性测试通过；bench-001/002/004/005/006 已完成 v2 离线重评，bench-003 正在远端首跑 |
 
 ## 子目录
 

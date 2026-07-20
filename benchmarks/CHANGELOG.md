@@ -5,6 +5,24 @@ All notable changes to the bio-reproducer benchmark suite will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-07-19
+
+### Added
+- Engine-neutral `input/`, private `oracle/`, and `submission.json` protocol.
+- Independent artifact evaluator with versioned claims, rubrics, submissions, and results.
+- Tracked baseline summaries separated from gitignored raw run results.
+- Protocol v2 independently evaluated baselines for bench-001, bench-002, and bench-004 through bench-006.
+
+### Changed
+- Entry layout is now exactly `input/`, `oracle/`, and `metadata.yaml`.
+- Scientific facts live in `claims.yaml`; scoring rules and tolerances live in `rubric.yaml`.
+- Historical protocol v1 self-evaluations are explicitly named `protocol-v1-legacy`.
+
+### Removed
+- Entry-level `golden/`, `expected.yaml`, generated figures, and duplicated data directories.
+- Protocol v1 evaluator runtime and system-owned final scoring.
+- L1/L2 implementation tests from the public benchmark domain; those now live under `tests/` and `evals/`.
+
 ## [0.1.0] — 2026-07-19
 
 ### Added

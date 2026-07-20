@@ -1,9 +1,9 @@
 ---
-title: Spec 001 — 基准测试体系
-description: bio-reproducer 的五层测试与基准体系：L1-L2 内部测试、L3-L5 黑盒基准，输入输出协议，执行器设计。
+title: Spec 001 — 测试、评测与基准体系
+description: bio-reproducer 的确定性软件测试、内部 LLM 行为评测和公开黑盒 benchmark，以及独立评估协议。
 type: spec
 status: active
-version: 1
+version: 2
 created: 2026-07-15T00:00:00Z
 ---
 
@@ -11,20 +11,19 @@ created: 2026-07-15T00:00:00Z
 
 ## 一、项目概述
 
-本 Spec 覆盖 bio-reproducer 的**测试与基准体系**（L1-L5）。论文复现系统本身（`loops/bio-reproducer/`）是已有实现，不在本 Spec 范围内——其设计见 `loops/bio-reproducer/agents/` 和 `workflow.py`。
+本 Spec 覆盖 bio-reproducer 的**软件测试、内部行为评测与公开 benchmark**。论文复现系统本身（`loops/bio-reproducer/`）是已有实现，不在本 Spec 范围内——其设计见 `loops/bio-reproducer/agents/` 和 `workflow.py`。
 
-测试体系分为两个域：L1-L2 内部测试（耦合于复现系统实现），L3-L5 黑盒基准（引擎无关，可成为公开标准）。
+体系分为三个域：确定性软件测试、耦合于复现系统的内部 LLM 行为评测、引擎无关的公开黑盒 benchmark。L3/L4/L5 仅作为公开 benchmark 内部的环境真实性等级，不再用于命名内部测试。
 
-### 两个域的关键区别
+### 三个域的关键区别
 
-| | L1-L2 (内部测试) | L3-L5 (黑盒基准) |
-|---|---|---|
-| **耦合对象** | bio-reproducer 的实现细节 | 无（只依赖输入/输出协议） |
-| **知道什么** | Phase 结构、output schema、agent 内部状态 | 只知道论文入、结果出 |
-| **测试方式** | 构造输入 → 喂给单个/多个 Phase → 检查内部产出 | 给论文包 → 等系统跑完 → 对比结果 JSON |
-| **可迁移性** | 换一个复现系统，完全无用 | 换一个复现系统，同样的基准可复用 |
-| **目标** | 开发时的快速反馈 | 可发布、可对比的公开标准 |
-| **版本** | 随 bio-reproducer 版本 | 独立的 benchmark 版本号 |
+| | 软件测试 | 内部行为评测 | 公开 benchmark |
+|---|---|---|---|
+| **目录** | `tests/` | `evals/` | `benchmarks/` |
+| **执行依赖** | fake/fixture，无真实 LLM 与网络 | 真实 LLM，可使用真实工具 | 完整被测系统与指定环境 |
+| **范围** | 代码、契约、状态传播 | 单 Phase、Phase handoff | 论文输入到复现产物 |
+| **结果表达** | 确定性 pass/fail | 多次运行的质量分布 | 独立 evaluator 的 score/verdict |
+| **版本** | 随 bio-reproducer | 随 bio-reproducer + 模型配置 | 独立 benchmark 版本 |
 
 ---
 
@@ -45,39 +44,43 @@ created: 2026-07-15T00:00:00Z
 
 | 模块 | 提供的能力 | 目录路径 | 优先级 |
 |------|-----------|---------|---------|
-| L1 单元测试 | 单 Phase Agent 业务逻辑正确性验证、行为稳定性测量 | `tests/unit/` | P0 |
-| L2 集成测试 | 跨 Phase 信息流验证、非完美上游处理验证、变更影响检测 | `tests/integration/` | P0 |
+| 确定性单元测试 | Runner、evaluator、adapter、解析和状态机逻辑 | `tests/unit/` | P0 |
+| 契约测试 | Phase 协议、状态传播、错误处理 | `tests/contract/` | P0 |
+| Component eval | 单 Phase Agent 业务质量和稳定性 | `evals/component/` | P0 |
+| Handoff eval | 跨 Phase 语义传递和降级决策 | `evals/handoff/` | P0 |
 | L3 能力基准 | 构造论文端到端黑盒测试、复现场景覆盖 | `benchmarks/entries/` | P0 |
 | L4 工程基准 | 真实论文冻结环境测试、工程复杂度覆盖 | `benchmarks/entries/` | P1 |
 | L5 生产基准 | 真实环境采样监控、长期趋势追踪 | (无固定目录，按需采样) | P2 |
 | Benchmark Runner | 论文包执行、结果采集、期望对比、报告生成 | `benchmarks/runner/` | P0 |
 | 引擎适配器 | 将引擎无关的论文包映射为 loopflow 调用 | `benchmarks/runner/adapters/` | P0 |
 
-### L1 详细说明
+### 确定性软件测试
 
-测单个 Agent 在单个 Phase 内的业务逻辑正确性。通过真实 LLM 调用运行单个 Phase Agent，对比其产出与 golden fixture 的关键业务字段。
+软件测试验证实现逻辑和接口契约。所有用例必须在无 LLM、断网且不安装工具的环境中运行，使用 fake executor、录制响应或人工 fixture。
 
-不测 schema 合规（字段类型、枚举值、JSON 格式）——那是 loopflow workflow 运行时的基础设施保证，不属于 benchmark 测试范围。
+`tests/unit/` 覆盖 evaluator 比较器、artifact manifest、runner 补跑逻辑、adapter 错误映射和报告统计。`tests/contract/` 覆盖 Phase 输入输出 schema、blocked/partial 传播、缺失文件和非法状态。真实 LLM 行为不在此域内。
 
-测试方式：给定论文 PDF + 构造的上游产出 → 运行 Phase Agent → 对比产出的结构化关键字段与 golden fixture。
+### 内部行为评测
 
-关键字段包括：status、tool list、accession 列表、参数映射、关键决策点。不比较全文。
+Component eval 给单 Phase 提供论文和构造的上游 fixture，通过真实 LLM 运行。Handoff eval 运行多个 Phase，测量语义信息保留与非完美上游处理。结果按模型、Prompt、工具和环境版本记录，并通过 profile 控制的重复运行报告均值、方差、成功率和失败类别。
+
+内部 eval 以能力分支或失败模式为 case，不按 benchmark entry 与 Phase 做笛卡尔积。Case 可以引用一个代表性 InputBundle，但 benchmark 新增不自动产生 eval；只有新增能力维度或真实回归才新增 case。内部 eval 不与完整 benchmark entry 的参考产物建立 symlink，也不使用 exemplar 做完整输出匹配。
 
 每 Phase 的关注重点：
 
-| Phase | 核心关注 |
-|-------|---------|
-| Reader | 能否从论文中提取出复现所需的结构化信息 |
-| Bootstrap | 能否正确检测系统环境并报告缺失组件 |
-| Provision | 能否制定合理的工具部署计划并执行 |
-| Data | 能否识别数据来源并尝试获取 |
-| Run | 能否根据计划生成并执行分析流程 |
-| Validate | 能否根据 plan 和 run 结果产出完整的验证报告 |
-| Package | 能否生成可用的 README 和 run.sh |
+| Phase | 主要度量 |
+|-------|----------|
+| Reader | claims 精确率/召回率、参数归属、幻觉数 |
+| Bootstrap | 与独立环境探针的一致性 |
+| Provision | 需求覆盖、版本约束、替代方案有效性 |
+| Data | 数据身份、checksum、维度、错误来源处理 |
+| Run | 实际结果表、统计方向、容差、图表产物 |
+| Validate | 与独立 evaluator 的一致性和校准误差 |
+| Package | 干净环境中的 run.sh smoke test |
 
-### L2 详细说明
+### Handoff 详细说明
 
-测 Phase 之间的信息流自洽性。不仅测 happy path，还测上游非完美产出时下游的正确处理。
+测 Phase 之间的信息流自洽性。不仅测 happy path，还测上游非完美产出时下游的正确处理。确定性的状态传播进入 `tests/contract/`；需要真实 LLM 判断的语义处理进入 `evals/handoff/`。
 
 上游非完美状态及下游处理规则：
 
@@ -159,19 +162,26 @@ L4 的 `expected_verdict: PARTIAL` 的合理原因：
 ```
 bio-reproducer/
 ├── loops/bio-reproducer/         # 被测系统
-├── tests/                        # L1-L2: 内部测试
-│   ├── unit/                     # L1: 单 Phase Agent
-│   ├── integration/              # L2: 跨 Phase 信息流
-│   ├── conftest.py
-│   └── fixtures/                 # → symlink to ../../benchmarks/entries/*/golden/
+├── tests/                        # 快速、确定性软件测试
+│   ├── unit/
+│   ├── contract/
+│   └── fixtures/
+├── evals/                        # 真实 LLM 内部行为评测
+│   ├── component/
+│   ├── handoff/
+│   ├── cases/                    # capability/failure-mode case 定义
+│   ├── fixtures/                 # 构造或人工确认的上游 Phase 状态
+│   ├── runner/                   # profile、执行与结果记录
+│   └── results/                  # 真实 LLM 原始观测 (gitignored)
 ├── benchmarks/                   # L3-L5: 黑盒基准 (引擎无关)
 │   ├── VERSION
 │   ├── CHANGELOG.md
-│   ├── entries/                  # 论文定义
+│   ├── entries/                  # input/ + private oracle/ + metadata.yaml
+│   ├── baselines/                # 按系统/模型/Prompt/环境记录的历史观测
 │   ├── runner/                   # benchmark 执行器
 │   │   ├── cli.py
 │   │   ├── runner.py
-│   │   ├── evaluator.py
+│   │   ├── independent_evaluator.py
 │   │   ├── reporter.py
 │   │   └── adapters/             # 引擎适配 (唯一耦合点)
 │   └── results/                  # 运行结果 (gitignored)
@@ -192,10 +202,9 @@ bio-reproducer/
 | version | str | NOT NULL | 论文包版本号 |
 | scenario | str | NOT NULL | 复现场景：figure/data/conclusion/pipeline/mixed |
 | difficulty | str | NOT NULL | 难度：easy/medium/hard |
-| expected_verdict | str | NOT NULL | 期望的最终判定 |
-| paper_pdf | path | NOT NULL | 论文 PDF 路径 |
-| data_dir | path | NOT NULL | 数据集目录 |
-| expected_yaml | path | NOT NULL | 测评期望文件路径 |
+| input_dir | path | NOT NULL | 运行时暴露给被测系统的输入目录 |
+| oracle_dir | path | NOT NULL | 仅 evaluator 可见的真值与规则目录 |
+| oracle_version | str | NOT NULL | Oracle 版本 |
 | complexity_profile | dict | 推荐 | 复杂度维度取值，用于可发现性和能力匹配 |
 
 ### 复杂度维度分类法
@@ -307,17 +316,30 @@ bio-reproducer/
 | 用途 | 筛选匹配能力的 entry | 筛选测试特定故障注入的 entry |
 | 查询示例 | "tool_count ≤ 3 的 entry" | "repo_gone=true 的 entry" |
 
-### BenchmarkResult
+### BenchmarkSubmission
+
+| 字段 | 类型 | 约束 | 说明 |
+|------|------|------|------|
+| submission_id | str | PK | 一次系统提交的唯一标识 |
+| bench_id | str | FK | 关联的 BenchmarkEntry |
+| system | object | NOT NULL | 被测系统名称与版本 |
+| claimed_verdict | str | 可选 | 系统自评，只用于校准指标 |
+| artifacts | list[Artifact] | NOT NULL | 带语义 role 的实际产物清单 |
+| execution | object | NOT NULL | 时长、阶段和资源等运行观测 |
+
+### EvaluationResult
 
 | 字段 | 类型 | 约束 | 说明 |
 |------|------|------|------|
 | run_id | str | PK | 运行实例 ID |
 | bench_id | str | FK | 关联的 BenchmarkEntry |
-| bench_version | str | NOT NULL | 使用的基准版本 |
-| verdict | str | NOT NULL | REPRODUCED/PARTIAL/FAILED/BLOCKED |
-| score | int | 0-100 | 复现分数 |
-| stages | list[StageResult] | | 各阶段状态 |
-| duration_seconds | int | | 总耗时 |
+| benchmark_version | str | NOT NULL | 使用的基准版本 |
+| submission_id | str | FK | 被评估的提交 |
+| verdict | str | NOT NULL | evaluator 生成的 REPRODUCED/PARTIAL/FAILED/BLOCKED |
+| score | float | 0-100 | evaluator 生成的复现分数 |
+| checks | list[CheckResult] | NOT NULL | 每个 rubric 检查项的证据与结果 |
+| calibration | object | 可选 | 系统自评和独立 verdict 的差异 |
+| provenance | object | NOT NULL | evaluator 与 oracle 版本 |
 
 ### StageResult
 
@@ -333,10 +355,12 @@ bio-reproducer/
 | 规则编号 | 描述 | 触发条件 | 约束 |
 |----------|------|----------|------|
 | BR-001 | L3 每篇论文跑 N≥5 次，L4 跑 N≥1 次 | 执行 benchmark 时 | L3 必须报告 verdict 分布，L4 可单次 |
-| BR-002 | 评估基于分布，不要求每次匹配：verdict 匹配率 ≥ 阈值（默认 60%） | 评估对比时 | 5 次中 ≥3 次匹配 expected 即通过 |
+| BR-002 | 评估基于独立 evaluator 结果的分布，不信任系统自评 | 评估对比时 | 5 次中达到 rubric 规定 verdict 的比例 ≥ 阈值 |
 | BR-003 | BLOCKED 需区分原因：系统阻塞（能力不足）vs 外部阻塞（依赖不可用） | 评估对比时 | blocked_reason 必须标注来源：system / external |
 | BR-004 | 系统阻塞 + expected 为 REPRODUCED → 判定失败；外部阻塞 → 不计入失败 | 评估对比时 | 两种阻塞分开统计 |
 | BR-005 | L3-L5 基准独立于引擎 | 定义基准时 | 输入/输出/评估协议不含引擎特定字段 |
+| BR-006 | InputBundle 与 OracleBundle 运行时隔离 | 执行 benchmark 时 | 被测系统仅能读取 staged input |
+| BR-007 | baseline 是带系统配置的观测值，不属于 entry 真值 | 记录历史结果时 | baseline 独立存储，不写入 metadata/oracle |
 
 ### blocked_reason 分类
 
@@ -355,7 +379,8 @@ bio-reproducer/
 | 维度 | 指标 | 目标值 |
 |------|------|--------|
 | 性能 | L3 单篇论文执行时间 | < 10 min |
-| 性能 | L1 单 Phase 测试时间 | < 30 s |
+| 性能 | 确定性 `pytest tests/` | < 30 s |
+| 隔离性 | 被测系统读取 oracle 的能力 | 不可读取 |
 | 可重复性 | L3 同篇论文 verdict 匹配率 | ≥ 60% (5 次中 ≥3 次) |
 | 兼容性 | L3-L5 基准可被其他引擎使用 | 是 |
 
@@ -366,7 +391,7 @@ bio-reproducer/
 | 依赖 | 版本 | 用途 |
 |------|------|------|
 | loopflow | ≥0.13.0 | Agent 执行引擎 |
-| pytest | ≥8.0 | L1/L2 测试框架 |
+| pytest | ≥8.0 | 确定性单元与契约测试框架 |
 | Python | ≥3.10 | 运行环境 |
 
 ---
@@ -375,7 +400,11 @@ bio-reproducer/
 
 | 术语 | 定义 |
 |------|------|
-| Golden fixture | 人工标注的完美 Phase 产出，用于 L1/L2 对比 |
-| 论文包 | L3-L5 基准的输入单元：paper.pdf + data/ + expected.yaml |
-| 评估协议 | 对比 expected.yaml 和 result.json 的规则 |
+| Oracle | 独立科学真值、评分规则、容差和验证程序 |
+| Fixture | 为确定性测试或内部 eval 构造的输入，不代表唯一正确输出 |
+| Exemplar | 经人工确认的一个合法输出示例，不用于全文匹配 |
+| Baseline | 特定系统、模型、Prompt、工具和环境版本的历史观测 |
+| InputBundle | 被测系统运行时唯一可见的论文、数据和补充材料 |
+| SubmissionBundle | 被测系统产出的 manifest 与实际 artifacts |
+| 评估协议 | evaluator 使用私有 oracle 检查 submission 并生成 result 的规则 |
 | 引擎适配器 | 将引擎无关的论文包映射为特定引擎调用的桥接模块 |

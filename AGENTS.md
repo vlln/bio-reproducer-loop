@@ -3,8 +3,8 @@
 bio-reproducer 包含三个部分：
 
 1. **论文复现系统** — AI Agent 驱动的 7 阶段工作流。输入论文 PDF/DOI，自动完成信息提取、环境搭建、数据获取、分析运行、结果验证。基于 [loopflow](https://github.com/vlln/loopflow) 引擎。
-2. **内部测试（L1-L2）** — 耦合于复现系统的实现，验证单 Agent 业务逻辑和跨 Phase 信息流。
-3. **公开 benchmark（L3-L5）** — 引擎无关的论文复现基准，可独立发布，被任何复现系统采用。
+2. **软件测试与内部评测** — `tests/` 提供确定性工程门禁；`evals/` 使用真实 LLM 验证单 Agent 业务逻辑和跨 Phase 信息流。
+3. **公开 benchmark（L3-L5）** — 引擎无关、独立评分的论文复现基准，可独立发布，被任何复现系统采用。
 
 ---
 
@@ -40,7 +40,8 @@ bio-reproducer 包含三个部分：
 │   │   ├── README.md
 │   │   └── 0001-benchmark.md
 │   ├── interface/
-│   │   └── README.md
+│   │   ├── README.md
+│   │   └── 0001-benchmark-protocol.md
 │   ├── ac/
 │   │   ├── README.md
 │   │   ├── 0001-benchmark-layers.md
@@ -49,12 +50,15 @@ bio-reproducer 包含三个部分：
 │   │   ├── README.md
 │   │   ├── 0001-language.md
 │   │   ├── 0002-benchmark-format.md
-│   │   └── 0003-test-layers.md
+│   │   ├── 0003-test-layers.md
+│   │   ├── 0005-independent-evaluation.md
+│   │   └── 0006-test-eval-domains.md
 │   └── plans/
 │       └── README.md
 ├── benchmarks/
 │   ├── paper-entries.md
 │   └── entries/
 ├── loops/bio-reproducer/  # 论文复现系统
-└── tests/                 # 内部测试
+├── tests/                 # 确定性软件测试
+└── evals/                 # 真实 LLM 内部行为评测
 ```

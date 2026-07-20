@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- 将确定性软件测试、真实 LLM 内部评测和公开 benchmark 拆分为三个域
+- Benchmark 改为 input、submission、private oracle 三方协议，最终评分由独立 evaluator 生成
+- 废弃多用途 golden fixture，改用 oracle、fixture、exemplar 和 baseline 四类资产
+- 支持从既有 `repro-data` 补建 submission，并保留 legacy 自评用于校准
+- 修正 bench-004 的跨脑区对比 oracle；使用独立 evaluator 重评 bench-004 至 bench-006
+- 内部 eval 改为 capability case + execution profile，移除多用途 exemplar 和硬编码重复次数
+- 清理 protocol v1 entry 残留，拆分科学 claims 与评分 rubric，并明确标识 legacy/unestablished baseline
+- 从远端保留的 artifacts 离线建立 bench-001/002 的 protocol v2 独立评分 baseline
+
 ## [0.1.0] — 2026-07-19
 
 ### Added

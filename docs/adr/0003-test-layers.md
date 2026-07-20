@@ -2,11 +2,14 @@
 title: ADR-0003 — 五层测试体系
 description: 将测试体系分为两个域五个层次：L1-L2 内部测试（耦合于 bio-reproducer），L3-L5 黑盒基准（引擎无关）。
 type: adr
-status: accepted
+status: superseded
 created: 2026-07-15T00:00:00Z
 ---
 
 # ADR-0003: 五层测试体系
+
+> 2026-07-19: 已由 ADR-0006 supersede。保留本文作为历史决策；新的分类将
+> 确定性软件测试、真实 LLM 内部评测和公开 benchmark 分为三个域。
 
 ---
 
