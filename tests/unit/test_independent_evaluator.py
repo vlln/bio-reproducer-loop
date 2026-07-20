@@ -364,3 +364,38 @@ def test_existing_run_submission_discovers_nextflow_output_layout(tmp_path):
             "id": "volcano",
         },
     ]
+
+
+def test_existing_run_submission_discovers_flat_nextflow_results(tmp_path):
+    entry = tmp_path / "bench-003"
+    entry.mkdir()
+    (entry / "metadata.yaml").write_text("id: bench-003\nprotocol_version: '2.0'\n")
+    run_dir = tmp_path / "run_04"
+    run = run_dir / "repro-data" / "05_run"
+    provision = run_dir / "repro-data" / "03_provision"
+    provision.mkdir(parents=True)
+    (run / "results").mkdir(parents=True)
+    (run / "figures").mkdir()
+    (provision / "provision.md").write_text("DESeq2 1.10.1 verified\n")
+    (run / "results" / "full_deseq2_results.csv").write_text(
+        "gene,log2FoldChange,padj\nDUSP1,1.7,0.01\n"
+    )
+    (run / "figures" / "volcano_plot.pdf").write_bytes(b"%PDF-1.4\n")
+
+    submission = build_submission_from_existing(entry, run_dir)
+
+    assert submission["artifacts"] == [
+        {
+            "role": "result_table",
+            "path": "repro-data/05_run/results/full_deseq2_results.csv",
+        },
+        {
+            "role": "environment",
+            "path": "repro-data/03_provision/provision.md",
+        },
+        {
+            "role": "figure",
+            "path": "repro-data/05_run/figures/volcano_plot.pdf",
+            "id": "volcano",
+        },
+    ]
