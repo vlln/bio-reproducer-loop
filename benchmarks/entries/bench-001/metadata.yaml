@@ -176,15 +176,14 @@ reproducibility:
 
 baseline:
   established: "2026-07-15"
-  runs: 1
+  updated: "2026-07-19"
+  runs: 5
   verdict: REPRODUCED
-  score: 87
-  score_breakdown:
-    data_integrity: "25/25"
-    process_quality: "20/25"
-    quantitative_concordance: "22.5/30"
-    figure_and_finding: "20/20"
-  notes: >
-    首次运行。主要扣分项：软件版本差异（R 4.6.1 vs 4.3.0, DESeq2 1.52.0 vs
-    1.42.0）导致 p 值数量级差异。log2FC 偏差在预期范围内。需要跑满 5 次建立
-    分布基线。
+  verdict_distribution: {REPRODUCED: 5, PARTIAL: 0, BLOCKED: 0, FAILED: 0}
+  match_rate: 1.0
+  score_min: 91
+  score_max: 96
+  score_mean: 94.2
+  score_median: 95.0
+  backend: deepseek-v4-pro
+  platform: Linux x86_64 (Ubuntu 22.04, Docker 29.2.0)

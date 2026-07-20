@@ -145,6 +145,18 @@ reproducibility:
 
 baseline:
   established: "2026-07-19"
-  runs: 0
-  verdict: null
-  score: null
+  runs: 5
+  verdict: REPRODUCED
+  verdict_distribution: {REPRODUCED: 5, PARTIAL: 0, BLOCKED: 0, FAILED: 0}
+  match_rate: 1.0
+  score_min: 85
+  score_max: 95
+  score_mean: 89.0
+  score_median: 88.0
+  score_breakdown:
+    data_integrity: 22.5
+    process_quality: 25.0
+    quantitative_concordance: 25.0
+    figure_and_finding: 17.5
+  backend: deepseek-v4-pro
+  platform: Linux x86_64 (Ubuntu 22.04, Docker 29.2.0)

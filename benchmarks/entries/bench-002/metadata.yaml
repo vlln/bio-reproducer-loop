@@ -169,15 +169,14 @@ reproducibility:
 
 baseline:
   established: "2026-07-15"
-  runs: 1
-  verdict: PARTIAL
-  score: 82
-  score_breakdown:
-    data_integrity: "25/25"
-    process_quality: "18.75/25"
-    quantitative_concordance: "24/30"
-    figure_and_finding: "15/20"
-  notes: >
-    首次运行。主要扣分项：DESeq2 版本差异导致 p 值偏差，JUN/FOS 被新版
-    DESeq2 判为显著（从 6 个 DE 变为 8 个），GO 术语排名因富集方法差异
-    略有不同。需要跑满 5 次建立分布基线。
+  updated: "2026-07-19"
+  runs: 5
+  verdict: REPRODUCED
+  verdict_distribution: {REPRODUCED: 3, PARTIAL: 1, BLOCKED: 1, FAILED: 0}
+  match_rate: 0.6
+  score_min: 0
+  score_max: 100
+  score_mean: 72.6
+  score_median: 87.0
+  backend: deepseek-v4-pro
+  platform: Linux x86_64 (Ubuntu 22.04, Docker 29.2.0)
