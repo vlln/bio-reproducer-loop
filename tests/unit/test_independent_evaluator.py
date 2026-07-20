@@ -329,3 +329,38 @@ def test_existing_run_submission_discovers_nested_benchmark_outputs(tmp_path):
         "role": "result_table",
         "path": "repro-data/05_run/results/results/results_DrugA_vs_DMSO.csv",
     }
+
+
+def test_existing_run_submission_discovers_nextflow_output_layout(tmp_path):
+    entry = tmp_path / "bench-003"
+    entry.mkdir()
+    (entry / "metadata.yaml").write_text("id: bench-003\nprotocol_version: '2.0'\n")
+    run_dir = tmp_path / "run_01"
+    output = run_dir / "repro-data" / "05_run" / "output"
+    (output / "deseq2").mkdir(parents=True)
+    (output / "figures").mkdir()
+    (output / "deseq2" / "deseq2_all_results.csv").write_text(
+        "gene,log2FoldChange,padj\nDUSP1,2.0,0.01\n"
+    )
+    (output / "deseq2" / "versions.txt").write_text("DESeq2_1.42.0\n")
+    (output / "figures" / "volcano_plot.png").write_bytes(
+        b"\x89PNG\r\n\x1a\n"
+    )
+
+    submission = build_submission_from_existing(entry, run_dir)
+
+    assert submission["artifacts"] == [
+        {
+            "role": "result_table",
+            "path": "repro-data/05_run/output/deseq2/deseq2_all_results.csv",
+        },
+        {
+            "role": "environment",
+            "path": "repro-data/05_run/output/deseq2/versions.txt",
+        },
+        {
+            "role": "figure",
+            "path": "repro-data/05_run/output/figures/volcano_plot.png",
+            "id": "volcano",
+        },
+    ]

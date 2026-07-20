@@ -217,6 +217,7 @@ def _artifact_candidates(entry_id: str, repro_dir: Path) -> list[tuple[str, str 
         results / "deseq2_results.csv",
         results / "deseq2" / "deseq2_results.csv",
         results / "differential_expression.csv",
+        run / "output" / "deseq2" / "deseq2_all_results.csv",
     ]
     if entry_id == "bench-005":
         result_tables = [
@@ -240,12 +241,14 @@ def _artifact_candidates(entry_id: str, repro_dir: Path) -> list[tuple[str, str 
             results / "session_info.txt",
             results / "results" / "session_info.txt",
             results / "r_session_info.txt",
+            run / "output" / "deseq2" / "versions.txt",
         ]),
         ("figure", "volcano", [
             figures / "volcano_plot.png",
             figures / "figure1_volcano.png",
             figures / "figures" / "figure1_volcano.png",
             results / "figures" / "figure1_volcano.png",
+            run / "output" / "figures" / "volcano_plot.png",
         ]),
         ("figure", "go_barplot", [
             figures / "figure2_go_barplot.png",
