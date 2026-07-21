@@ -8,7 +8,6 @@ ROOT = Path(__file__).parents[2]
 BENCHMARKS = ROOT / "benchmarks"
 ENTRIES = BENCHMARKS / "entries"
 ENTRY_IDS = [f"bench-{number:03d}" for number in range(1, 7)]
-MIGRATED_ENTRY_IDS = [entry_id for entry_id in ENTRY_IDS if entry_id != "bench-003"]
 CLAIM_SECTIONS = {
     "experimental_design",
     "methods",
@@ -49,7 +48,7 @@ def test_protocol_v2_entry_layout_is_minimal():
 
     assert {
         entry.name for entry in ENTRIES.iterdir() if (entry / "bundle.yaml").is_file()
-    } == set(MIGRATED_ENTRY_IDS)
+    } == set(ENTRY_IDS)
 
 
 def test_all_entries_declare_protocol_v2():

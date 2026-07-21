@@ -1,0 +1,111 @@
+schema_version: "1.0"
+entry_id: bench-003
+level: L4
+input_root: input
+primary_paper: paper-pdf
+resources:
+  - id: paper-pdf
+    role: paper
+    authority: original
+    availability: bundled
+    path: paper/article.pdf
+    source: https://pmc.ncbi.nlm.nih.gov/articles/PMC4057123/pdf/pone.0099625.pdf
+    sha256: 058af82f8e1dca2b1a0115cbc4f7cc8962638bca3bad1d38e7b8dfc1491903d3
+    retrieved_at: "2026-07-21T00:00:00Z"
+    media_type: application/pdf
+    license: CC-BY-4.0
+  - id: paper-xml
+    role: paper
+    authority: original
+    availability: bundled
+    path: paper/article.xml
+    source: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC4057123/fullTextXML
+    sha256: ed3e585419ff07b3e2de17c70f0ac5bf70e50331973949e90972abb4d4cca322
+    retrieved_at: "2026-07-21T00:00:00Z"
+    media_type: application/xml
+    license: CC-BY-4.0
+  - id: published-supplementary
+    role: supplementary
+    authority: original
+    availability: bundled
+    path: supplementary/PMC4057123-supplementary.zip
+    source: https://www.ebi.ac.uk/europepmc/webservices/rest/PMC4057123/supplementaryFiles
+    sha256: a4dcc567caf8e65e6b3fd429ce298c5fc2a4b1be1f1b10c509d6eb65a6b8a466
+    retrieved_at: "2026-07-21T00:00:00Z"
+    media_type: application/zip
+    license: CC-BY-4.0
+  - id: geo-fpkm-matrix
+    role: data
+    authority: original
+    availability: bundled
+    path: data/GSE52778_All_Sample_FPKM_Matrix.txt.gz
+    source: https://ftp.ncbi.nlm.nih.gov/geo/series/GSE52nnn/GSE52778/suppl/GSE52778_All_Sample_FPKM_Matrix.txt.gz
+    sha256: e7e54e8f564d417b47843e82c2a7140b92a783d6b5078816bae15d07fca126f6
+    retrieved_at: "2026-07-21T00:00:00Z"
+    media_type: application/gzip
+  - id: geo-cuffdiff-result
+    role: data
+    authority: original
+    availability: bundled
+    path: data/GSE52778_Dex_vs_Untreated_gene_exp.diff.gz
+    source: https://ftp.ncbi.nlm.nih.gov/geo/series/GSE52nnn/GSE52778/suppl/GSE52778_Dex_vs_Untreated_gene_exp.diff.gz
+    sha256: 6c6ca5ce509e98ea9d5fb9aef698b2a0fbf4c778997c7ceaf95a42cbf15eb63f
+    retrieved_at: "2026-07-21T00:00:00Z"
+    media_type: application/gzip
+  - id: geo-series-metadata
+    role: metadata
+    authority: original
+    availability: bundled
+    path: resources/GSE52778_series_matrix.txt.gz
+    source: https://ftp.ncbi.nlm.nih.gov/geo/series/GSE52nnn/GSE52778/matrix/GSE52778_series_matrix.txt.gz
+    sha256: 67db46e962f795b9dd61fa6b4279f2678c6b2b9bf1df035fbc22fcf81b5e879e
+    retrieved_at: "2026-07-21T00:00:00Z"
+    media_type: application/gzip
+  - id: raw-fastq-resolver
+    role: data
+    authority: original
+    availability: bundled
+    path: resources/SRP033351_fastq_manifest.tsv
+    source: https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRP033351
+    sha256: e4a810ed5fe519b34c58891028650386cb960ebb3c89c77ef3f30723b0d90b72
+    retrieved_at: "2026-07-21T00:00:00Z"
+    media_type: text/tab-separated-values
+    access_notes: Resolver records 16 runs and 46.9 GiB of FASTQ URLs, MD5 values, and byte sizes.
+  - id: taffeta-code
+    role: code
+    authority: original
+    availability: bundled
+    path: code/taffeta-d12f00f.bundle
+    source: https://github.com/blancahimes/taffeta/tree/d12f00f74de35e437068349c617869a97856e160
+    sha256: b7afdb87f5258f87dfd9ed8a80b870b484ab79fbf053e69eee19f988b9470e81
+    retrieved_at: "2026-07-21T00:00:00Z"
+    media_type: application/octet-stream
+    license: MIT
+  - id: hg19-igenomes-snapshot
+    role: data
+    authority: original
+    availability: unavailable
+    source: https://support.illumina.com/sequencing/sequencing_software/igenome.html
+    checked_at: "2026-07-21T00:00:00Z"
+    access_notes: The article names hg19 iGenomes files but does not identify an immutable release or checksum.
+  - id: historical-david-release
+    role: environment
+    authority: original
+    availability: unavailable
+    source: https://david.ncifcrf.gov/
+    checked_at: "2026-07-21T00:00:00Z"
+    access_notes: The article does not identify the historical DAVID database release used for Table S4.
+  - id: ics-response-gwas
+    role: data
+    authority: original
+    availability: restricted
+    source: https://doi.org/10.1371/journal.pone.0099625#ics-response-gwas
+    checked_at: "2026-07-21T00:00:00Z"
+    access_notes: Participant-level clinical-trial genotype and phenotype data are not released with the article.
+  - id: bronchodilator-response-gwas
+    role: data
+    authority: original
+    availability: restricted
+    source: https://doi.org/10.1371/journal.pone.0099625#bronchodilator-response-gwas
+    checked_at: "2026-07-21T00:00:00Z"
+    access_notes: Participant-level GWAS data are not released with the article; only reported results are bundled.

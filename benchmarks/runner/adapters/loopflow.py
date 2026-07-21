@@ -34,7 +34,7 @@ def run(entry_path: str, run_dir: Optional[str] = None) -> dict:
     entry_dir = Path(entry_path)
 
     # Validate the trusted control plane before creating any system-visible state.
-    validate_entry(entry_dir)
+    bundle = validate_entry(entry_dir)
 
     # 1. Read what the benchmark entry declares about itself
     metadata = _read_metadata(entry_dir)
@@ -48,7 +48,7 @@ def run(entry_path: str, run_dir: Optional[str] = None) -> dict:
 
     # 3. Stage only public input and resolve the paper inside that bundle
     input_dir = _stage_input(entry_dir, run_root)
-    paper_path = _resolve_v2_paper(input_dir)
+    paper_path = _resolve_primary_paper(input_dir, bundle)
 
     # 4. Launch loopflow — no timeout, loopflow controls its own pace
     args = {
@@ -107,12 +107,13 @@ def _stage_input(entry_dir: Path, run_root: Path) -> Path:
     return staged.resolve()
 
 
-def _resolve_v2_paper(input_dir: Path) -> Path:
-    for name in ("paper.pdf", "paper.md"):
-        paper = input_dir / name
-        if paper.is_file():
-            return paper
-    raise FileNotFoundError(f"Paper not found in InputBundle: {input_dir}")
+def _resolve_primary_paper(input_dir: Path, bundle: dict) -> Path:
+    primary_id = bundle["primary_paper"]
+    resource = next(item for item in bundle["resources"] if item["id"] == primary_id)
+    paper = input_dir / resource["path"]
+    if not paper.is_file():
+        raise FileNotFoundError(f"Primary paper not found in InputBundle: {paper}")
+    return paper
 
 
 def _read_metadata(entry_dir: Path) -> dict:

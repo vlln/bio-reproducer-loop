@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from benchmarks.runner.adapters.loopflow import _stage_input
+from benchmarks.runner.adapters.loopflow import _resolve_primary_paper, _stage_input
 from benchmarks.runner.bundle_validator import BundleValidationError, validate_entry
 from benchmarks.runner import runner
 
@@ -13,7 +13,7 @@ from benchmarks.runner import runner
 ROOT = Path(__file__).parents[2]
 ENTRY = ROOT / "benchmarks" / "entries" / "bench-001"
 ENTRIES = ROOT / "benchmarks" / "entries"
-MIGRATED_ENTRY_IDS = ["bench-001", "bench-002", "bench-004", "bench-005", "bench-006"]
+CONSTRUCTED_ENTRY_IDS = ["bench-001", "bench-002", "bench-004", "bench-005", "bench-006"]
 
 
 def _copy_entry(tmp_path: Path) -> Path:
@@ -39,7 +39,7 @@ def test_pilot_entry_bundle_is_valid_and_schema_is_machine_readable():
     assert schema["properties"]["input_root"]["const"] == "input"
 
 
-@pytest.mark.parametrize("entry_id", MIGRATED_ENTRY_IDS)
+@pytest.mark.parametrize("entry_id", CONSTRUCTED_ENTRY_IDS)
 def test_all_migrated_constructed_entries_are_valid(entry_id):
     bundle = validate_entry(ENTRIES / entry_id)
 
@@ -47,9 +47,13 @@ def test_all_migrated_constructed_entries_are_valid(entry_id):
     assert not (ENTRIES / entry_id / "input" / "paper.pdf").exists()
 
 
-def test_unrebuilt_real_entry_remains_outside_bundle_gate():
-    with pytest.raises(BundleValidationError, match="Missing bundle lock"):
-        validate_entry(ENTRIES / "bench-003")
+def test_rebuilt_real_entry_is_valid_l4():
+    entry = ENTRIES / "bench-003"
+    bundle = validate_entry(entry)
+
+    assert bundle["level"] == "L4"
+    assert bundle["primary_paper"] == "paper-pdf"
+    assert (entry / "input" / "paper" / "article.pdf").is_file()
 
 
 def test_missing_bundle_is_invalid(tmp_path):
@@ -157,6 +161,20 @@ def test_staging_replaces_old_tree_and_exposes_only_input(tmp_path):
     assert not (staged / "bundle.yaml").exists()
     assert not (staged / "metadata.yaml").exists()
     assert not (staged / "oracle").exists()
+
+
+def test_primary_paper_is_resolved_from_bundle_path(tmp_path):
+    entry = _copy_entry(tmp_path)
+    bundle = _read_bundle(entry)
+    paper_dir = entry / "input" / "paper"
+    paper_dir.mkdir()
+    (entry / "input" / "paper.md").rename(paper_dir / "article.md")
+    bundle["resources"][0]["path"] = "paper/article.md"
+    _write_bundle(entry, bundle)
+
+    staged = _stage_input(entry, tmp_path / "run")
+
+    assert _resolve_primary_paper(staged, bundle) == staged / "paper" / "article.md"
 
 
 def test_runner_validates_before_invoking_adapter(tmp_path, monkeypatch):

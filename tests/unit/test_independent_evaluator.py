@@ -156,6 +156,43 @@ def test_csv_row_supports_common_gene_column_aliases(tmp_path):
     assert result["score"] == 100
 
 
+def test_bench_003_scores_published_cuffdiff_conclusions(tmp_path):
+    genes = ["DUSP1", "KLF15", "PER1", "TSC22D3", "C7", "CCDC69", "CRISPLD2"]
+    rows = [
+        f"{gene},{2.69648 if gene == 'CRISPLD2' else 1.0},"
+        f"{6.9242e-13 if gene == 'CRISPLD2' else 0.001}"
+        for gene in genes
+    ]
+    rows.extend(f"SIGNIFICANT_{index},0.5,0.01" for index in range(309))
+
+    artifacts = tmp_path / "artifacts"
+    artifacts.mkdir()
+    (artifacts / "results.csv").write_text(
+        "gene,log2_fold_change_dex_vs_control,q_value\n" + "\n".join(rows) + "\n"
+    )
+    (artifacts / "environment.txt").write_text(
+        "Taffeta workflow\nCufflinks 2.0.2\nCuffdiff 2.0.2\n"
+    )
+    submission = {
+        "submission_id": "bench-003-cuffdiff",
+        "bench_id": "bench-003",
+        "system": {"name": "test-system", "version": "1.0"},
+        "artifacts": [
+            {"role": "result_table", "path": "artifacts/results.csv"},
+            {"role": "environment", "path": "artifacts/environment.txt"},
+        ],
+        "execution": {"duration_seconds": 1, "stages": []},
+    }
+    submission_path = tmp_path / "submission.json"
+    submission_path.write_text(json.dumps(submission))
+
+    result = evaluate_submission(ENTRIES / "bench-003", submission_path)
+
+    assert result["score"] == 100
+    assert result["verdict"] == "REPRODUCED"
+    assert all(check["passed"] for check in result["checks"])
+
+
 @pytest.mark.parametrize("entry_id", [f"bench-{number:03d}" for number in range(1, 7)])
 def test_v2_entries_keep_oracle_outside_staged_input(tmp_path, entry_id):
     entry = ENTRIES / entry_id
@@ -169,7 +206,12 @@ def test_v2_entries_keep_oracle_outside_staged_input(tmp_path, entry_id):
     assert "baseline" not in metadata
     assert sum(float(check["weight"]) for check in rubric["checks"]) == 100
     assert not (staged / "oracle").exists()
-    assert (staged / "paper.pdf").exists() or (staged / "paper.md").exists()
+    bundle = yaml.safe_load((entry / "bundle.yaml").read_text())
+    paper = next(
+        resource for resource in bundle["resources"]
+        if resource["id"] == bundle["primary_paper"]
+    )
+    assert (staged / paper["path"]).is_file()
 
 
 def test_bench_004_rubric_uses_valid_alternative_evidence_schema():
@@ -332,9 +374,9 @@ def test_existing_run_submission_discovers_nested_benchmark_outputs(tmp_path):
 
 
 def test_existing_run_submission_discovers_nextflow_output_layout(tmp_path):
-    entry = tmp_path / "bench-003"
+    entry = tmp_path / "bench-legacy"
     entry.mkdir()
-    (entry / "metadata.yaml").write_text("id: bench-003\nprotocol_version: '2.0'\n")
+    (entry / "metadata.yaml").write_text("id: bench-legacy\nprotocol_version: '2.0'\n")
     run_dir = tmp_path / "run_01"
     output = run_dir / "repro-data" / "05_run" / "output"
     (output / "deseq2").mkdir(parents=True)
@@ -367,9 +409,9 @@ def test_existing_run_submission_discovers_nextflow_output_layout(tmp_path):
 
 
 def test_existing_run_submission_discovers_flat_nextflow_results(tmp_path):
-    entry = tmp_path / "bench-003"
+    entry = tmp_path / "bench-legacy"
     entry.mkdir()
-    (entry / "metadata.yaml").write_text("id: bench-003\nprotocol_version: '2.0'\n")
+    (entry / "metadata.yaml").write_text("id: bench-legacy\nprotocol_version: '2.0'\n")
     run_dir = tmp_path / "run_04"
     run = run_dir / "repro-data" / "05_run"
     provision = run_dir / "repro-data" / "03_provision"
@@ -402,9 +444,9 @@ def test_existing_run_submission_discovers_flat_nextflow_results(tmp_path):
 
 
 def test_existing_run_submission_discovers_contrast_named_results(tmp_path):
-    entry = tmp_path / "bench-003"
+    entry = tmp_path / "bench-legacy"
     entry.mkdir()
-    (entry / "metadata.yaml").write_text("id: bench-003\nprotocol_version: '2.0'\n")
+    (entry / "metadata.yaml").write_text("id: bench-legacy\nprotocol_version: '2.0'\n")
     run_dir = tmp_path / "run_05"
     run = run_dir / "repro-data" / "05_run"
     (run / "results").mkdir(parents=True)
