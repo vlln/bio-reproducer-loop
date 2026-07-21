@@ -2,7 +2,7 @@
 title: AC 003 — InputBundle 材料真实性与 provenance
 description: 验收 L3/L4/L5 分层输入、资源清单、原始与派生材料、cited resource 完整性和答案隔离。
 type: ac
-status: proposed
+status: active
 created: 2026-07-20T00:00:00Z
 ---
 

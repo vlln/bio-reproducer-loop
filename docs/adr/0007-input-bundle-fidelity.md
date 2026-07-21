@@ -2,7 +2,7 @@
 title: ADR-0007 — 分层 InputBundle 与材料真实性
 description: 统一 InputBundle 的结构和 provenance 契约，同时按 L3/L4/L5 区分构造输入、冻结真实材料与在线资源发现。
 type: adr
-status: proposed
+status: accepted
 created: 2026-07-20T00:00:00Z
 ---
 

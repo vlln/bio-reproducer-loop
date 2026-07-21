@@ -2,7 +2,7 @@
 title: Spec 001 — 测试、评测与基准体系
 description: bio-reproducer 的确定性软件测试、内部 LLM 行为评测、分层 InputBundle 和公开黑盒 benchmark，以及独立评估协议。
 type: spec
-status: proposed
+status: active
 version: 3
 created: 2026-07-15T00:00:00Z
 ---

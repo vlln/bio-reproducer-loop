@@ -16,8 +16,8 @@ created: 2026-07-20T00:00:00Z
 
 | 项目 | 观察 |
 |------|------|
-| 输入形状 | 六个 entry 均为 paper + 小型 counts；没有 supplementary/、code/、resources/ 或 runner-only provenance lock |
-| 构造论文 | bench-001/002/004/005/006 同时提供 Markdown 和 PDF，但没有声明两者的权威/派生关系或生成方式 |
+| 输入形状 | 初始审计时六个 entry 均为 paper + 小型 counts，且没有 supplementary/、code/、resources/ 或 runner-only provenance lock |
+| 构造论文 | 初始审计时 bench-001/002/004/005/006 同时提供 Markdown 和 PDF，但没有声明两者的权威/派生关系或生成方式 |
 | 图像断链 | 五个构造 Markdown 共引用 7 个 `figures/*.png`，InputBundle 中没有对应文件 |
 | Supplementary | 构造论文普遍引用 S1/S2 和 analysis script；只有 counts 数据存在，其他材料无文件或状态记录 |
 | 代码 | 构造论文引用 `github.com/example/...`，metadata 声明 repo_gone，但 InputBundle 无核查记录 |
@@ -29,7 +29,7 @@ created: 2026-07-20T00:00:00Z
 
 | Entry | 当前材料 | 确认缺口/冲突 | 建议处置 | 风险 |
 |-------|----------|---------------|----------|------|
-| bench-001 | constructed MD/PDF，10-gene counts | Markdown 引用 volcano PNG、S1、GSE99999 和代码仓库；PNG/代码/availability record 缺失；S1 与 data/counts 的关系未声明 | 建立 L3 bundle lock；声明 PDF/MD 派生关系；将 counts 同时映射为 data/S1；补 figure 或明确论文表示；锁定虚构 accession/repo 的场景状态 | medium |
+| bench-001 | constructed MD，10-gene counts，runner-only bundle lock | 已移除来源和转换过程不明的冗余 PDF；bundle 登记 primary paper、S1/counts、DOI、GEO、代码和缺图状态 | 自动 gate 已通过；发布前复核外部资源的可观察行为 | medium |
 | bench-002 | constructed MD/PDF，20-gene counts | 引用 3 个 figure、S1/S2 和代码；只有 counts；metadata 同时写 supplementary:none 与 missing_supplementary:true | 明确缺失 supplementary 是否为测试意图；补齐或建立 unavailable record；修正 complexity profile | high |
 | bench-003 | 82 行 MD，357-gene counts + samples | metadata 声明 real_published/pdf，但 PDF 不存在；摘要将真实论文整理为 DESeq2 workflow；输入声称约 64k transcripts，却只提供 357 基因且无裁剪 provenance；无 supplementary/code/source snapshot | 原地重建为真实 L4；获取原始发布物与 cited resources；核查真实方法链；重建 data scope 和 oracle | critical |
 | bench-004 | constructed MD/PDF，50-gene counts | 声明 data_source:real 和虚构 GSE88888；引用 2 个 figure、S1/S2、Python/R scripts，均未完整打包 | 保持 L3 constructed；把“real data”改为可证实来源或 synthetic；补齐跨语言脚本材料/状态 | high |
@@ -43,6 +43,15 @@ created: 2026-07-20T00:00:00Z
 3. constructed paper 可以使用虚构资源，但必须让公开材料自洽；故障注入原因保持私有。
 4. bench-003 当前只能证明一个 airway-derived DESeq2 子任务，不能作为真实论文 L4。
 5. 在 source audit、bundle validator 和 entry 修复完成前，现有分数不得建立 release baseline。
+
+# 实施进度
+
+- `bundle.schema.json` 和无外部 schema 运行时依赖的 validator 已实现。
+- `bench-run validate-entry --entry bench-001` 通过；bench-002 至 006 因没有 bundle lock 被拒绝。
+- Runner 在创建结果或调用 adapter 前校验 entry；staging 会清除旧目录并只复制 `input/`。
+- AC-0006 的 hash、dotfile、path escape、oracle 字段、派生 provenance、metadata 冲突和
+  control-plane 残留已有确定性测试。
+- OS/container 级文件系统强隔离不在本次 staging contract 的证明范围内。
 
 # 待外部核查
 

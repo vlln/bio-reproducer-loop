@@ -5,7 +5,7 @@ contain the project's L1/L2 unit, contract, or internal LLM evaluations.
 
 ## Entry layout
 
-Each `entries/bench-NNN/` directory contains exactly:
+Release-ready `entries/bench-NNN/` directories contain exactly:
 
 ```text
 bundle.yaml     runner-only input inventory and provenance lock
@@ -18,10 +18,10 @@ metadata.yaml   entry discovery and version metadata
 `oracle/rubric.yaml` owns evidence selection, comparison rules, tolerances,
 weights, and verdict thresholds. The system under test never receives `oracle/`.
 
-The next InputBundle contract is currently proposed in ADR-0007 and Interface
-0001. Existing entries have not passed its runner-only bundle lock and
-material-fidelity gate; they remain internal development inputs rather than
-release-ready benchmarks.
+The InputBundle contract is active in ADR-0007 and Interface 0001. Bench-001 is
+the validator pilot; bench-002 through bench-006 have not passed the runner-only
+bundle lock and material-fidelity gate. All entries remain internal development
+inputs until their scientific review and release gate are complete.
 
 ## Results and baselines
 
@@ -39,6 +39,7 @@ does not require every ad hoc benchmark invocation to run five times.
 ## Commands
 
 ```bash
+bench-run validate-entry --entry bench-001
 bench-run run --entry bench-001 --runs 1
 bench-run submit --entry bench-001
 bench-run eval --entry bench-001

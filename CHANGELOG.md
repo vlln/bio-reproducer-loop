@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - baseline 改为 release-gated：entry、oracle 与协议冻结前不追踪历史分数
 - 退回 DESIGN，提出 L3/L4/L5 分层 InputBundle、runner-only bundle lock 和 provenance 契约
 - 完成 bench-001 至 bench-006 的本地材料审计；bench-003 标记为需要重建的假 L4 输入
+- 冻结 runner-only bundle lock 契约，实现 schema、validator、staging gate 和 bench-001 pilot
 
 ## [0.1.0] — 2026-07-19
 

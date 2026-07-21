@@ -8,9 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
-- Proposed level-specific InputBundle fidelity and provenance requirements for L3, L4, and L5.
+- Adopted level-specific InputBundle fidelity and provenance requirements for L3, L4, and L5.
 - Marked all existing entries as internal development inputs pending bundle-lock and cited-resource review.
 - Marked bench-003 for L4 reconstruction because its current input is a derived summary and subset dataset.
+- Added the runner-only bundle schema, validator, staging gate, and bench-001 migration pilot.
 
 ## [2.0.0] - 2026-07-19
 

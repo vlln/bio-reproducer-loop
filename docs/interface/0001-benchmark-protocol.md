@@ -2,7 +2,7 @@
 title: Interface 001 — Benchmark 输入、提交与评估协议
 description: 定义分层且可追溯的 input bundle、submission bundle 和 evaluator result 协议及其信任边界。
 type: interface
-status: proposed
+status: active
 created: 2026-07-19T00:00:00Z
 ---
 

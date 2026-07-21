@@ -8,4 +8,4 @@
 | 0004 | [测试基建：CI 静态检查 + 本地测试](0004-test-infra.md) | superseded |
 | 0005 | [独立评估与答案隔离](0005-independent-evaluation.md) | accepted |
 | 0006 | [测试、内部评测与公开基准分域](0006-test-eval-domains.md) | accepted |
-| 0007 | [分层 InputBundle 与材料真实性](0007-input-bundle-fidelity.md) | proposed |
+| 0007 | [分层 InputBundle 与材料真实性](0007-input-bundle-fidelity.md) | accepted |
