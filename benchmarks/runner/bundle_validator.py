@@ -244,6 +244,13 @@ def _validate_metadata(entry: Path, bundle: dict[str, Any]) -> None:
     _require(metadata.get("id") == bundle["entry_id"], "metadata id conflicts with bundle")
     _require(metadata.get("input_dir") == "input/", "metadata input_dir must be input/")
     paper_type = metadata.get("complexity_profile", {}).get("paper", {}).get("paper_type")
+    entry_number = int(bundle["entry_id"].removeprefix("bench-"))
+    _require(entry_number > 0, "entry IDs start at bench-001")
+    expected_paper_type = "constructed" if entry_number < 100 else "real_published"
+    _require(
+        paper_type == expected_paper_type,
+        f"{bundle['entry_id']} IDs require metadata paper_type {expected_paper_type}",
+    )
     if bundle["level"] == "L3":
         _require(paper_type == "constructed", "L3 metadata paper_type must be constructed")
     else:

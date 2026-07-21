@@ -7,7 +7,7 @@ import yaml
 ROOT = Path(__file__).parents[2]
 BENCHMARKS = ROOT / "benchmarks"
 ENTRIES = BENCHMARKS / "entries"
-ENTRY_IDS = [f"bench-{number:03d}" for number in range(1, 7)]
+ENTRY_IDS = ["bench-001", "bench-002", "bench-004", "bench-005", "bench-006", "bench-100"]
 CLAIM_SECTIONS = {
     "experimental_design",
     "methods",

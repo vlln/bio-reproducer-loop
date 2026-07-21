@@ -17,7 +17,7 @@ created: 2026-07-19T00:00:00Z
 | pytest 骨架（`tests/unit/`、`tests/integration/`） | ✅ | 7 个 Phase 的 L1 测试 + 2 个 L2 集成测试 |
 | Benchmark runner 骨架（`benchmarks/runner/`） | ✅ | CLI、runner、evaluator、reporter、adapter |
 | PR 模板（`.github/pull_request_template.md`） | ✅ | 含 L1/L2 测试结果检查清单 |
-| Bench entries（bench-001 ~ bench-006） | ✅ | L3 构造论文包 |
+| 初始 Bench entries（当时编号 bench-001 ~ bench-006） | ✅ | 早期 entry 骨架；后续重新分层并将真实论文重编号为 bench-100 |
 
 ## 偏差记录
 

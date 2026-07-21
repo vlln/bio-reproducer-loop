@@ -6,12 +6,15 @@ status: draft
 created: 2026-07-19T00:00:00Z
 ---
 
+> 本报告中的 `bench-003` 是重编号前、使用旧 DESeq2 oracle 的历史运行标识。
+> 当前真实论文 entry 为 `bench-100`，这些结果不构成 bench-100 的 baseline。
+
 # 已完成
 
 | 项目 | 结果 |
 |------|------|
 | 设计冻结 | Spec v2、Interface 0001、ADR-0005/0006 已 active/accepted |
-| Entry 迁移 | bench-001 至 bench-006 均已拆为 `input/` 与 `oracle/`；eval fixture 独立维护 |
+| Entry 迁移 | 当时编号 bench-001 至 bench-006 的六个 entry 均已拆为 `input/` 与 `oracle/`；eval fixture 独立维护 |
 | Submission 协议 | loopflow adapter 对 v2 entry 生成 artifact manifest，不生成权威 score/verdict |
 | 独立评分 | evaluator 直接检查 CSV、环境记录和图像文件，不读取 Validate metrics |
 | 路径边界 | 拒绝绝对路径、`..` 越界和不存在的 artifact |

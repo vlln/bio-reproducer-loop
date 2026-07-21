@@ -10,12 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Adopted level-specific InputBundle fidelity and provenance requirements for L3, L4, and L5.
 - Marked all existing entries as internal development inputs pending bundle-lock and cited-resource review.
-- Marked bench-003 for L4 reconstruction because its current input is a derived summary and subset dataset.
+- Marked the former bench-003 for L4 reconstruction because its input was a derived summary and subset dataset.
 - Added the runner-only bundle schema, validator, staging gate, and bench-001 migration pilot.
 - Migrated all five constructed L3 entries and added bundle validation to the deterministic lint gate.
 - Removed untraceable constructed PDFs and bench-006's byte-identical hidden data duplicate.
-- Rebuilt bench-003 as L4 from the publisher article, PMC supplementary archive, official GEO outputs, an ENA raw-read resolver, and a frozen Taffeta source snapshot.
+- Rebuilt and renumbered bench-100 (formerly bench-003) as L4 from the publisher article, PMC supplementary archive, official GEO outputs, an ENA raw-read resolver, and a frozen Taffeta source snapshot.
 - Replaced the incorrect airway/DESeq2 oracle with the paper's Cuffdiff workflow, 316-gene result, and DEX-induced gene conclusions.
+- Reserved IDs below 100 for constructed papers and IDs from 100 onward for real papers.
 
 ## [2.0.0] - 2026-07-19
 
@@ -39,7 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - bench-001: 构造论文，DESeq2 差异表达分析（基础图表复现型）
 - bench-002: 构造论文，多工具编排（DESeq2 + clusterProfiler + pathview）
-- bench-003: 真实论文，airway 数据集（Himes et al. 2014, PLOS ONE）
+- bench-003: 真实论文，airway 数据集（Himes et al. 2014, PLOS ONE；后重编号为 bench-100）
 - bench-004: 构造论文，跨平台转录组分析（Python + R 混合）
 - bench-005: 构造论文，环境漂移 + 冲突信息注入
 - bench-006: 构造论文，数据降级 + 故障注入

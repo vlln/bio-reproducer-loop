@@ -36,13 +36,13 @@ Input/Submission/Oracle 信任边界，但让 L3、L4、L5 对论文原件、补
 - 明确 constructed、synthetic、intentionally unavailable 和 derived resource。
 - 删除未声明重复文件；故障恢复资源必须具有清晰公开语义和私有注入记录。
 
-## 阶段 4：bench-003 L4 重建
+## 阶段 4：bench-100（原 bench-003）L4 重建
 
 - 获取真实原始论文 PDF/XML/HTML 和全部可获得 supplementary。
 - 核查论文真实方法链、代码公开情况、GSE52778 和 airway 数据关系。
 - 冻结原始数据或受审查 descriptor；为任何裁剪数据提供转换 provenance。
 - 基于真实论文 scope 重建 claims/rubric，不沿用当前 DESeq2 摘要任务的假设。
-- bench-003 通过 L4 fidelity gate 前不得建立 baseline 或对外宣称 L4 完成。
+- bench-100 通过 L4 fidelity gate 前不得建立 baseline 或对外宣称 L4 完成。
 
 ## 阶段 5：重新验证
 
@@ -55,12 +55,12 @@ Input/Submission/Oracle 信任边界，但让 L3、L4、L5 对论文原件、补
 - 本设计单元不下载或修改论文材料。
 - 不把 supplementary、代码缺失自动判为系统失败。
 - 不将 bundle lock stage 给被测系统，也不在其中加入 expected results、rubric 或故障注入原因。
-- 不保留当前 bench-003 的内部开发 baseline。
+- 不保留原 bench-003 的内部开发 baseline。
 
 # 完成条件
 
 - ADR-0007 accepted，Spec/Interface/AC active。
 - AC-0006/0007 具有确定性自动化门禁。
 - 六个 entry 均有通过校验且经人工审查的 bundle lock。
-- bench-003 的真实论文材料和复现 scope 通过 L4 审查。
+- bench-100 的真实论文材料和复现 scope 通过 L4 审查。
 - Plan Report 记录每项 AC 的 PASS/FAIL 和残余风险。

@@ -48,7 +48,7 @@ def test_all_migrated_constructed_entries_are_valid(entry_id):
 
 
 def test_rebuilt_real_entry_is_valid_l4():
-    entry = ENTRIES / "bench-003"
+    entry = ENTRIES / "bench-100"
     bundle = validate_entry(entry)
 
     assert bundle["level"] == "L4"
@@ -142,6 +142,21 @@ def test_rejects_level_metadata_conflict(tmp_path):
 
     with pytest.raises(BundleValidationError, match="L4 metadata paper_type"):
         validate_entry(entry)
+
+
+def test_rejects_constructed_paper_in_real_paper_id_range(tmp_path):
+    entry = _copy_entry(tmp_path)
+    renamed = tmp_path / "bench-100"
+    entry.rename(renamed)
+    bundle = _read_bundle(renamed)
+    bundle["entry_id"] = "bench-100"
+    _write_bundle(renamed, bundle)
+    metadata = yaml.safe_load((renamed / "metadata.yaml").read_text())
+    metadata["id"] = "bench-100"
+    (renamed / "metadata.yaml").write_text(yaml.safe_dump(metadata, sort_keys=False))
+
+    with pytest.raises(BundleValidationError, match="IDs require metadata paper_type real_published"):
+        validate_entry(renamed)
 
 
 def test_staging_replaces_old_tree_and_exposes_only_input(tmp_path):

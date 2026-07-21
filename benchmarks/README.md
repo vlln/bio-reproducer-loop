@@ -3,6 +3,10 @@
 The benchmark suite is the engine-neutral L3-L5 evaluation surface. It does not
 contain the project's L1/L2 unit, contract, or internal LLM evaluations.
 
+Entry IDs reserve `bench-001` through `bench-099` for constructed benchmarks and
+`bench-100` through `bench-999` for real-paper benchmarks. An ID describes input
+provenance, while `level` continues to describe the execution environment.
+
 ## Entry layout
 
 Release-ready `entries/bench-NNN/` directories contain exactly:
@@ -19,8 +23,8 @@ metadata.yaml   entry discovery and version metadata
 weights, and verdict thresholds. The system under test never receives `oracle/`.
 
 The InputBundle contract is active in ADR-0007 and Interface 0001. The five
-constructed L3 entries and the rebuilt bench-003 L4 entry pass the automated
-bundle gate. Bench-003 now stages the publisher article, supplementary archive,
+constructed L3 entries and the rebuilt bench-100 L4 entry pass the automated
+bundle gate. Bench-100 now stages the publisher article, supplementary archive,
 official GEO processed outputs, raw-read resolver, and a frozen Taffeta source
 snapshot. All entries remain internal development inputs until their scientific
 review and release gate are complete.

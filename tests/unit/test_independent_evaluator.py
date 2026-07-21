@@ -156,7 +156,7 @@ def test_csv_row_supports_common_gene_column_aliases(tmp_path):
     assert result["score"] == 100
 
 
-def test_bench_003_scores_published_cuffdiff_conclusions(tmp_path):
+def test_bench_100_scores_published_cuffdiff_conclusions(tmp_path):
     genes = ["DUSP1", "KLF15", "PER1", "TSC22D3", "C7", "CCDC69", "CRISPLD2"]
     rows = [
         f"{gene},{2.69648 if gene == 'CRISPLD2' else 1.0},"
@@ -174,8 +174,8 @@ def test_bench_003_scores_published_cuffdiff_conclusions(tmp_path):
         "Taffeta workflow\nCufflinks 2.0.2\nCuffdiff 2.0.2\n"
     )
     submission = {
-        "submission_id": "bench-003-cuffdiff",
-        "bench_id": "bench-003",
+        "submission_id": "bench-100-cuffdiff",
+        "bench_id": "bench-100",
         "system": {"name": "test-system", "version": "1.0"},
         "artifacts": [
             {"role": "result_table", "path": "artifacts/results.csv"},
@@ -186,14 +186,17 @@ def test_bench_003_scores_published_cuffdiff_conclusions(tmp_path):
     submission_path = tmp_path / "submission.json"
     submission_path.write_text(json.dumps(submission))
 
-    result = evaluate_submission(ENTRIES / "bench-003", submission_path)
+    result = evaluate_submission(ENTRIES / "bench-100", submission_path)
 
     assert result["score"] == 100
     assert result["verdict"] == "REPRODUCED"
     assert all(check["passed"] for check in result["checks"])
 
 
-@pytest.mark.parametrize("entry_id", [f"bench-{number:03d}" for number in range(1, 7)])
+@pytest.mark.parametrize(
+    "entry_id",
+    ["bench-001", "bench-002", "bench-004", "bench-005", "bench-006", "bench-100"],
+)
 def test_v2_entries_keep_oracle_outside_staged_input(tmp_path, entry_id):
     entry = ENTRIES / entry_id
     metadata = yaml.safe_load((entry / "metadata.yaml").read_text())

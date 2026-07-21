@@ -37,7 +37,7 @@ entries/<id>/
 
 ```yaml
 schema_version: "1.0"
-entry_id: bench-003
+entry_id: bench-100
 level: L4
 input_root: input
 primary_paper: paper-main
