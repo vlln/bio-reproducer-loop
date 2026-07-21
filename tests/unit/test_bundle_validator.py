@@ -12,6 +12,8 @@ from benchmarks.runner import runner
 
 ROOT = Path(__file__).parents[2]
 ENTRY = ROOT / "benchmarks" / "entries" / "bench-001"
+ENTRIES = ROOT / "benchmarks" / "entries"
+MIGRATED_ENTRY_IDS = ["bench-001", "bench-002", "bench-004", "bench-005", "bench-006"]
 
 
 def _copy_entry(tmp_path: Path) -> Path:
@@ -35,6 +37,19 @@ def test_pilot_entry_bundle_is_valid_and_schema_is_machine_readable():
     assert bundle["entry_id"] == "bench-001"
     assert bundle["level"] == "L3"
     assert schema["properties"]["input_root"]["const"] == "input"
+
+
+@pytest.mark.parametrize("entry_id", MIGRATED_ENTRY_IDS)
+def test_all_migrated_constructed_entries_are_valid(entry_id):
+    bundle = validate_entry(ENTRIES / entry_id)
+
+    assert bundle["level"] == "L3"
+    assert not (ENTRIES / entry_id / "input" / "paper.pdf").exists()
+
+
+def test_unrebuilt_real_entry_remains_outside_bundle_gate():
+    with pytest.raises(BundleValidationError, match="Missing bundle lock"):
+        validate_entry(ENTRIES / "bench-003")
 
 
 def test_missing_bundle_is_invalid(tmp_path):

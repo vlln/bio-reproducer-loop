@@ -22,9 +22,9 @@ description: >
 complexity_profile:
   data:
     data_size: medium
-    data_source: real
+    data_source: synthetic
     data_format: csv
-    supplementary: none
+    supplementary: simple
   environment:
     tool_count: 3-5
     tool_chain: multi_language
@@ -87,10 +87,11 @@ capability_coverage:
     - multi_language_workflow: "Python 数据预处理 + R 统计分析"
     - real_gene_names: "50 个真实小鼠基因名"
     - multi_group_design: "4 个独立脑区组，使用 ~ region 设计"
-    - geo_download: "从 GEO 下载数据"
+    - wrong_accession_detection: "识别论文中的 GEO accession 与研究主题不匹配"
     - heatmap_visualization: "热图可视化"
     - python_environment: "Python + pandas + numpy"
   does_not_cover:
+    - raw_data_download: "本地提供构造 counts；GEO accession 指向无关研究"
     - large_data: "50 基因 × 16 样本，~1 MB"
     - custom_dockerfile: "使用现有 Bioconductor 镜像"
     - multi_factor: "仅单因子设计（region）"

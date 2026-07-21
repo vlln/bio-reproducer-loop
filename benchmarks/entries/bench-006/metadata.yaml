@@ -23,8 +23,8 @@ complexity_profile:
   data:
     data_size: tiny
     data_source: synthetic
-    data_format: mixed
-    supplementary: none
+    data_format: tsv
+    supplementary: simple
   environment:
     tool_count: 1-2
     tool_chain: single_language
@@ -55,7 +55,7 @@ complexity_profile:
 
 robustness_profile:
   resource_unavailability:
-    database_down: true
+    database_down: false
     registry_down: false
     tool_not_found: true
     repo_gone: true
@@ -88,7 +88,6 @@ capability_coverage:
     - truncated_file: "counts.csv 被截断，缺少 4 个基因数据行"
     - format_mismatch: "论文说 CSV 但实际文件是 TSV（制表符分隔）"
     - tool_not_found: "DataIntegrityR 包不存在，系统需回退"
-    - database_down: "GEO 不可访问"
     - wrong_accession: "GSE 指向其他研究"
   does_not_cover:
     - multi_language: "纯 R 流程"
@@ -101,8 +100,8 @@ design_decisions:
     intent: "测试系统能否检测格式不匹配并处理不完整数据"
   - decision: "DataIntegrityR 工具不存在"
     intent: "测试系统能否检测工具不可用并回退到替代方案"
-  - decision: "GEO 和 GitHub 均不可用"
-    intent: "测试系统能否仅依赖本地信息和 paper 文本完成分析"
+  - decision: "GEO accession 指向无关研究，GitHub 仓库不可用"
+    intent: "测试系统能否识别错误数据来源并使用受损的本地输入降级分析"
 
 reproducibility:
   known_limitations:

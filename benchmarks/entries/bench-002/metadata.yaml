@@ -25,7 +25,7 @@ complexity_profile:
     data_size: tiny
     data_source: synthetic
     data_format: csv
-    supplementary: none
+    supplementary: simple
   environment:
     tool_count: 3-5
     tool_chain: single_language
@@ -120,8 +120,8 @@ design_decisions:
     intent: "Drug 组有 ~20% 上调，可能因版本/参数差异被判为显著或不显著——测试容忍度"
   - decision: "q-value 阈值在 Table 2 footnote 而非 Methods"
     intent: "测试系统是否读取表格脚注中的参数（scattered_params）"
-  - decision: "KEGG 通路 ID (hsa04668) 仅在代码仓库中提及"
-    intent: "测试系统能否从有限信息推断正确的通路 ID（scattered_params）"
+  - decision: "KEGG 通路 ID (hsa04668) 仅在 Figure 3 图注中提及"
+    intent: "测试系统能否从分散信息中提取正确的通路 ID（scattered_params）"
 
 # ───────────────────────────────────────────
 # 可复现性声明

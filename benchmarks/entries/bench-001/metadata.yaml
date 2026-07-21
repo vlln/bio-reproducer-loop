@@ -24,7 +24,7 @@ complexity_profile:
     data_size: tiny
     data_source: synthetic
     data_format: csv
-    supplementary: none
+    supplementary: simple
   environment:
     tool_count: 1-2
     tool_chain: single_language

@@ -24,7 +24,7 @@ complexity_profile:
     data_size: tiny
     data_source: synthetic
     data_format: csv
-    supplementary: none
+    supplementary: simple
   environment:
     tool_count: 3-5
     tool_chain: single_language
@@ -65,7 +65,7 @@ robustness_profile:
     empty_data_dir: false
     truncated_file: false
     format_mismatch: false
-    wrong_accession: false
+    wrong_accession: true
   information_degradation:
     missing_supplementary: true
     version_gaps: true
