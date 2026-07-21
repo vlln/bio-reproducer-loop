@@ -14,9 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 支持从既有 `repro-data` 补建 submission，并保留 legacy 自评用于校准
 - 修正 bench-004 的跨脑区对比 oracle；使用独立 evaluator 重评 bench-004 至 bench-006
 - 内部 eval 改为 capability case + execution profile，移除多用途 exemplar 和硬编码重复次数
-- 清理 protocol v1 entry 残留，拆分科学 claims 与评分 rubric，并明确标识 legacy/unestablished baseline
-- 从远端保留的 artifacts 离线建立 bench-001/002 的 protocol v2 独立评分 baseline
-- 完成 bench-003 的五次远端首跑并建立 protocol v2 独立评分 baseline
+- 清理 protocol v1 entry 残留，拆分科学 claims 与评分 rubric
+- 使用独立 evaluator 完成既有 artifacts 的迁移期离线重评
+- 完成 bench-003 的五次远端首跑；结果保留为开发期观测，不建立发布级 baseline
+- baseline 改为 release-gated：entry、oracle 与协议冻结前不追踪历史分数
 
 ## [0.1.0] — 2026-07-19
 

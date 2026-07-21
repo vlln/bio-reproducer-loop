@@ -177,7 +177,7 @@ bio-reproducer/
 │   ├── VERSION
 │   ├── CHANGELOG.md
 │   ├── entries/                  # input/ + private oracle/ + metadata.yaml
-│   ├── baselines/                # 按系统/模型/Prompt/环境记录的历史观测
+│   ├── baselines/                # 仅在 benchmark 冻结后记录发布级历史观测
 │   ├── runner/                   # benchmark 执行器
 │   │   ├── cli.py
 │   │   ├── runner.py
@@ -360,7 +360,7 @@ bio-reproducer/
 | BR-004 | 系统阻塞 + expected 为 REPRODUCED → 判定失败；外部阻塞 → 不计入失败 | 评估对比时 | 两种阻塞分开统计 |
 | BR-005 | L3-L5 基准独立于引擎 | 定义基准时 | 输入/输出/评估协议不含引擎特定字段 |
 | BR-006 | InputBundle 与 OracleBundle 运行时隔离 | 执行 benchmark 时 | 被测系统仅能读取 staged input |
-| BR-007 | baseline 是带系统配置的观测值，不属于 entry 真值 | 记录历史结果时 | baseline 独立存储，不写入 metadata/oracle |
+| BR-007 | baseline 是冻结 benchmark 上带系统配置的发布级观测，不属于 entry 真值 | entry、oracle 与协议进入 RC/发布后 | 开发期结果只进入 ignored results/report；baseline 独立存储，不写入 metadata/oracle |
 
 ### blocked_reason 分类
 
@@ -403,7 +403,7 @@ bio-reproducer/
 | Oracle | 独立科学真值、评分规则、容差和验证程序 |
 | Fixture | 为确定性测试或内部 eval 构造的输入，不代表唯一正确输出 |
 | Exemplar | 经人工确认的一个合法输出示例，不用于全文匹配 |
-| Baseline | 特定系统、模型、Prompt、工具和环境版本的历史观测 |
+| Baseline | 在冻结 benchmark 版本上，由特定系统、模型、Prompt、工具和环境产生的发布级历史观测 |
 | InputBundle | 被测系统运行时唯一可见的论文、数据和补充材料 |
 | SubmissionBundle | 被测系统产出的 manifest 与实际 artifacts |
 | 评估协议 | evaluator 使用私有 oracle 检查 submission 并生成 result 的规则 |

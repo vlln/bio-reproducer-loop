@@ -73,6 +73,7 @@ regression、release profile 决定，不在 case 实现中硬编码。
 
 - `pytest` 重新代表快速、确定性的工程反馈。
 - LLM 非确定性通过分布和 baseline 表达，不再伪装成 unit test。
+- 内部开发期的分布保存在 ignored results 或实施报告中；只有 entry、oracle 和协议冻结后才建立 tracked baseline。
 - 内部 eval 与公开 benchmark 可以独立演进。
 
 ### 负面

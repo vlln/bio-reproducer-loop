@@ -10,14 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Engine-neutral `input/`, private `oracle/`, and `submission.json` protocol.
 - Independent artifact evaluator with versioned claims, rubrics, submissions, and results.
-- Tracked baseline summaries separated from gitignored raw run results.
-- Protocol v2 independently evaluated baselines for bench-001, bench-002, and bench-004 through bench-006.
-- Fresh five-run protocol v2 baseline for bench-003 on Linux x86_64 with deepseek-v4-pro.
+- Release-gated baseline policy separated from gitignored development results.
 
 ### Changed
 - Entry layout is now exactly `input/`, `oracle/`, and `metadata.yaml`.
 - Scientific facts live in `claims.yaml`; scoring rules and tolerances live in `rubric.yaml`.
-- Historical protocol v1 self-evaluations are explicitly named `protocol-v1-legacy`.
+- Development and migration observations are no longer tracked as release baselines.
 
 ### Removed
 - Entry-level `golden/`, `expected.yaml`, generated figures, and duplicated data directories.
