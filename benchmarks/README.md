@@ -17,6 +17,10 @@ metadata.yaml   entry discovery and version metadata
 `oracle/rubric.yaml` owns evidence selection, comparison rules, tolerances,
 weights, and verdict thresholds. The system under test never receives `oracle/`.
 
+The next InputBundle contract is currently proposed in ADR-0007 and Interface
+0001. Existing entries have not passed its manifest and material-fidelity gate;
+they remain internal development inputs rather than release-ready benchmarks.
+
 ## Results and baselines
 
 - `results/` contains raw submissions and evaluator outputs from local runs. It is

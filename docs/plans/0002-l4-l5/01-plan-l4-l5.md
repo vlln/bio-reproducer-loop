@@ -13,7 +13,7 @@ created: 2026-07-19T00:00:00Z
 - 将 paper-entries.md 中的论文结构化
 - 先选 Tier 1 论文（airway 等，工程复杂度极低）作为过渡
 - 实现环境冻结，预烘焙 benchmark 环境
-- bench-003 已创建（Himes et al. 2014），需补全 L4 基础设施
+- bench-003 当前 prototype 不满足真实 L4 材料要求；等待 Plan 004 原地重建 InputBundle、scope 和 oracle
 
 ## 阶段 2: L5 生产基准
 

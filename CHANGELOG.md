@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 使用独立 evaluator 完成既有 artifacts 的迁移期离线重评
 - 完成 bench-003 的五次远端首跑；结果保留为开发期观测，不建立发布级 baseline
 - baseline 改为 release-gated：entry、oracle 与协议冻结前不追踪历史分数
+- 退回 DESIGN，提出 L3/L4/L5 分层 InputBundle、资源 manifest 和 provenance 契约
+- 完成 bench-001 至 bench-006 的本地材料审计；bench-003 标记为需要重建的假 L4 输入
 
 ## [0.1.0] — 2026-07-19
 
