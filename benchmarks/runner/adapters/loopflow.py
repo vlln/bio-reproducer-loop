@@ -18,6 +18,8 @@ from typing import Optional
 
 import yaml
 
+from ..bundle_validator import validate_entry
+
 
 def run(entry_path: str, run_dir: Optional[str] = None) -> dict:
     """Run a benchmark entry via loopflow bio-reproducer.
@@ -30,6 +32,9 @@ def run(entry_path: str, run_dir: Optional[str] = None) -> dict:
         Standardized submission.json dict per the benchmark protocol.
     """
     entry_dir = Path(entry_path)
+
+    # Validate the trusted control plane before creating any system-visible state.
+    validate_entry(entry_dir)
 
     # 1. Read what the benchmark entry declares about itself
     metadata = _read_metadata(entry_dir)
@@ -91,9 +96,14 @@ def _stage_input(entry_dir: Path, run_root: Path) -> Path:
     if not source.is_dir():
         raise FileNotFoundError(f"InputBundle not found: {source}")
     staged = run_root / "input"
-    shutil.copytree(source, staged, dirs_exist_ok=True)
-    if (staged / "oracle").exists():
-        raise ValueError("InputBundle must not contain an oracle directory")
+    if staged.exists():
+        shutil.rmtree(staged)
+    shutil.copytree(source, staged)
+    leaked = {"bundle.yaml", "metadata.yaml", "oracle"} & {
+        path.name for path in staged.iterdir()
+    }
+    if leaked:
+        raise ValueError(f"InputBundle contains reserved control-plane paths: {sorted(leaked)}")
     return staged.resolve()
 
 

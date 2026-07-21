@@ -34,15 +34,19 @@ FORBIDDEN_CLAIM_KEYS = {
 def test_protocol_v2_entry_layout_is_minimal():
     for entry_id in ENTRY_IDS:
         entry = ENTRIES / entry_id
-        assert {path.name for path in entry.iterdir()} == {
+        names = {path.name for path in entry.iterdir()}
+        assert names >= {
             "input",
             "metadata.yaml",
             "oracle",
         }
+        assert names <= {"bundle.yaml", "input", "metadata.yaml", "oracle"}
         assert {path.name for path in (entry / "oracle").iterdir()} == {
             "claims.yaml",
             "rubric.yaml",
         }
+
+    assert (ENTRIES / "bench-001" / "bundle.yaml").is_file()
 
 
 def test_all_entries_declare_protocol_v2():

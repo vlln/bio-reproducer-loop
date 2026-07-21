@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from .adapters.loopflow import run as loopflow_run
+from .bundle_validator import validate_entry
 
 def run_entry(entry_path: str, runs: int = 5, output_dir: Optional[str] = None) -> list:
     """Run a protocol v2 benchmark entry N times and return submissions.
@@ -19,6 +20,7 @@ def run_entry(entry_path: str, runs: int = 5, output_dir: Optional[str] = None) 
         List of result.json dicts, one per completed run.
     """
     entry_dir = Path(entry_path)
+    validate_entry(entry_dir)
     entry_id = entry_dir.name
     if output_dir is None:
         results_root = Path(__file__).parent.parent / "results"

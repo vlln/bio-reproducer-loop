@@ -1,6 +1,7 @@
 """Benchmark runner CLI.
 
 Usage:
+    bench-run validate-entry --entry bench-001
     bench-run run --entry bench-001 --runs 5
     bench-run submit --entry bench-001
     bench-run eval --entry bench-001
@@ -15,6 +16,19 @@ from pathlib import Path
 BENCHMARKS_DIR = Path(__file__).parent.parent / "entries"
 
 
+def cmd_validate_entry(args: argparse.Namespace) -> None:
+    """Validate an entry's trusted bundle lock and runtime input."""
+    from .bundle_validator import BundleValidationError, validate_entry
+
+    entry_path = BENCHMARKS_DIR / args.entry
+    try:
+        bundle = validate_entry(entry_path)
+    except BundleValidationError as exc:
+        print(f"ERROR [{exc.code}]: {exc}", file=sys.stderr)
+        raise SystemExit(2) from exc
+    print(f"VALID: {bundle['entry_id']} ({bundle['level']})")
+
+
 def cmd_run(args: argparse.Namespace) -> None:
     """Run a benchmark entry N times."""
     from .runner import run_entry
@@ -24,7 +38,13 @@ def cmd_run(args: argparse.Namespace) -> None:
         print(f"ERROR: Benchmark entry not found: {entry_path}", file=sys.stderr)
         sys.exit(2)
 
-    results = run_entry(str(entry_path), runs=args.runs, output_dir=args.output)
+    from .bundle_validator import BundleValidationError
+
+    try:
+        results = run_entry(str(entry_path), runs=args.runs, output_dir=args.output)
+    except BundleValidationError as exc:
+        print(f"ERROR [{exc.code}]: {exc}", file=sys.stderr)
+        raise SystemExit(2) from exc
     print(f"Completed {len(results)} runs for {args.entry}")
 
 
@@ -145,6 +165,11 @@ def main() -> None:
     )
     subparsers = parser.add_subparsers(dest="command")
 
+    validate_parser = subparsers.add_parser(
+        "validate-entry", help="Validate an entry bundle without running it"
+    )
+    validate_parser.add_argument("--entry", required=True, help="Benchmark entry ID")
+
     # bench-run run
     run_parser = subparsers.add_parser("run", help="Run a benchmark entry")
     run_parser.add_argument("--entry", required=True, help="Benchmark entry ID (e.g., bench-001)")
@@ -173,7 +198,9 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    if args.command == "run":
+    if args.command == "validate-entry":
+        cmd_validate_entry(args)
+    elif args.command == "run":
         cmd_run(args)
     elif args.command == "submit":
         cmd_submit(args)

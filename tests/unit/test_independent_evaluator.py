@@ -111,10 +111,10 @@ def test_rejects_artifact_path_outside_submission(tmp_path):
 def test_staged_input_excludes_private_oracle(tmp_path):
     staged = _stage_input(ENTRY, tmp_path)
 
-    assert (staged / "paper.pdf").is_file()
+    assert (staged / "paper.md").is_file()
     assert (staged / "data" / "counts.csv").is_file()
     assert not (staged / "oracle").exists()
-    assert {path.name for path in staged.iterdir()} == {"paper.pdf", "paper.md", "data"}
+    assert {path.name for path in staged.iterdir()} == {"paper.md", "data"}
 
 
 def test_adapter_submission_contains_evidence_not_score(tmp_path):
