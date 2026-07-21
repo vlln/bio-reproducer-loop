@@ -2,9 +2,9 @@
 
 | 字段 | 值 |
 |------|-----|
-| **当前阶段** | `TEST_INFRA`（评估信任边界重构） |
-| **设计评估** | Spec v2、Interface 0001、ADR-0005/0006 已确认并冻结 |
-| **基建评估** | Benchmark 协议 v2 与确定性测试已完成；InputBundle fidelity、内部真实 LLM eval 和强隔离仍待执行 |
+| **当前阶段** | `DESIGN`（InputBundle 材料真实性修订） |
+| **设计评估** | ADR-0007、Spec v3、Interface 0001 修订与 AC-0003 已 proposed，待内容审查 |
+| **基建评估** | 独立评分边界已验证；manifest validator、InputBundle fidelity、内部真实 LLM eval 和强隔离仍待执行 |
 | **系统测试** | 32 个确定性测试通过；现有运行仅作为迁移期观测，不建立 tracked baseline |
 
 ## 子目录

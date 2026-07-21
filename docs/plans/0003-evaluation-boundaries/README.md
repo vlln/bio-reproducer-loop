@@ -5,6 +5,6 @@
 | [01-plan-evaluation-boundaries.md](01-plan-evaluation-boundaries.md) | Plan | pending |
 | [01-report-evaluation-boundaries.md](01-report-evaluation-boundaries.md) | Report | draft |
 
-状态：TEST_INFRA，Spec v2、Interface 0001、ADR-0005/0006 已冻结，正在执行。
+状态：paused。系统测试暴露 InputBundle 设计缺陷，先执行 Plan 004 并重新冻结 Spec/Interface/AC。
 
 分支：`refactor/0003-evaluation-boundaries`
