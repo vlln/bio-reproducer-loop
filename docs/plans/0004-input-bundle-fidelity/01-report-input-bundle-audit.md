@@ -31,7 +31,7 @@ created: 2026-07-20T00:00:00Z
 |-------|----------|---------------|----------|------|
 | bench-001 | constructed MD，10-gene counts，runner-only bundle lock | 已移除来源和转换过程不明的冗余 PDF；bundle 登记 primary paper、S1/counts、DOI、GEO、代码和缺图状态 | 自动 gate 已通过；发布前复核外部资源的可观察行为 | medium |
 | bench-002 | constructed MD，20-gene counts，runner-only bundle lock | 已移除无 provenance PDF；bundle 登记 S1、缺失 S2、3 个缺图、DOI、GEO 和代码；修正 supplementary 与 KEGG ID 位置 | 自动 gate 已通过；发布前人工复核场景可观察性 | medium |
-| bench-003 | 82 行 MD，357-gene counts + samples | metadata 声明 real_published/pdf，但 PDF 不存在；摘要将真实论文整理为 DESeq2 workflow；输入声称约 64k transcripts，却只提供 357 基因且无裁剪 provenance；无 supplementary/code/source snapshot | 原地重建为真实 L4；获取原始发布物与 cited resources；核查真实方法链；重建 data scope 和 oracle | critical |
+| bench-003 | 初始为 82 行 MD、357-gene counts + samples；现已替换为原始 PDF/XML、完整 PMC supplementary、GEO Cuffdiff/FPKM 输出、ENA resolver 与 Taffeta snapshot | 初始材料将真实论文错误整理为 DESeq2 workflow；重建后确认论文使用 Taffeta、TopHat、Cufflinks/Cuffdiff 与 CummeRbund，raw FASTQ 约 46.9 GiB，GWAS 个体数据受限 | 已按 processed-output verification scope 原地重建为 L4；自动 gate 通过，待人工 fidelity review | medium |
 | bench-004 | constructed MD，50-gene counts，runner-only bundle lock | 已将 data_source 修正为 synthetic；GSE88888 保留为可观察的错误 locator；缺图、S2 和代码均有 disposition | 自动 gate 已通过；发布前人工复核跨语言 scope | medium |
 | bench-005 | constructed MD，30-gene counts，runner-only bundle lock | 已登记 DOI、错误 GEO、失效代码、缺失 S2 和 2 个缺图；metadata 修正 wrong_accession | 自动 gate 已通过；环境冲突仍由 private rubric 审查 | medium |
 | bench-006 | constructed MD，11-gene TSV，runner-only bundle lock | 已删除与 counts 完全相同的隐藏副本和无 provenance PDF；登记实际 TSV、错误 GEO、DataIntegrityR、代码、S2 和缺图 | 自动 gate 已通过；损坏输入不可恢复性仍需人工确认 | high |
@@ -41,16 +41,18 @@ created: 2026-07-20T00:00:00Z
 1. 当前问题不是顶层 `input/` 结构本身，而是缺少层级规则、resource inventory 和 provenance。
 2. `supplementary: none` 不能与论文正文中的 S1/S2 引用并存，除非 bundle lock 解释其状态。
 3. constructed paper 可以使用虚构资源，但必须让公开材料自洽；故障注入原因保持私有。
-4. bench-003 当前只能证明一个 airway-derived DESeq2 子任务，不能作为真实论文 L4。
+4. bench-003 的旧输入只能证明 airway-derived DESeq2 子任务；该输入与旧 oracle 已删除，不能用于解释重建后的 L4 entry。
 5. 在 source audit、bundle validator 和 entry 修复完成前，现有分数不得建立 release baseline。
 
 # 实施进度
 
 - `bundle.schema.json` 和无外部 schema 运行时依赖的 validator 已实现。
-- `bench-run validate-entry` 对 bench-001/002/004/005/006 通过；bench-003 因没有 bundle lock 被拒绝。
+- `bench-run validate-entry` 对 bench-001 至 bench-006 全部通过；bench-003 被识别为 L4。
 - Runner 在创建结果或调用 adapter 前校验 entry；staging 会清除旧目录并只复制 `input/`。
 - AC-0006 的 hash、dotfile、path escape、oracle 字段、派生 provenance、metadata 冲突和
   control-plane 残留已有确定性测试。
+- bench-003 rubric 已增加确定性回归，覆盖 316 个显著基因、七个 DEX-induced 基因、
+  CRISPLD2 效应值和 Cuffdiff/Taffeta 环境证据。
 - OS/container 级文件系统强隔离不在本次 staging contract 的证明范围内。
 
 # 外部资源核查
@@ -62,9 +64,15 @@ created: 2026-07-20T00:00:00Z
   Parkinson 病、poly(I:C) MEF 和拟南芥研究，与构造论文主题不匹配。
 - `DataIntegrityR` 的 CRAN metadata 与 R-universe package 查询均返回 HTTP 404。
 
-# 待外部核查
+# bench-003 重建核查
 
-- Himes et al. 2014 的原始 PDF/XML、PLOS/PMC supplementary 清单与许可。
-- 论文实际使用的统计方法、代码公开情况和 GSE52778 文件清单。
-- airway Bioconductor 数据与论文原始分析输入/方法的关系。
-- 五个构造 entry 的 unavailable/external 状态在目标运行环境中是否保持相同可观察行为。
+- 论文身份冻结为 DOI `10.1371/journal.pone.0099625`、PMID `24926665`、PMCID `PMC4057123`，许可为 CC BY 4.0。
+- PMC supplementary archive 含 29 个发布资产；GEO 官方 Cuffdiff 输出恰有 316 个 q-value < 0.05 的基因。
+- 计分 scope 从官方 GEO processed outputs 开始；16 个 ENA runs 共 `50,359,986,052` bytes，仅以 resolver 暴露，不默认 stage FASTQ。
+- `airway` Bioconductor 包是后来的教学重分析，不属于论文原始方法契约；旧 DESeq2 baseline 不保留。
+
+# 待审查
+
+- 六个 entry 的 cited-resource inventory 需要人工 fidelity review 签字。
+- 五个构造 entry 的 unavailable/external 状态需在目标运行环境复核。
+- hg19 iGenomes 与历史 DAVID release 缺少不可变版本标识；GWAS participant-level 数据不可公开获得。

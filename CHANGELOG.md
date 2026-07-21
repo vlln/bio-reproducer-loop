@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 完成 bench-001 至 bench-006 的本地材料审计；bench-003 标记为需要重建的假 L4 输入
 - 冻结 runner-only bundle lock 契约，实现 schema、validator、staging gate 和 bench-001 pilot
 - 完成五个构造 L3 entry 的 bundle 迁移，清理无 provenance PDF 与 bench-006 隐藏重复数据
+- 从 PLOS/PMC、GEO、ENA 和 Taffeta 原始材料重建 bench-003，修正 DESeq2/airway 方法误归因并通过 L4 bundle gate
 
 ## [0.1.0] — 2026-07-19
 

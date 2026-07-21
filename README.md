@@ -80,8 +80,8 @@ python3 -m benchmarks.runner.cli report
 |------|------|------|
 | L1 | 单 Phase Agent 业务逻辑 | `tests/unit/` |
 | L2 | 跨 Phase 信息流 | `tests/integration/` |
-| L3 | 构造论文端到端（6 entries） | `benchmarks/entries/` |
-| L4 | 真实论文 + 冻结环境（规划中） | — |
+| L3 | 构造论文端到端（5 entries） | `benchmarks/entries/` |
+| L4 | 真实论文 + 冻结材料（1 entry，审查中） | `benchmarks/entries/bench-003/` |
 | L5 | 生产基准（规划中） | — |
 
 ### Benchmark Entries
@@ -90,7 +90,7 @@ python3 -m benchmarks.runner.cli report
 |-------|------|------|------|
 | bench-001 | 差异表达分析（DESeq2） | easy | REPRODUCED |
 | bench-002 | 多工具编排（DESeq2 + clusterProfiler + pathview） | easy | REPRODUCED |
-| bench-003 | airway-derived 开发输入；真实 L4 材料待重建 | easy | UNDER REVIEW |
+| bench-003 | Himes et al. 2014 原始材料；GEO Cuffdiff/FPKM 结果验证 | hard | UNDER REVIEW |
 | bench-004 | 跨平台转录组（Python + R） | medium | REPRODUCED |
 | bench-005 | 环境漂移 + 冲突信息 | medium | REPRODUCED |
 | bench-006 | 数据降级 + 故障注入 | medium | REPRODUCED |

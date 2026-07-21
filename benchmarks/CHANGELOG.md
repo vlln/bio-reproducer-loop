@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added the runner-only bundle schema, validator, staging gate, and bench-001 migration pilot.
 - Migrated all five constructed L3 entries and added bundle validation to the deterministic lint gate.
 - Removed untraceable constructed PDFs and bench-006's byte-identical hidden data duplicate.
+- Rebuilt bench-003 as L4 from the publisher article, PMC supplementary archive, official GEO outputs, an ENA raw-read resolver, and a frozen Taffeta source snapshot.
+- Replaced the incorrect airway/DESeq2 oracle with the paper's Cuffdiff workflow, 316-gene result, and DEX-induced gene conclusions.
 
 ## [2.0.0] - 2026-07-19
 

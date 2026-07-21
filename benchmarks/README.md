@@ -19,9 +19,11 @@ metadata.yaml   entry discovery and version metadata
 weights, and verdict thresholds. The system under test never receives `oracle/`.
 
 The InputBundle contract is active in ADR-0007 and Interface 0001. The five
-constructed L3 entries pass the automated bundle gate. Bench-003 remains invalid
-until it is rebuilt from real L4 materials. All entries remain internal
-development inputs until their scientific review and release gate are complete.
+constructed L3 entries and the rebuilt bench-003 L4 entry pass the automated
+bundle gate. Bench-003 now stages the publisher article, supplementary archive,
+official GEO processed outputs, raw-read resolver, and a frozen Taffeta source
+snapshot. All entries remain internal development inputs until their scientific
+review and release gate are complete.
 
 ## Results and baselines
 
