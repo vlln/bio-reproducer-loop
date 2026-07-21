@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 完成五个构造 L3 entry 的 bundle 迁移，清理无 provenance PDF 与 bench-006 隐藏重复数据
 - 从 PLOS/PMC、GEO、ENA 和 Taffeta 原始材料重建真实论文 entry，重编号为 bench-100，修正 DESeq2/airway 方法误归因并通过 L4 bundle gate
 - 划分 entry ID 命名空间：001-099 用于构造论文，100-999 用于真实论文，并由 bundle validator 强制校验
+- 完成六个 entry 的人工 fidelity review；将宿主机强隔离移交 Plan 005，将 L4 可执行环境冻结保留在 Plan 002
 
 ## [0.1.0] — 2026-07-19
 

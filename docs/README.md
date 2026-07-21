@@ -2,9 +2,9 @@
 
 | 字段 | 值 |
 |------|-----|
-| **当前阶段** | `TEST_INFRA`（InputBundle bundle gate 与 entry 迁移） |
+| **当前阶段** | `TEST_INFRA`（Plan 004 已完成，分支待审查合并） |
 | **设计评估** | ADR-0007 accepted；Spec v3、Interface 0001 与 AC-0003 active |
-| **基建评估** | bundle schema、validator、`validate-entry` 和 staging contract 已验证；五个构造 L3 与 bench-100 L4 均通过自动 gate，人工 fidelity review 待完成 |
+| **基建评估** | bundle schema、validator、`validate-entry`、staging contract 与六个 entry 的人工 fidelity review 已通过；强隔离进入 Plan 005 |
 | **系统测试** | 确定性测试通过；现有运行仅作为迁移期观测，不建立 tracked baseline |
 
 当前隔离保证是 Runner 不将 control-plane 文件复制或传入运行时 InputBundle。若被测系统

@@ -2,15 +2,15 @@
 title: Report 004 — 现有 InputBundle 材料审计
 description: 记录首批六个 entry 的论文原件、派生表示、补充材料、代码、数据、图像和 provenance 缺口。
 type: report
-status: draft
+status: complete
 created: 2026-07-20T00:00:00Z
 ---
 
 # 审计范围
 
-本报告只检查当前 Git workspace 中 staged InputBundle 的可观察事实，不访问外部网络，
-不判断真实论文页面最终有哪些附件。外部论文、supplementary、仓库和 accession 的存在性
-均标记为待后续 source audit。
+初始审计检查 Git workspace 中 staged InputBundle 的可观察事实；后续 source audit 核查了
+构造 entry 的外部 locator，并从 PLOS/PMC、GEO、ENA 与 Taffeta 原始材料重建 bench-100。
+最终审查逐项对照论文引用、bundle resource、实际文件、oracle scope 与自动门禁。
 
 # 总体发现（初始审计）
 
@@ -29,12 +29,12 @@ created: 2026-07-20T00:00:00Z
 
 | Entry | 当前材料 | 确认缺口/冲突 | 建议处置 | 风险 |
 |-------|----------|---------------|----------|------|
-| bench-001 | constructed MD，10-gene counts，runner-only bundle lock | 已移除来源和转换过程不明的冗余 PDF；bundle 登记 primary paper、S1/counts、DOI、GEO、代码和缺图状态 | 自动 gate 已通过；发布前复核外部资源的可观察行为 | medium |
-| bench-002 | constructed MD，20-gene counts，runner-only bundle lock | 已移除无 provenance PDF；bundle 登记 S1、缺失 S2、3 个缺图、DOI、GEO 和代码；修正 supplementary 与 KEGG ID 位置 | 自动 gate 已通过；发布前人工复核场景可观察性 | medium |
-| bench-100（原 bench-003） | 初始为 82 行 MD、357-gene counts + samples；现已替换为原始 PDF/XML、完整 PMC supplementary、GEO Cuffdiff/FPKM 输出、ENA resolver 与 Taffeta snapshot | 初始材料将真实论文错误整理为 DESeq2 workflow；重建后确认论文使用 Taffeta、TopHat、Cufflinks/Cuffdiff 与 CummeRbund，raw FASTQ 约 46.9 GiB，GWAS 个体数据受限 | 已按 processed-output verification scope 原地重建为 L4；自动 gate 通过，待人工 fidelity review | medium |
-| bench-004 | constructed MD，50-gene counts，runner-only bundle lock | 已将 data_source 修正为 synthetic；GSE88888 保留为可观察的错误 locator；缺图、S2 和代码均有 disposition | 自动 gate 已通过；发布前人工复核跨语言 scope | medium |
-| bench-005 | constructed MD，30-gene counts，runner-only bundle lock | 已登记 DOI、错误 GEO、失效代码、缺失 S2 和 2 个缺图；metadata 修正 wrong_accession | 自动 gate 已通过；环境冲突仍由 private rubric 审查 | medium |
-| bench-006 | constructed MD，11-gene TSV，runner-only bundle lock | 已删除与 counts 完全相同的隐藏副本和无 provenance PDF；登记实际 TSV、错误 GEO、DataIntegrityR、代码、S2 和缺图 | 自动 gate 已通过；损坏输入不可恢复性仍需人工确认 | high |
+| bench-001 | constructed MD，10-gene counts，runner-only bundle lock | primary paper、S1/counts、DOI、GEO、代码和缺图均有 disposition | PASS；外部 locator 漂移保留为运行风险 | medium |
+| bench-002 | constructed MD，20-gene counts，runner-only bundle lock | S1、缺失 S2、3 个缺图、DOI、GEO 和代码均有 disposition | PASS；缺失材料不作为隐藏答案 | medium |
+| bench-100（原 bench-003） | 原始 PDF/XML、完整 PMC archive、GEO Cuffdiff/FPKM、ENA resolver 与 Taffeta snapshot | 另登记 GSE34313/GSE13168、历史工具链、iGenomes、DAVID 和两类 GWAS；计分 scope 不含 raw alignment、microarray、GWAS 与湿实验 | PASS；仅对 processed-output L4 scope 签字 | medium |
+| bench-004 | constructed MD，50-gene counts，runner-only bundle lock | synthetic data、错误 GSE、缺图、S2 和代码均有 disposition | PASS；跨语言 scope 与 rubric 一致 | medium |
+| bench-005 | constructed MD，30-gene counts，runner-only bundle lock | DOI、错误 GEO、失效代码、缺失 S2、缺图与公开方法冲突均可观察或有 disposition | PASS；环境冲突由公开 paper 暴露 | medium |
+| bench-006 | constructed MD，11-row TSV with CSV extension，runner-only bundle lock | 行数、分隔符、错误 GEO、DataIntegrityR、代码、S2 和缺图均已核对 | PASS；不可恢复的 4 个缺失基因仍是预期降级边界 | high |
 
 # 设计结论
 
@@ -70,9 +70,34 @@ created: 2026-07-20T00:00:00Z
 - PMC supplementary archive 含 29 个发布资产；GEO 官方 Cuffdiff 输出恰有 316 个 q-value < 0.05 的基因。
 - 计分 scope 从官方 GEO processed outputs 开始；16 个 ENA runs 共 `50,359,986,052` bytes，仅以 resolver 暴露，不默认 stage FASTQ。
 - `airway` Bioconductor 包是后来的教学重分析，不属于论文原始方法契约；旧 DESeq2 baseline 不保留。
+- `git bundle verify` 确认 Taffeta snapshot 是 commit `d12f00f74de35e437068349c617869a97856e160` 的完整历史，仓库内含 MIT license。
+- GSE34313 与 GSE13168 是 Table 3 的 secondary microarray context，已登记为不参与计分；历史 RNA-seq 可执行包未伪装为冻结环境。
 
-# 待审查
+# AC 验收
 
-- 六个 entry 的 cited-resource inventory 需要人工 fidelity review 签字。
-- 五个构造 entry 的 unavailable/external 状态需在目标运行环境复核。
+| AC | 结果 | 证据与说明 |
+|----|------|------------|
+| AC-0006-N-1 | PASS | 五个 L3 的 constructed paper、数据与 resource inventory 均通过 validator 和人工逐项核对 |
+| AC-0006-N-2 | PASS | bench-100 冻结 original PDF/XML、全部 PMC supplementary、官方 GEO outputs 与代码 snapshot；无派生论文替代原件 |
+| AC-0006-N-3 | N/A | 当前没有 L5 entry |
+| AC-0006-N-4 | PASS | staging 测试证明只复制 `input/`，不复制 bundle、metadata 或 oracle |
+| AC-0006-B-1/B-2/B-4 | PASS | unavailable/restricted/constructed-failure resources 均有 source、时间和说明；rubric 不读取 bundle disposition 免责 |
+| AC-0006-B-3 | N/A | bench-100 使用官方完整 processed outputs，不使用静默裁剪数据 |
+| AC-0006-E-1 至 E-7 | PASS | hash、未声明文件、越界、派生链、oracle 字段、control-plane 泄漏和不可观察限制均有门禁或人工核对 |
+| AC-0006-F-1 至 F-3 | PASS | 旧假 L4 已删除；论文引用均有 disposition；不存在静默代表完整数据的裁剪 CSV |
+| AC-0007-N-1/N-2 | PASS | 五个 constructed L3 与一个真实材料 L4 的层级和编号契约一致 |
+| AC-0007-N-3/B-1 | N/A | 当前没有 L5 entry，也没有依赖对象存储解析的 L4 原件 |
+| AC-0007-E-1/F-1 | PASS | metadata/bundle 冲突会被拒绝；所有 entry 冻结前均不建立 tracked baseline |
+
+# 残余风险与移交
+
+- staging isolation 不能阻止拥有宿主机权限的被测系统读取仓库其他路径。OS/container 强隔离移交 Plan 005，不把本轮证明扩大为运行沙箱证明。
+- bench-100 的历史可执行工具与容器尚未冻结；这属于 Plan 002 的 L4 环境工作。当前通过的是 processed-output InputBundle fidelity，不是完整发布级 baseline。
 - hg19 iGenomes 与历史 DAVID release 缺少不可变版本标识；GWAS participant-level 数据不可公开获得。
+- 五个构造 entry 的外部 locator 可能随网络环境漂移；发布运行必须记录实际解析状态。
+
+# 结论
+
+Plan 004 的材料真实性、bundle gate、六个 entry 迁移和人工 fidelity review 均完成。
+六个 entry 可以进入后续执行环境与系统测试工作，但在 Plan 002/005 完成且协议进入 RC 前，
+仍不得建立 release baseline 或宣称公开 benchmark 已发布完成。

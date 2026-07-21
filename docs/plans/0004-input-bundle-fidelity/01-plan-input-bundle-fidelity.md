@@ -2,7 +2,7 @@
 title: Plan 004 — InputBundle 材料真实性
 description: 冻结 L3/L4/L5 分层输入契约，审计现有 entry，并重建 runner-only bundle lock、资源 provenance 和层级校验。
 type: plan
-status: pending
+status: done
 created: 2026-07-20T00:00:00Z
 ---
 

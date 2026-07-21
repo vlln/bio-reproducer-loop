@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rebuilt and renumbered bench-100 (formerly bench-003) as L4 from the publisher article, PMC supplementary archive, official GEO outputs, an ENA raw-read resolver, and a frozen Taffeta source snapshot.
 - Replaced the incorrect airway/DESeq2 oracle with the paper's Cuffdiff workflow, 316-gene result, and DEX-induced gene conclusions.
 - Reserved IDs below 100 for constructed papers and IDs from 100 onward for real papers.
+- Completed cited-resource fidelity review for all six entries and kept runtime isolation and executable-environment freezing outside the InputBundle claim.
 
 ## [2.0.0] - 2026-07-19
 
