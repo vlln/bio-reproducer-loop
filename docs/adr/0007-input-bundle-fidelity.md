@@ -23,34 +23,41 @@ bench-003 声明为 `real_published` 和 `paper_format: pdf`，实际只提供 8
 
 ## 决策内容
 
-### 1. 统一结构，不统一科学载荷
+### 1. 统一控制平面，不统一科学载荷
 
-每个 entry 保持 `input/`、`oracle/`、`metadata.yaml` 的顶层结构。`input/` 必须包含
-公开的 `manifest.yaml`，其余目录按材料实际情况出现：
+每个 entry 增加可信控制平面的 `bundle.yaml`。Runner 校验它，但绝不将其 stage 给被测
+系统。`input/` 只包含该场景中系统实际获得的材料：
 
 ```text
-input/
-├── manifest.yaml
-├── paper/
-├── supplementary/
-├── code/
-├── data/
-└── resources/
+entry/
+├── bundle.yaml            # Runner/benchmark maintainer 可见，不 stage
+├── input/                  # 被测系统唯一可见
+│   ├── paper/
+│   ├── supplementary/
+│   ├── code/
+│   ├── data/
+│   └── resources/
+├── oracle/                 # evaluator 私有
+└── metadata.yaml           # Runner 元数据，不 stage
 ```
 
-`manifest.yaml` 是资源与 provenance 清单，不是科学答案。它声明每项材料的 role、
-来源、版本、路径或可用性、checksum、license、原始/派生关系和转换过程。故障注入
-意图、expected result 和评分规则仍属于 private oracle 或非 staged metadata。
+`bundle.yaml` 是资源与 provenance 锁文件，不是被测系统输入。它声明每项材料的 role、
+来源、版本、相对 `input/` 的 path 或可用性、checksum、license、原始/派生关系和转换过程。
+故障注入意图、expected result 和评分规则仍属于 private oracle。
 
-InputBundle 中除 `manifest.yaml` 外的每个文件都必须被 manifest 声明。论文明确引用
-但未打包的 supplementary、代码或数据也必须有资源记录，状态不得用目录缺失隐式表达。
+InputBundle 中的每个文件都必须被 `bundle.yaml` 声明。论文明确引用但未打包的
+supplementary、代码或数据也必须有控制平面记录，状态不得用目录缺失隐式表达。公开仓库
+中的 `bundle.yaml` 仍受运行时隔离；正式隐藏测试集可以同时隐藏其仓库内容。
+
+真实论文随附的 README、数据说明或 provenance 文件可以作为普通材料进入 `input/`，
+但 benchmark 自动生成的 bundle lock 不得借此暴露给被测系统。
 
 ### 2. 按 L3/L4/L5 定义完整性
 
 | Level | 输入起点 | 材料规则 | 主要测量目标 |
 |-------|----------|----------|----------------|
-| L3 | 构造论文 | 允许 Markdown 和小型构造数据；虚构、缺失或不可用资源必须显式记录 | 可控能力与故障处理 |
-| L4 | 真实发表材料的冻结快照 | 原始论文必需；所有可合法获取的 cited supplementary、代码和数据必须冻结或提供受审查 descriptor | 真实工程复现能力 |
+| L3 | 构造论文 | 允许 Markdown 和小型构造数据；控制平面记录虚构、缺失或不可用资源，但系统只观察场景材料和环境行为 | 可控能力与故障处理 |
+| L4 | 真实发表材料的冻结快照 | 原始论文必需；所有可合法获取的 cited supplementary、代码和数据必须冻结或在控制平面提供受审查 descriptor | 真实工程复现能力 |
 | L5 | 原始论文或稳定标识符 | 保留最小可信起点，允许系统通过真实网络发现资源；运行时记录实际解析结果 | 真实生态与外部脆弱性 |
 
 L4 中 PDF/XML/HTML 等原始发布物是权威来源。由解析器生成的 Markdown、抽取图像、
@@ -67,13 +74,15 @@ L4 中 PDF/XML/HTML 等原始发布物是权威来源。由解析器生成的 Ma
 - `unavailable`：按记录的地址和时间核查后不可获取；
 - `not_applicable`：论文未声明该类资源。
 
-`unavailable` 需要核查位置和时间；`restricted` 需要访问要求；二者均不能由 curator
-遗漏文件来代替。benchmark 故意注入的不可用性不得在公开 manifest 中泄露“这是故障
-注入”，但必须向被测系统呈现与真实不可用资源等价的可观察状态。
+`unavailable` 需要核查位置和时间；`restricted` 需要访问要求；二者均不能由 benchmark
+maintainer 遗漏文件来代替。benchmark 故意注入的不可用性由 `bundle.yaml` 锁定可观察
+条件、由 private oracle 记录注入意图；被测系统只能通过论文、材料和运行环境观察状态。
+Evaluator 只有在限制确实可由这些运行时输入或环境观察到时，才能据此允许降级；控制面
+记录本身不能成为宽免依据。
 
 ### 4. Release gate
 
-Entry 只有通过 InputBundle 人工审查、manifest 校验和层级特定 AC 后，才能进入 RC。
+Entry 只有通过 InputBundle 人工审查、bundle 校验和层级特定 AC 后，才能进入 RC。
 在此之前运行结果只是开发期 observation，不建立 tracked baseline。
 
 ## 选择理由
@@ -101,13 +110,14 @@ Entry 只有通过 InputBundle 人工审查、manifest 校验和层级特定 AC 
 
 | 规则编号 | 规则 | 检出方式 |
 |----------|------|----------|
-| AR-001 | 每个 InputBundle 必须有 `manifest.yaml` | schema/contract test |
-| AR-002 | 每个 staged 文件必须在 manifest 中声明 | 目录与 manifest 集合比较 |
-| AR-003 | L4 必须包含原始论文，派生 Markdown 不能单独满足要求 | level validator |
-| AR-004 | L4 的 cited resources 必须 bundled 或有受审查状态记录 | 人工审计 + manifest validator |
-| AR-005 | 派生与裁剪资源必须声明来源和可重复转换 | provenance validator |
-| AR-006 | manifest 不得包含 oracle、expected result 或评分字段 | schema + forbidden-key test |
-| AR-007 | 未通过 fidelity gate 的 entry 不得建立 release baseline | release checklist |
+| AR-001 | 每个 entry 必须有 runner-only `bundle.yaml` | schema/contract test |
+| AR-002 | 每个 staged 文件必须在 bundle lock 中声明 | 目录与 bundle resource 集合比较 |
+| AR-003 | Runner 只能 stage `input/`，不得 stage bundle/metadata/oracle | 隔离工作目录测试 |
+| AR-004 | L4 必须包含原始论文，派生 Markdown 不能单独满足要求 | level validator |
+| AR-005 | L4 的 cited resources 必须 bundled 或有受审查状态记录 | 人工审计 + bundle validator |
+| AR-006 | 派生与裁剪资源必须声明来源和可重复转换 | provenance validator |
+| AR-007 | bundle lock 不得包含 oracle、expected result 或评分字段 | schema + forbidden-key test |
+| AR-008 | 未通过 fidelity gate 的 entry 不得建立 release baseline | release checklist |
 
 ## 验证
 
@@ -116,5 +126,6 @@ Entry 只有通过 InputBundle 人工审查、manifest 校验和层级特定 AC 
 | 假 L4 | 声明 `real_published`，仅提供人工摘要 Markdown | `INVALID_INPUT` |
 | 未声明文件 | 在 `input/data/` 放置未登记 dotfile | `INVALID_INPUT` |
 | 派生数据 | 提供裁剪 CSV 但不声明原数据和转换过程 | L4 fidelity gate 失败 |
-| 合法受限资源 | manifest 声明 restricted accession 和访问条件 | InputBundle 有效，执行可按 paper limitation 降级 |
-| Oracle 泄露 | manifest 出现 expected score 或 rubric 字段 | `INVALID_INPUT` |
+| 控制面隔离 | bundle 声明完整资源清单后运行被测系统 | 工作目录中只有 input 内容 |
+| 合法受限资源 | bundle 声明 restricted accession 和访问条件 | Entry 有效，执行可按 paper limitation 降级 |
+| Oracle 污染 | bundle 出现 expected score 或 rubric 字段 | `INVALID_BUNDLE` |

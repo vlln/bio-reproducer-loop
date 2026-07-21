@@ -1,6 +1,6 @@
 ---
 title: Plan 004 — InputBundle 材料真实性
-description: 冻结 L3/L4/L5 分层输入契约，审计现有 entry，并重建 manifest、资源 provenance 和层级校验。
+description: 冻结 L3/L4/L5 分层输入契约，审计现有 entry，并重建 runner-only bundle lock、资源 provenance 和层级校验。
 type: plan
 status: pending
 created: 2026-07-20T00:00:00Z
@@ -18,20 +18,20 @@ Input/Submission/Oracle 信任边界，但让 L3、L4、L5 对论文原件、补
 
 - 审查 ADR-0007 的分层 InputBundle 决策。
 - 审查 Spec 001 v3、Interface 0001 修订和 AC-0003。
-- 明确 public manifest 与 private oracle/robustness intent 的边界。
+- 明确 runner-only bundle、runtime InputBundle 与 private oracle/robustness intent 的边界。
 - 审查通过后将 Spec/Interface/AC promote 为 active，ADR promote 为 accepted。
 
-## 阶段 2：Manifest 基建
+## 阶段 2：Bundle Lock 基建
 
-- 定义可机器校验的 InputBundle manifest schema。
+- 定义可机器校验的 `bundle.yaml` schema。
 - 实现 path、hash、authority、derived_from、transform 和 availability 校验。
 - 实现 L3/L4/L5 level validator 和 forbidden oracle-key 检查。
-- Runner 在调用被测系统前执行 validator，并保持 oracle 隔离。
+- Runner 在调用被测系统前执行 validator，并只 stage `input/`，隔离 bundle/metadata/oracle。
 - 覆盖 AC-0006/0007 的确定性测试。
 
 ## 阶段 3：L3 Entry 修复
 
-- 为 bench-001/002/004/005/006 建立 manifest。
+- 为 bench-001/002/004/005/006 建立 bundle lock。
 - 对论文引用的 figures、supplementary、code 和 accession 逐项处置。
 - 明确 constructed、synthetic、intentionally unavailable 和 derived resource。
 - 删除未声明重复文件；故障恢复资源必须具有清晰公开语义和私有注入记录。
@@ -46,7 +46,7 @@ Input/Submission/Oracle 信任边界，但让 L3、L4、L5 对论文原件、补
 
 ## 阶段 5：重新验证
 
-- 全量运行确定性 tests 和 manifest lint。
+- 全量运行确定性 tests 和 bundle lint。
 - 人工审查六个 cited-resource inventory。
 - 仅在 entry、oracle 和协议进入 RC 后重新执行 benchmark 并建立 baseline。
 
@@ -54,13 +54,13 @@ Input/Submission/Oracle 信任边界，但让 L3、L4、L5 对论文原件、补
 
 - 本设计单元不下载或修改论文材料。
 - 不把 supplementary、代码缺失自动判为系统失败。
-- 不在 public manifest 中加入 expected results、rubric 或故障注入原因。
+- 不将 bundle lock stage 给被测系统，也不在其中加入 expected results、rubric 或故障注入原因。
 - 不保留当前 bench-003 的内部开发 baseline。
 
 # 完成条件
 
 - ADR-0007 accepted，Spec/Interface/AC active。
 - AC-0006/0007 具有确定性自动化门禁。
-- 六个 entry 均有通过校验且经人工审查的 manifest。
+- 六个 entry 均有通过校验且经人工审查的 bundle lock。
 - bench-003 的真实论文材料和复现 scope 通过 L4 审查。
 - Plan Report 记录每项 AC 的 PASS/FAIL 和残余风险。

@@ -10,29 +10,36 @@ created: 2026-07-19T00:00:00Z
 
 ## InputBundle
 
-Runner 校验 `entries/<id>/input/manifest.yaml` 后，将整个 `input/` 复制到隔离工作目录，
-并只向被测系统提供该目录。`oracle/`、baseline、其他系统的历史结果和故障注入意图不属于
-InputBundle。
+Runner 校验 `entries/<id>/bundle.yaml` 后，将整个 `input/` 复制到隔离工作目录，并只向
+被测系统提供该目录。`bundle.yaml`、`metadata.yaml`、`oracle/`、baseline、其他系统的
+历史结果和故障注入意图不属于运行时 InputBundle。
 
 ```text
-input/
-├── manifest.yaml          # 必需，公开的资源与 provenance 清单
-├── paper/                 # 论文原始文件与派生表示
-├── supplementary/         # 补充材料原件
-├── code/                  # cited code 的冻结快照
-├── data/                  # 冻结数据、派生数据或访问 descriptor
-└── resources/             # landing page、availability record 等辅助快照
+entries/<id>/
+├── bundle.yaml            # 必需，Runner 校验，不 stage
+├── input/                 # 被测系统唯一可见
+│   ├── paper/             # 论文原始文件与场景允许的派生表示
+│   ├── supplementary/     # 补充材料原件
+│   ├── code/              # cited code 的冻结快照
+│   ├── data/              # 冻结数据、派生数据或访问 descriptor
+│   └── resources/         # 场景实际提供的辅助材料
+├── oracle/                # evaluator 私有
+└── metadata.yaml          # Runner 元数据，不 stage
 ```
 
-除 `manifest.yaml` 外，每个 staged 文件都必须由一个 resource 声明。目录可以不存在，
-但论文引用而未打包的资源必须有带状态的 resource record，不能通过省略目录表达。
+每个 staged 文件都必须由 `bundle.yaml` 中的一个 resource 声明。目录可以不存在，但论文
+引用而未打包的资源必须在控制平面有带状态的 resource record，不能通过省略目录表达。
+该记录用于完整性审查，不会告诉被测系统哪些资源缺失、受限或由 benchmark 注入。
+若 rubric 允许系统因资源限制而降级，该限制必须能从 staged input 或运行环境中观察，
+不能只存在于 `bundle.yaml`。
 
-### manifest.yaml
+### bundle.yaml
 
 ```yaml
 schema_version: "1.0"
 entry_id: bench-003
 level: L4
+input_root: input
 primary_paper: paper-main
 resources:
   - id: paper-main
@@ -64,15 +71,15 @@ resources:
     access_notes: Repository returned 404 during bundle review.
 ```
 
-### ManifestResource
+### BundleResource
 
 | 字段 | 必需 | 说明 |
 |------|------|------|
-| `id` | 是 | InputBundle 内稳定且唯一的资源 ID |
+| `id` | 是 | entry bundle 内稳定且唯一的资源 ID |
 | `role` | 是 | `paper` / `supplementary` / `code` / `data` / `metadata` / `environment` / `resource_page` |
 | `authority` | 是 | `original` 或 `derived` |
 | `availability` | 是 | `bundled` / `external` / `restricted` / `unavailable` / `not_applicable` |
-| `path` | bundled 时 | 相对 `input/` 的文件路径；禁止绝对路径和 `..` |
+| `path` | bundled 时 | 相对 `input_root` 的文件路径；禁止绝对路径和 `..` |
 | `source` | original 时 | DOI、accession、仓库/发布页 URL；constructed L3 使用 `urn:benchmark:<entry>:<resource>` |
 | `sha256` | bundled 文件时 | 文件内容校验和 |
 | `retrieved_at` | bundled original 时 | 获取时间 |
@@ -91,8 +98,9 @@ resources:
 | L4 | 真实发布的 original PDF/XML/HTML | 所有 cited resources 必须 bundled、restricted 或 unavailable；派生/裁剪材料必须可追溯 |
 | L5 | original paper 或稳定 DOI/PMID/arXiv locator | 允许 external，运行时执行真实资源发现并记录结果 |
 
-Manifest 不得包含 scientific expected values、rubric checks、score、expected verdict 或
-故障注入原因。它描述被测系统在现实中可观察的材料事实，不描述如何得分。
+Bundle lock 不得包含 scientific expected values、rubric checks、score、expected verdict
+或故障注入原因。它描述 benchmark maintainer 审计的材料事实；故障注入意图进入 private
+oracle。Runner 必须保证 bundle lock 不出现在被测系统的工作目录、Prompt 或工具上下文中。
 
 ## SubmissionBundle
 
@@ -153,7 +161,7 @@ Evaluator 独立生成 `result.json`：
 | code | 含义 |
 |------|------|
 | `INVALID_INPUT` | InputBundle 不完整或损坏 |
-| `INVALID_INPUT_PROVENANCE` | manifest、checksum、层级完整性或派生关系不合法 |
+| `INVALID_BUNDLE` | bundle schema、checksum、层级完整性、派生关系或 staged 文件集合不合法 |
 | `INVALID_SUBMISSION` | manifest 缺字段、路径越界或 artifact 不存在 |
 | `INVALID_ORACLE` | rubric 或 verifier 配置错误 |
 | `EXECUTION_BLOCKED` | 被测系统未完成执行 |

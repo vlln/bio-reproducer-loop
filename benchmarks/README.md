@@ -8,6 +8,7 @@ contain the project's L1/L2 unit, contract, or internal LLM evaluations.
 Each `entries/bench-NNN/` directory contains exactly:
 
 ```text
+bundle.yaml     runner-only input inventory and provenance lock
 input/          material exposed to the system under test
 oracle/         private scientific claims and evaluation rubric
 metadata.yaml   entry discovery and version metadata
@@ -18,8 +19,9 @@ metadata.yaml   entry discovery and version metadata
 weights, and verdict thresholds. The system under test never receives `oracle/`.
 
 The next InputBundle contract is currently proposed in ADR-0007 and Interface
-0001. Existing entries have not passed its manifest and material-fidelity gate;
-they remain internal development inputs rather than release-ready benchmarks.
+0001. Existing entries have not passed its runner-only bundle lock and
+material-fidelity gate; they remain internal development inputs rather than
+release-ready benchmarks.
 
 ## Results and baselines
 
