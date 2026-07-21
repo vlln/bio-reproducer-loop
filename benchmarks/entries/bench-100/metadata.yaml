@@ -77,6 +77,8 @@ capability_coverage:
     - historical_workflow: "Identify FastQC, FASTX, TopHat, Cufflinks, Cuffdiff, CummeRbund, and DAVID"
   does_not_cover:
     - raw_alignment_default: "The 46.9 GiB FASTQ set is resolvable but not staged as the default scored path"
+    - historical_environment_execution: "Historical tool identities are preserved, but executable packages and containers are not frozen in this processed-output scope"
+    - prior_microarray_reanalysis: "GSE34313 and GSE13168 support paper context but are not scored"
     - wet_lab_reproduction: "qRT-PCR, Western blot, cytokine, and knockdown experiments are not scored"
     - gwas_reproduction: "Restricted participant-level GWAS analyses are not scored"
 

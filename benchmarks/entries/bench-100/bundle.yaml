@@ -66,7 +66,7 @@ resources:
     authority: original
     availability: bundled
     path: resources/SRP033351_fastq_manifest.tsv
-    source: https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRP033351
+    source: "https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRP033351&result=read_run&fields=run_accession,sample_accession,experiment_accession,fastq_ftp,fastq_md5,fastq_bytes&format=tsv"
     sha256: e4a810ed5fe519b34c58891028650386cb960ebb3c89c77ef3f30723b0d90b72
     retrieved_at: "2026-07-21T00:00:00Z"
     media_type: text/tab-separated-values
@@ -95,17 +95,35 @@ resources:
     source: https://david.ncifcrf.gov/
     checked_at: "2026-07-21T00:00:00Z"
     access_notes: The article does not identify the historical DAVID database release used for Table S4.
+  - id: historical-rnaseq-toolchain
+    role: environment
+    authority: original
+    availability: not_applicable
+    source: https://github.com/blancahimes/taffeta/blob/d12f00f74de35e437068349c617869a97856e160/README.md
+    access_notes: FastQC, trimming, TopHat, Cufflinks/Cuffdiff, CummeRbund, Picard, samtools, and bamtools are identified by the article and frozen Taffeta snapshot, but executable packages are outside the processed-output verification scope and are not a frozen runtime environment.
+  - id: prior-microarray-gse34313
+    role: data
+    authority: original
+    availability: not_applicable
+    source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE34313
+    access_notes: Public prior-study microarray data support article Table 3 but are outside the scored RNA-seq processed-output scope; the reported results remain available in the bundled article.
+  - id: prior-microarray-gse13168
+    role: data
+    authority: original
+    availability: not_applicable
+    source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE13168
+    access_notes: Public prior-study microarray data support article Table 3 but are outside the scored RNA-seq processed-output scope; the reported results remain available in the bundled article.
   - id: ics-response-gwas
     role: data
     authority: original
     availability: restricted
-    source: https://doi.org/10.1371/journal.pone.0099625#ics-response-gwas
+    source: https://doi.org/10.1371/journal.pone.0099625
     checked_at: "2026-07-21T00:00:00Z"
-    access_notes: Participant-level clinical-trial genotype and phenotype data are not released with the article.
+    access_notes: The article describes an inhaled-corticosteroid-resistance GWAS across clinical-trial cohorts but gives no public participant-level accession; genotype and phenotype data are not released with the article.
   - id: bronchodilator-response-gwas
     role: data
     authority: original
     availability: restricted
-    source: https://doi.org/10.1371/journal.pone.0099625#bronchodilator-response-gwas
+    source: https://doi.org/10.1371/journal.pone.0099625
     checked_at: "2026-07-21T00:00:00Z"
-    access_notes: Participant-level GWAS data are not released with the article; only reported results are bundled.
+    access_notes: The article describes a bronchodilator-response GWAS but gives no public participant-level accession; only aggregate reported results are bundled.
