@@ -18,10 +18,10 @@ metadata.yaml   entry discovery and version metadata
 `oracle/rubric.yaml` owns evidence selection, comparison rules, tolerances,
 weights, and verdict thresholds. The system under test never receives `oracle/`.
 
-The InputBundle contract is active in ADR-0007 and Interface 0001. Bench-001 is
-the validator pilot; bench-002 through bench-006 have not passed the runner-only
-bundle lock and material-fidelity gate. All entries remain internal development
-inputs until their scientific review and release gate are complete.
+The InputBundle contract is active in ADR-0007 and Interface 0001. The five
+constructed L3 entries pass the automated bundle gate. Bench-003 remains invalid
+until it is rebuilt from real L4 materials. All entries remain internal
+development inputs until their scientific review and release gate are complete.
 
 ## Results and baselines
 
@@ -40,6 +40,7 @@ does not require every ad hoc benchmark invocation to run five times.
 
 ```bash
 bench-run validate-entry --entry bench-001
+make bench-validate
 bench-run run --entry bench-001 --runs 1
 bench-run submit --entry bench-001
 bench-run eval --entry bench-001

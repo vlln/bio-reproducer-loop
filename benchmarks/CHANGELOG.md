@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Marked all existing entries as internal development inputs pending bundle-lock and cited-resource review.
 - Marked bench-003 for L4 reconstruction because its current input is a derived summary and subset dataset.
 - Added the runner-only bundle schema, validator, staging gate, and bench-001 migration pilot.
+- Migrated all five constructed L3 entries and added bundle validation to the deterministic lint gate.
+- Removed untraceable constructed PDFs and bench-006's byte-identical hidden data duplicate.
 
 ## [2.0.0] - 2026-07-19
 

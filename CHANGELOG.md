@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 退回 DESIGN，提出 L3/L4/L5 分层 InputBundle、runner-only bundle lock 和 provenance 契约
 - 完成 bench-001 至 bench-006 的本地材料审计；bench-003 标记为需要重建的假 L4 输入
 - 冻结 runner-only bundle lock 契约，实现 schema、validator、staging gate 和 bench-001 pilot
+- 完成五个构造 L3 entry 的 bundle 迁移，清理无 provenance PDF 与 bench-006 隐藏重复数据
 
 ## [0.1.0] — 2026-07-19
 

@@ -4,8 +4,8 @@
 |------|-----|
 | **当前阶段** | `TEST_INFRA`（InputBundle bundle gate 与 entry 迁移） |
 | **设计评估** | ADR-0007 accepted；Spec v3、Interface 0001 与 AC-0003 active |
-| **基建评估** | bundle schema、validator、`validate-entry`、staging contract 和 bench-001 pilot 已验证；bench-002 至 006 待迁移 |
-| **系统测试** | 46 个确定性测试通过；现有运行仅作为迁移期观测，不建立 tracked baseline |
+| **基建评估** | bundle schema、validator、`validate-entry` 和 staging contract 已验证；五个构造 L3 已迁移，bench-003 待重建 |
+| **系统测试** | 52 个确定性测试通过；现有运行仅作为迁移期观测，不建立 tracked baseline |
 
 当前隔离保证是 Runner 不将 control-plane 文件复制或传入运行时 InputBundle。若被测系统
 在宿主机上拥有不受限的文件系统权限，OS/container 级强隔离仍需单独实现和验证。

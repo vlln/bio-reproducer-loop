@@ -12,7 +12,7 @@ created: 2026-07-20T00:00:00Z
 不判断真实论文页面最终有哪些附件。外部论文、supplementary、仓库和 accession 的存在性
 均标记为待后续 source audit。
 
-# 总体发现
+# 总体发现（初始审计）
 
 | 项目 | 观察 |
 |------|------|
@@ -30,11 +30,11 @@ created: 2026-07-20T00:00:00Z
 | Entry | 当前材料 | 确认缺口/冲突 | 建议处置 | 风险 |
 |-------|----------|---------------|----------|------|
 | bench-001 | constructed MD，10-gene counts，runner-only bundle lock | 已移除来源和转换过程不明的冗余 PDF；bundle 登记 primary paper、S1/counts、DOI、GEO、代码和缺图状态 | 自动 gate 已通过；发布前复核外部资源的可观察行为 | medium |
-| bench-002 | constructed MD/PDF，20-gene counts | 引用 3 个 figure、S1/S2 和代码；只有 counts；metadata 同时写 supplementary:none 与 missing_supplementary:true | 明确缺失 supplementary 是否为测试意图；补齐或建立 unavailable record；修正 complexity profile | high |
+| bench-002 | constructed MD，20-gene counts，runner-only bundle lock | 已移除无 provenance PDF；bundle 登记 S1、缺失 S2、3 个缺图、DOI、GEO 和代码；修正 supplementary 与 KEGG ID 位置 | 自动 gate 已通过；发布前人工复核场景可观察性 | medium |
 | bench-003 | 82 行 MD，357-gene counts + samples | metadata 声明 real_published/pdf，但 PDF 不存在；摘要将真实论文整理为 DESeq2 workflow；输入声称约 64k transcripts，却只提供 357 基因且无裁剪 provenance；无 supplementary/code/source snapshot | 原地重建为真实 L4；获取原始发布物与 cited resources；核查真实方法链；重建 data scope 和 oracle | critical |
-| bench-004 | constructed MD/PDF，50-gene counts | 声明 data_source:real 和虚构 GSE88888；引用 2 个 figure、S1/S2、Python/R scripts，均未完整打包 | 保持 L3 constructed；把“real data”改为可证实来源或 synthetic；补齐跨语言脚本材料/状态 | high |
-| bench-005 | constructed MD/PDF，30-gene counts | 引用 2 个 figure、S1/S2、analysis.R、GSE77777；仅 counts 存在；环境冲突与材料遗漏混在一起 | 将环境漂移和资源缺失拆成明确注入；bundle lock 登记每项 cited resource | high |
-| bench-006 | constructed MD/PDF，两个相同的 11-row tab-delimited `.csv` | 论文声称 15 genes 和 DataIntegrityR；oracle 声明 truncated/format mismatch；隐藏 dotfile 与公开文件完全相同，不是 full recovery source；引用 figure、S2、script 均缺失 | 删除无语义 dotfile 或重新设计恢复资源；bundle lock 明确损坏输入；不要把隐藏文件当隐式答案 | critical |
+| bench-004 | constructed MD，50-gene counts，runner-only bundle lock | 已将 data_source 修正为 synthetic；GSE88888 保留为可观察的错误 locator；缺图、S2 和代码均有 disposition | 自动 gate 已通过；发布前人工复核跨语言 scope | medium |
+| bench-005 | constructed MD，30-gene counts，runner-only bundle lock | 已登记 DOI、错误 GEO、失效代码、缺失 S2 和 2 个缺图；metadata 修正 wrong_accession | 自动 gate 已通过；环境冲突仍由 private rubric 审查 | medium |
+| bench-006 | constructed MD，11-gene TSV，runner-only bundle lock | 已删除与 counts 完全相同的隐藏副本和无 provenance PDF；登记实际 TSV、错误 GEO、DataIntegrityR、代码、S2 和缺图 | 自动 gate 已通过；损坏输入不可恢复性仍需人工确认 | high |
 
 # 设计结论
 
@@ -47,16 +47,24 @@ created: 2026-07-20T00:00:00Z
 # 实施进度
 
 - `bundle.schema.json` 和无外部 schema 运行时依赖的 validator 已实现。
-- `bench-run validate-entry --entry bench-001` 通过；bench-002 至 006 因没有 bundle lock 被拒绝。
+- `bench-run validate-entry` 对 bench-001/002/004/005/006 通过；bench-003 因没有 bundle lock 被拒绝。
 - Runner 在创建结果或调用 adapter 前校验 entry；staging 会清除旧目录并只复制 `input/`。
 - AC-0006 的 hash、dotfile、path escape、oracle 字段、派生 provenance、metadata 冲突和
   control-plane 残留已有确定性测试。
 - OS/container 级文件系统强隔离不在本次 staging contract 的证明范围内。
+
+# 外部资源核查
+
+2026-07-21 的实际查询结果：
+
+- 构造 entry 的四个 `10.1234/bench.*` DOI 和四个 `github.com/example/...` 仓库均返回 HTTP 404。
+- GSE99999、GSE88888、GSE77777、GSE66666 均为公开 GEO series，但分别对应系统性硬化症、
+  Parkinson 病、poly(I:C) MEF 和拟南芥研究，与构造论文主题不匹配。
+- `DataIntegrityR` 的 CRAN metadata 与 R-universe package 查询均返回 HTTP 404。
 
 # 待外部核查
 
 - Himes et al. 2014 的原始 PDF/XML、PLOS/PMC supplementary 清单与许可。
 - 论文实际使用的统计方法、代码公开情况和 GSE52778 文件清单。
 - airway Bioconductor 数据与论文原始分析输入/方法的关系。
-- 构造 PDF 是否由 Markdown 生成、是否实际嵌入 Markdown 中断链的 figure。
-- 每个构造场景中 fake DOI/GEO/repository 的预期公开语义。
+- 五个构造 entry 的 unavailable/external 状态在目标运行环境中是否保持相同可观察行为。
