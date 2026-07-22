@@ -10,5 +10,5 @@
 
 当前阶段：TEST_INFRA。Plan 003 已完成独立 evaluator、测试分域和 14-case 真实 LLM
 smoke；Plan 004 已完成 InputBundle 契约、validator、staging、六个 entry 迁移和人工
-fidelity review。当前堆叠分支待审查合并。Plan 002 继续负责 L4 执行环境冻结；Plan 005
-负责 OS/container 强文件系统隔离。
+fidelity review；两者已随堆叠分支集成到 `develop`。Plan 002 继续负责 L4 执行环境冻结；
+Plan 005 负责 OS/container 强文件系统隔离。

@@ -2,7 +2,7 @@
 
 | 字段 | 值 |
 |------|-----|
-| **当前阶段** | `TEST_INFRA`（Plan 003/004 已完成，堆叠分支待审查合并） |
+| **当前阶段** | `TEST_INFRA`（Plan 003/004 已完成并集成到 `develop`） |
 | **设计评估** | ADR-0007 accepted；Spec v3、Interface 0001 与 AC-0003 active |
 | **基建评估** | 独立 evaluator、测试分域、bundle schema、validator、staging contract 与六个 entry 的人工 fidelity review 已通过；强隔离进入 Plan 005 |
 | **系统测试** | 57 个确定性测试通过；12 个 component 与 2 个 handoff 真实 LLM smoke 有效通过；开发期不建立 tracked baseline |
