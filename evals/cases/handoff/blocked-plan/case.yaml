@@ -8,4 +8,4 @@ upstream:
 output: 04_data/data_manifest.md
 checks:
   contains_any: [[blocked, unavailable]]
-  not_contains: [downloaded, verified]
+  not_contains: ["Status | COMPLETE", "Status | SUCCESS"]

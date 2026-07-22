@@ -48,11 +48,11 @@ def assert_text_checks(content: str, checks: dict) -> None:
     minimum = int(checks.get("min_chars", 0))
     assert len(content) >= minimum, f"Output too short: {len(content)} < {minimum}"
     lowered = content.lower()
-    missing = [value for value in checks.get("contains", []) if value.lower() not in lowered]
-    forbidden = [value for value in checks.get("not_contains", []) if value.lower() in lowered]
+    missing = [value for value in checks.get("contains", []) if str(value).lower() not in lowered]
+    forbidden = [value for value in checks.get("not_contains", []) if str(value).lower() in lowered]
     unmatched_groups = [
         values for values in checks.get("contains_any", [])
-        if not any(value.lower() in lowered for value in values)
+        if not any(str(value).lower() in lowered for value in values)
     ]
     assert not missing, f"Missing expected content: {missing}"
     assert not forbidden, f"Found forbidden content: {forbidden}"

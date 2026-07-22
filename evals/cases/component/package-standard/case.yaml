@@ -6,6 +6,7 @@ input: {benchmark: bench-001}
 upstream:
   01_plan/plan.md: phase-states/valid/bench-001/01_plan/plan.md
   06_validate/report.md: phase-states/valid/bench-001/06_validate/report.md
+  06_validate/metrics.json: phase-states/valid/bench-001/06_validate/metrics.json
 checks:
   files: [README.md, run.sh]
   contains:

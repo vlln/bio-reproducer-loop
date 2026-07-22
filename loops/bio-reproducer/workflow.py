@@ -1,3 +1,7 @@
+import json
+from pathlib import Path
+
+
 meta = {
     "name": "bio-reproducer",
     "description": "复现生物信息学论文：7 阶段从论文提取到打包交付",
@@ -14,6 +18,20 @@ meta = {
         {"title": "Package", "detail": "生成 README 和 run.sh"},
     ],
 }
+
+
+def _validation_verdict(validate_result, output_dir):
+    if validate_result.value:
+        verdict = validate_result.value.get("payload", {}).get("verdict")
+        if verdict:
+            return verdict
+
+    metrics_path = Path(output_dir) / "06_validate" / "metrics.json"
+    try:
+        metrics = json.loads(metrics_path.read_text())
+    except (OSError, json.JSONDecodeError):
+        return None
+    return metrics.get("verdict")
 
 
 def run(agent, parallel, pipeline, phase, log, args, workflow, state):
@@ -112,7 +130,7 @@ def run(agent, parallel, pipeline, phase, log, args, workflow, state):
         return None
 
     # ── Phase 7: Package ─────────────────────────────────────────────
-    verdict = validate_result.value.get("payload", {}).get("verdict") if validate_result.value else None
+    verdict = _validation_verdict(validate_result, out)
     if verdict in ("REPRODUCED", "PARTIAL"):
         phase("Package")
         package_result = agent(
