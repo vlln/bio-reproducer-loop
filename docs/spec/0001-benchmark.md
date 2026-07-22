@@ -1,9 +1,9 @@
 ---
 title: Spec 001 — 测试、评测与基准体系
-description: bio-reproducer 的确定性软件测试、内部 LLM 行为评测、分层 InputBundle 和公开黑盒 benchmark，以及独立评估协议。
+description: bio-reproducer 的确定性测试、内部 LLM 评测，以及采用 disposable VM、分层 InputBundle 和独立评分的公开黑盒 benchmark。
 type: spec
-status: active
-version: 3
+status: proposed
+version: 4
 created: 2026-07-15T00:00:00Z
 ---
 
@@ -18,6 +18,10 @@ created: 2026-07-15T00:00:00Z
 Benchmark entry ID 按输入来源分区：`bench-001` 至 `bench-099` 保留给构造论文，
 `bench-100` 至 `bench-999` 保留给真实论文。编号不替代 L3/L4/L5；前者表达材料来源，
 后者表达执行环境与资源冻结程度。
+
+公开 benchmark 的正式执行边界统一为 runner-owned disposable VM。L3/L4/L5、网络策略和
+系统内部使用 Pixi/OCI 的方式均不选择其他正式 backend。宿主 Docker sandbox 只用于
+开发/CI 验证，其结果不能进入 release report 或 baseline。
 
 ### 三个域的关键区别
 
@@ -57,6 +61,7 @@ Benchmark entry ID 按输入来源分区：`bench-001` 至 `bench-099` 保留给
 | L5 生产基准 | 真实环境采样监控、长期趋势追踪 | (无固定目录，按需采样) | P2 |
 | Benchmark Runner | 论文包执行、结果采集、期望对比、报告生成 | `benchmarks/runner/` | P0 |
 | 引擎适配器 | 将引擎无关的论文包映射为 loopflow 调用 | `benchmarks/runner/adapters/` | P0 |
+| VM Control Plane | 创建 fresh worker、attach I/O、执行 deadline、收集产物并 teardown | `benchmarks/runner/` | P0 |
 
 ### 确定性软件测试
 
@@ -111,7 +116,7 @@ Run → Validate:      Validate 能否正确读取 run_results.md 中的实际�
 
 ### L3 详细说明
 
-构造论文，黑盒端到端。论文是我们写的，数据极小（≤10MB），工具极简（1-2 个容器），ground truth 完全已知。测系统的阅读理解能力和端到端完成率。L3 可以使用 Markdown/PDF 和构造数据，但必须通过 runner-only bundle lock 审计所有 staged 文件、虚构引用和不可用资源；不能用 benchmark maintainer 遗漏模拟资源缺失，也不能把审计清单提供给被测系统。
+构造论文，黑盒端到端。论文是我们写的，数据极小（≤10MB），工具极简（1-2 个容器），ground truth 完全已知。测系统的阅读理解能力和端到端完成率。L3 可以使用 Markdown/PDF 和构造数据，但必须通过 runner-only bundle lock 审计所有 staged 文件、虚构引用和不可用资源；不能用 benchmark maintainer 遗漏模拟资源缺失，也不能把审计清单提供给被测系统。正式 L3 同样在 disposable VM 中运行，环境简单不等于降低隔离边界。
 
 复现场景分类：
 
@@ -155,11 +160,19 @@ L4 的 `expected_verdict: PARTIAL` 的合理原因：
 - 论文部分结果依赖付费工具（系统用替代方案生成了可比结果）
 - 论文的某些图表缺乏原始数据无法验证（系统正确标注了限制）
 
-环境冻结：数据预下载到本地对象存储，容器镜像预拉取到本地 registry，外部 URL 映射到本地。解析生成的 Markdown、抽取图像、格式转换或裁剪数据只能作为派生材料；必须记录原始资源、checksum、转换工具、参数和脚本，不能静默替代原始论文或完整数据。
+环境冻结：数据预下载到可信对象存储，runner-required image 由控制面预取并校验，外部 URL
+按 entry 约束解析到固定对象。每次 run 仍从同一 immutable worker base 创建 fresh VM，
+冻结内容通过 InputBundle 或受控注入进入 guest，不复用上一 run 的可写 overlay。解析生成的
+Markdown、抽取图像、格式转换或裁剪数据只能作为派生材料；必须记录原始资源、checksum、
+转换工具、参数和脚本，不能静默替代原始论文或完整数据。
 
 ### L5 详细说明
 
-真实论文，真实环境，真实网络。InputBundle 提供原始论文或稳定标识符作为最小可信起点，系统自行发现在线资源并记录实际解析结果。随机采样新论文尝试复现，监控真实世界复现率和外部依赖脆弱性。不做 CI gate，做长期观测。
+真实论文，真实环境，真实网络。InputBundle 提供原始论文或稳定标识符作为最小可信起点，
+系统在 disposable VM 的 controlled-egress 策略下自行发现在线资源并记录实际解析结果。
+随机采样新论文尝试复现，监控真实世界复现率和外部依赖脆弱性。不做 CI gate，做长期
+观测。L5 的网络真实性不改变 control-plane/guest 隔离，也不允许 runner 自身依赖未固定
+的公共 registry 才能启动 worker。
 
 ### 文件系统结构
 
@@ -185,6 +198,7 @@ bio-reproducer/
 │   ├── runner/                   # benchmark 执行器
 │   │   ├── cli.py
 │   │   ├── runner.py
+│   │   ├── worker.py             # disposable VM lifecycle（待实现）
 │   │   ├── independent_evaluator.py
 │   │   ├── reporter.py
 │   │   └── adapters/             # 引擎适配 (唯一耦合点)
@@ -355,6 +369,26 @@ entry 不得标记为 L4。Runner 只能 stage `input_root`，不得暴露 bundl
 | 用途 | 筛选匹配能力的 entry | 筛选测试特定故障注入的 entry |
 | 查询示例 | "tool_count ≤ 3 的 entry" | "repo_gone=true 的 entry" |
 
+### ExecutionEnvelope
+
+ExecutionEnvelope 是 formal run 的控制面记录，不向被测系统暴露 private 值。
+
+| 字段 | 类型 | 约束 | 说明 |
+|------|------|------|------|
+| isolation | enum | 固定 `disposable-vm` | 可发布结果的唯一正式隔离类型 |
+| purpose | enum | formal/validation-only | 是否允许进入 release report/baseline |
+| worker_image | object | digest 必需 | Runner-owned immutable VM base identity |
+| system_artifact | object | digest 必需 | 被测系统 opaque artifact 与 adapter identity |
+| network_policy | enum | offline/controlled-egress | Entry interaction mode 映射后的 VM 网络策略 |
+| deadline_seconds | int | >0 | Runner-owned wall-clock deadline |
+| started_at | datetime | NOT NULL | Worker 启动时间 |
+| finished_at | datetime | 完成时必需 | Run 结束时间 |
+| teardown | object | completed 必需 | VM/container/overlay/secret 清理与审计结果 |
+
+Worker image 只提供 guest boot、control channel、I/O attach 与 VM-local runtime 等基础设施。
+System artifact 的内部形式由 adapter 决定；Pixi environment、OCI image、源码包或多容器
+workflow 不进入 ExecutionEnvelope 的 runtime enum。
+
 ### BenchmarkSubmission
 
 | 字段 | 类型 | 约束 | 说明 |
@@ -405,6 +439,11 @@ entry 不得标记为 L4。Runner 只能 stage `input_root`，不得暴露 bundl
 | BR-010 | cited supplementary/code/data 不得因 benchmark maintainer 省略而隐式缺失 | entry 审查时 | bundled 或在 bundle lock 提供 restricted/unavailable record |
 | BR-011 | 派生与裁剪材料必须可追溯、可重复生成 | authority=derived 时 | derived_from 与 transform 必填 |
 | BR-012 | bundle lock 不得污染 InputBundle 或包含 oracle | entry 校验与 staging 时 | bundle 不可见；expected/rubric/score/verdict/故障注入字段禁止出现 |
+| BR-013 | 可发布 run 必须使用 disposable VM | formal execution 时 | isolation 固定为 disposable-vm，不允许 host/container fallback |
+| BR-014 | Guest 只能获得 system、input、workspace/output 和显式网络/secret | worker staging 时 | repository、oracle、host socket 与 shared object store 不得 attach |
+| BR-015 | Worker teardown 是结果有效性的组成部分 | 所有 run 结束时 | teardown 未完成的 run 不得发布或进入 baseline |
+| BR-016 | 系统打包方式不属于 benchmark runtime taxonomy | adapter 集成时 | Pixi/OCI/source 等只记录 artifact/adapter identity |
+| BR-017 | Validation backend 结果与 formal result 分开 | Docker sandbox 或 mock 执行时 | purpose=validation-only，release gate 必须拒绝 |
 
 ### blocked_reason 分类
 
@@ -425,6 +464,8 @@ entry 不得标记为 L4。Runner 只能 stage `input_root`，不得暴露 bundl
 | 性能 | L3 单篇论文执行时间 | < 10 min |
 | 性能 | 确定性 `pytest tests/` | < 30 s |
 | 隔离性 | 被测系统读取 oracle 的能力 | 不可读取 |
+| 隔离性 | 被测系统控制 host runtime 的能力 | 不可获得 host socket/control channel |
+| 清理性 | Formal run 后 worker 残留 | 0 个 VM/container/overlay/temporary secret |
 | 可重复性 | L3 同篇论文 verdict 匹配率 | ≥ 60% (5 次中 ≥3 次) |
 | 兼容性 | L3-L5 基准可被其他引擎使用 | 是 |
 
@@ -437,6 +478,7 @@ entry 不得标记为 L4。Runner 只能 stage `input_root`，不得暴露 bundl
 | loopflow | ≥0.13.0 | Agent 执行引擎 |
 | pytest | ≥8.0 | 确定性单元与契约测试框架 |
 | Python | ≥3.10 | 运行环境 |
+| Hardware virtualization/VM provider | 实现定义 | Formal benchmark worker isolation |
 
 ---
 
@@ -450,5 +492,9 @@ entry 不得标记为 L4。Runner 只能 stage `input_root`，不得暴露 bundl
 | Baseline | 在冻结 benchmark 版本上，由特定系统、模型、Prompt、工具和环境产生的发布级历史观测 |
 | InputBundle | 被测系统运行时唯一可见、带 provenance 的论文、数据、代码、补充材料和资源记录 |
 | SubmissionBundle | 被测系统产出的 manifest 与实际 artifacts |
+| ExecutionEnvelope | Formal run 的 worker、system、network、deadline 与 teardown provenance |
+| WorkerImage | Runner-owned、按 digest 固定的 disposable VM immutable base |
+| SystemArtifact | Adapter 注入 guest 的 opaque 被测系统制品；内部打包方式不属于 benchmark 协议 |
+| Validation backend | 只用于开发/CI 的非正式执行路径，其结果不得进入 release baseline |
 | 评估协议 | evaluator 使用私有 oracle 检查 submission 并生成 result 的规则 |
 | 引擎适配器 | 将引擎无关的论文包映射为特定引擎调用的桥接模块 |

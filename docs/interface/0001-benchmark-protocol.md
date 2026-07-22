@@ -1,18 +1,37 @@
 ---
-title: Interface 001 — Benchmark 输入、提交与评估协议
-description: 定义分层且可追溯的 input bundle、submission bundle 和 evaluator result 协议及其信任边界。
+title: Interface 001 — Benchmark 输入、执行、提交与评估协议
+description: 定义 disposable VM execution envelope、可追溯 InputBundle、SubmissionBundle、EvaluatorResult 及其信任边界。
 type: interface
-status: active
+status: proposed
 created: 2026-07-19T00:00:00Z
 ---
 
-# Interface 001: Benchmark 输入、提交与评估协议
+# Interface 001: Benchmark 输入、执行、提交与评估协议
+
+## 信任边界
+
+```text
+trusted control plane
+├── Runner / Curator / bundle validator
+├── worker image resolver / artifact collector
+├── private oracle / evaluator
+└── disposable VM (untrusted system boundary)
+    ├── runner-owned immutable worker base
+    ├── opaque system artifact + guest root + VM-local Docker
+    ├── read-only InputBundle
+    └── writable workspace / output
+```
+
+正式结果的 `isolation` 固定为 `disposable-vm`。Docker sandbox、mock executor 或 host
+execution 不是并列的正式 runtime；允许存在的 Docker sandbox 结果必须标为
+`validation-only`，release gate 不接受其进入 baseline。
 
 ## InputBundle
 
-Runner 校验 `entries/<id>/bundle.yaml` 后，将整个 `input/` 复制到隔离工作目录，并只向
-被测系统提供该目录。`bundle.yaml`、`metadata.yaml`、`oracle/`、baseline、其他系统的
-历史结果和故障注入意图不属于运行时 InputBundle。
+Runner 校验 `entries/<id>/bundle.yaml` 后，将整个 `input/` 物化到 entry-local staging，
+再以只读语义 attach 到 disposable VM，并只向被测系统提供该目录。`bundle.yaml`、
+`metadata.yaml`、`oracle/`、baseline、其他系统的历史结果和故障注入意图不属于运行时
+InputBundle。
 
 ```text
 entries/<id>/
@@ -102,12 +121,77 @@ Bundle lock 不得包含 scientific expected values、rubric checks、score、ex
 或故障注入原因。它描述 benchmark maintainer 审计的材料事实；故障注入意图进入 private
 oracle。Runner 必须保证 bundle lock 不出现在被测系统的工作目录、Prompt 或工具上下文中。
 
+## FormalExecution
+
+### Worker 与 system contract
+
+Runner 使用按 digest 固定、由控制面管理的 immutable worker image。Worker 提供 guest
+启动、control channel、I/O attach 和 VM-local runtime；不得内置 entry oracle。Adapter
+将被测系统作为 opaque system artifact 注入 guest，并提供 guest 内启动命令。
+
+System artifact 可以在内部使用 Pixi、Conda、OCI、源码安装或多 container workflow。
+这些形式不得进入 entry schema 或 formal runtime enum。公共协议只记录 artifact digest
+和 adapter identity。
+
+### 生命周期
+
+1. 校验 InputBundle、worker image digest、system artifact digest 与 network policy。
+2. 从 immutable base 创建 fresh writable overlay，不恢复失败 run 的 overlay。
+3. Attach read-only input、独立 writable workspace/output；注入最小权限临时 secret。
+4. 启动 guest 和被测系统；Runner 在 VM 外执行 wall-clock deadline。
+5. 被测系统退出后停止 guest，只从 output 构造 SubmissionBundle。
+6. 删除 guest process、VM-local container、overlay、attach point 和临时 secret。
+7. Teardown 审计通过后，formal run 才可进入 release report 或 baseline。
+
+### 网络策略
+
+| `network_policy` | 语义 |
+|------------------|------|
+| `offline` | Guest 无外部 egress；仅保留 runner control channel |
+| `controlled-egress` | Guest 可访问 entry 允许的外部资源；控制面仍不可达 |
+
+Entry 的 `offline` interaction mode 映射为 `offline`；`discovery` 与 `tool-runtime` 映射为
+`controlled-egress`。这是网络策略差异，不是 runtime backend 差异。临时凭据的值不得写入
+ExecutionEnvelope、日志或报告；只记录凭据名称、来源类型与失效状态。
+
+### ExecutionEnvelope
+
+```json
+{
+  "purpose": "formal",
+  "isolation": "disposable-vm",
+  "worker_image": {
+    "id": "bio-reproducer-worker",
+    "digest": "sha256:<64 lowercase hex characters>"
+  },
+  "system_artifact": {
+    "digest": "sha256:<64 lowercase hex characters>",
+    "adapter": "loopflow-adapter@0.1.0"
+  },
+  "network_policy": "offline",
+  "deadline_seconds": 3600,
+  "duration_seconds": 42,
+  "teardown": {
+    "status": "completed",
+    "worker_absent": true,
+    "overlay_absent": true,
+    "secrets_revoked": true
+  },
+  "stages": []
+}
+```
+
+`purpose=formal` 时 `isolation`、两个 digest、network policy、deadline 和 completed teardown
+全部必需。`purpose=validation-only` 可以记录 Docker sandbox provenance，但不得伪装成
+`disposable-vm`。
+
 ## SubmissionBundle
 
 被测系统执行结束后，adapter 生成 `submission.json`，所有路径相对于 submission 根目录。
 
 ```json
 {
+  "protocol_version": "2.0",
   "submission_id": "bench-001-20260719T120000Z",
   "bench_id": "bench-001",
   "system": {"name": "bio-reproducer", "version": "0.1.0"},
@@ -117,7 +201,17 @@ oracle。Runner 必须保证 bundle lock 不出现在被测系统的工作目录
     {"role": "figure", "id": "volcano", "path": "artifacts/volcano.png"},
     {"role": "run_log", "path": "artifacts/run.log"}
   ],
-  "execution": {"duration_seconds": 42, "stages": []}
+  "execution": {
+    "purpose": "formal",
+    "isolation": "disposable-vm",
+    "worker_image": {"id": "bio-reproducer-worker", "digest": "sha256:<digest>"},
+    "system_artifact": {"digest": "sha256:<digest>", "adapter": "loopflow-adapter@0.1.0"},
+    "network_policy": "offline",
+    "deadline_seconds": 3600,
+    "duration_seconds": 42,
+    "teardown": {"status": "completed"},
+    "stages": []
+  }
 }
 ```
 
@@ -125,9 +219,10 @@ oracle。Runner 必须保证 bundle lock 不出现在被测系统的工作目录
 必须被 evaluator 保留而非静默丢弃。同一 role 存在多个语义产物时必须提供稳定的 `id`
 （例如 contrast 名称），oracle 可以声明正反 contrast 或合并表为等价证据，但不得改写系统原始产物。
 
-已存在的 protocol v1 运行可执行 `bench-run submit --entry <id>`，从 `repro-data/`
-补建 manifest，无需重新运行被测系统。随后执行 `bench-run eval --entry <id>`；原系统生成的
-`result.json` 会保留为 `legacy-result.json`，新 `result.json` 仅由 evaluator 生成。
+已存在的 protocol v1 运行仍可执行 `bench-run submit --entry <id>`，从 `repro-data/` 补建
+manifest 并由 evaluator 生成历史观测；原系统生成的 `result.json` 保留为
+`legacy-result.json`。由于 v1 没有 disposable VM 与 teardown provenance，这类 submission
+不得进入 protocol v2 baseline，必须在 formal VM 中重新运行。
 
 ## OracleBundle
 
@@ -164,5 +259,11 @@ Evaluator 独立生成 `result.json`：
 | `INVALID_BUNDLE` | bundle schema、checksum、层级完整性、派生关系或 staged 文件集合不合法 |
 | `INVALID_SUBMISSION` | manifest 缺字段、路径越界或 artifact 不存在 |
 | `INVALID_ORACLE` | rubric 或 verifier 配置错误 |
+| `INVALID_EXECUTION_ENVIRONMENT` | worker/system digest、execution envelope 或 attach contract 不合法 |
+| `WORKER_UNAVAILABLE` | 节点不能提供 formal disposable VM，不允许回退到 host/container |
+| `WORKER_BOOT_FAILED` | Guest 启动或 control channel 建立失败，属于 infrastructure error |
 | `EXECUTION_BLOCKED` | 被测系统未完成执行 |
+| `EXECUTION_TIMEOUT` | 被测系统超过 runner-owned deadline；仍必须 teardown |
+| `ARTIFACT_COLLECTION_ERROR` | Output attach 或 submission 收集失败，属于 infrastructure error |
+| `TEARDOWN_ERROR` | VM/container/overlay/secret 存在残留；结果不可发布 |
 | `EVALUATION_ERROR` | evaluator 内部错误，不计为系统能力失败 |

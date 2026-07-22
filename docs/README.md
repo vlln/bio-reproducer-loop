@@ -2,14 +2,15 @@
 
 | 字段 | 值 |
 |------|-----|
-| **当前阶段** | `TEST_INFRA`（Plan 003/004/005 已完成） |
-| **设计评估** | ADR-0007/0008 accepted；Spec v3、Interface 0001 与 AC-0003 active |
-| **基建评估** | 独立 evaluator、测试分域、bundle/fidelity review 与 Docker runtime isolation 已通过；实际 L4 image 留在 Plan 002 |
+| **当前阶段** | `DESIGN`（VM runtime architecture revision） |
+| **设计评估** | ADR-0009、Spec v4、Interface 0001 与 AC-0004 proposed，等待内容审查 |
+| **基建评估** | Plan 006 已验证 disposable VM 可行；现有 Docker sandbox 降为 validation backend，VM runner 尚未实现 |
 | **系统测试** | 73 个确定性测试与 4 个显式真实 Docker probe 通过；12 个 component 与 2 个 handoff 真实 LLM smoke 有效通过；开发期不建立 tracked baseline |
 
-Runner/Curator 在可信宿主侧校验并 stage InputBundle；被测系统只能在 Docker sandbox
-中读取 `/input` 并写入 `/workspace`、`/output`。仓库、oracle、其他 entry、历史结果与
-Docker socket 均不挂载。当前剩余 benchmark 基建工作是 Plan 002 的实际系统/L4 镜像。
+正式设计草案要求 Runner/Curator 在可信控制面校验并 stage InputBundle，被测系统在每次
+新建的 disposable VM 中读取只读 `/input` 并写入 `/workspace`、`/output`。Guest 可以
+使用 root 与 VM-local Docker，但仓库、oracle、其他 entry、历史结果和 host runtime
+socket 不进入 VM。设计冻结后才能创建 VM runner 的 TEST_INFRA Plan。
 
 ## 子目录
 
