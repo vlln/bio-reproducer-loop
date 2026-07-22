@@ -9,3 +9,4 @@
 | 0005 | [独立评估与答案隔离](0005-independent-evaluation.md) | accepted |
 | 0006 | [测试、内部评测与公开基准分域](0006-test-eval-domains.md) | accepted |
 | 0007 | [分层 InputBundle 与材料真实性](0007-input-bundle-fidelity.md) | accepted |
+| 0008 | [Entry 分类与共享资源复用](0008-entry-taxonomy-resource-reuse.md) | accepted |

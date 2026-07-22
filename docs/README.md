@@ -3,7 +3,7 @@
 | 字段 | 值 |
 |------|-----|
 | **当前阶段** | `TEST_INFRA`（Plan 003/004/005 已完成） |
-| **设计评估** | ADR-0007 accepted；Spec v3、Interface 0001 与 AC-0003 active |
+| **设计评估** | ADR-0007/0008 accepted；Spec v3、Interface 0001 与 AC-0003 active |
 | **基建评估** | 独立 evaluator、测试分域、bundle/fidelity review 与 Docker runtime isolation 已通过；实际 L4 image 留在 Plan 002 |
 | **系统测试** | 73 个确定性测试与 4 个显式真实 Docker probe 通过；12 个 component 与 2 个 handoff 真实 LLM smoke 有效通过；开发期不建立 tracked baseline |
 
