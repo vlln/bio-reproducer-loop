@@ -2,7 +2,7 @@
 title: Plan 003 — 独立评估与测试分域
 description: 迁移 benchmark 信任边界、重建确定性测试，并将真实 LLM 用例迁移到内部 eval harness。
 type: plan
-status: pending
+status: done
 created: 2026-07-19T00:00:00Z
 ---
 
