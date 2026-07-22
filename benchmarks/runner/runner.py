@@ -8,7 +8,12 @@ from typing import Optional
 from .adapters.loopflow import run as loopflow_run
 from .bundle_validator import validate_entry
 
-def run_entry(entry_path: str, runs: int = 5, output_dir: Optional[str] = None) -> list:
+def run_entry(
+    entry_path: str,
+    runs: int = 5,
+    output_dir: Optional[str] = None,
+    sandbox=None,
+) -> list:
     """Run a protocol v2 benchmark entry N times and return submissions.
 
     Args:
@@ -44,7 +49,7 @@ def run_entry(entry_path: str, runs: int = 5, output_dir: Optional[str] = None) 
         run_dir.mkdir(parents=True, exist_ok=True)
 
         try:
-            result = loopflow_run(entry_path, run_dir=str(run_dir))
+            result = loopflow_run(entry_path, run_dir=str(run_dir), sandbox=sandbox)
         except Exception as e:
             result = _make_error_submission(entry_id, i, str(e))
 

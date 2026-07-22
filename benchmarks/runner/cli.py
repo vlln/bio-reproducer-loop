@@ -10,10 +10,19 @@ Usage:
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
 BENCHMARKS_DIR = Path(__file__).parent.parent / "entries"
+
+
+def _sandbox_pass_env_default() -> list[str]:
+    return [
+        item.strip()
+        for item in os.environ.get("BIO_REPRODUCER_SANDBOX_PASS_ENV", "").split(",")
+        if item.strip()
+    ]
 
 
 def cmd_validate_entry(args: argparse.Namespace) -> None:
@@ -40,10 +49,26 @@ def cmd_run(args: argparse.Namespace) -> None:
 
     from .bundle_validator import BundleValidationError
 
+    from .sandbox import DockerSandbox, SandboxConfig
+
     try:
-        results = run_entry(str(entry_path), runs=args.runs, output_dir=args.output)
+        sandbox = DockerSandbox(SandboxConfig(
+            image=args.sandbox_image,
+            profile=args.sandbox_profile,
+            timeout_seconds=args.timeout,
+            pass_env=tuple(args.pass_env),
+        ))
+        results = run_entry(
+            str(entry_path),
+            runs=args.runs,
+            output_dir=args.output,
+            sandbox=sandbox,
+        )
     except BundleValidationError as exc:
         print(f"ERROR [{exc.code}]: {exc}", file=sys.stderr)
+        raise SystemExit(2) from exc
+    except ValueError as exc:
+        print(f"ERROR [INVALID_SANDBOX]: {exc}", file=sys.stderr)
         raise SystemExit(2) from exc
     print(f"Completed {len(results)} runs for {args.entry}")
 
@@ -175,6 +200,29 @@ def main() -> None:
     run_parser.add_argument("--entry", required=True, help="Benchmark entry ID (e.g., bench-001)")
     run_parser.add_argument("--runs", type=int, default=5, help="Number of runs (default: 5)")
     run_parser.add_argument("--output", default=None, help="Output directory for results")
+    run_parser.add_argument(
+        "--sandbox-image",
+        default=os.environ.get("BIO_REPRODUCER_SANDBOX_IMAGE", ""),
+        help="Container image containing the system under test",
+    )
+    run_parser.add_argument(
+        "--sandbox-profile",
+        choices=("offline", "discovery", "tool-runtime"),
+        default=os.environ.get("BIO_REPRODUCER_SANDBOX_PROFILE", "offline"),
+        help="Sandbox network/runtime profile",
+    )
+    run_parser.add_argument(
+        "--timeout",
+        type=int,
+        default=int(os.environ.get("BIO_REPRODUCER_SANDBOX_TIMEOUT", "3600")),
+        help="Per-run sandbox timeout in seconds",
+    )
+    run_parser.add_argument(
+        "--pass-env",
+        action="append",
+        default=_sandbox_pass_env_default(),
+        help="Explicit host environment variable name to pass into the sandbox",
+    )
 
     # bench-run eval
     eval_parser = subparsers.add_parser("eval", help="Evaluate benchmark results")
