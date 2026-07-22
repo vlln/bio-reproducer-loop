@@ -22,6 +22,12 @@ jobs:
       - name: Run deterministic tests
         run: python -m pytest tests/ -q
 
+      - name: Run Docker isolation probes
+        env:
+          RUN_DOCKER_ISOLATION_TESTS: "1"
+          ISOLATION_PROBE_IMAGE: alpine:3
+        run: python -m pytest tests/integration/test_runtime_isolation_docker.py -q
+
       - name: Check YAML syntax
         run: |
           find benchmarks/entries evals \( -name "*.yaml" -o -name "*.yml" \) | while read f; do

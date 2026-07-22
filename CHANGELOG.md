@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 划分 entry ID 命名空间：001-099 用于构造论文，100-999 用于真实论文，并由 bundle validator 强制校验
 - 完成六个 entry 的人工 fidelity review；将宿主机强隔离移交 Plan 005，将 L4 可执行环境冻结保留在 Plan 002
 - 完成 12 个 component 与 2 个 handoff 的真实 LLM smoke，并修复标量断言、blocked 文本误判与 Package phase-only 恢复
+- 将被测系统迁入 Docker sandbox，仅挂载只读 InputBundle 与两个可写运行目录；新增 offline/discovery/tool-runtime profile、资源限制、env allowlist、timeout 强制清理和 CI escape probe
 
 ## [0.1.0] — 2026-07-19
 

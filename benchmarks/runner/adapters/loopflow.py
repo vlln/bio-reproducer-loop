@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import json
 import shutil
-import subprocess
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -19,9 +18,10 @@ from typing import Optional
 import yaml
 
 from ..bundle_validator import validate_entry
+from ..sandbox import DockerSandbox, SandboxError, SandboxRequest
 
 
-def run(entry_path: str, run_dir: Optional[str] = None) -> dict:
+def run(entry_path: str, run_dir: Optional[str] = None, sandbox=None) -> dict:
     """Run a benchmark entry via loopflow bio-reproducer.
 
     Args:
@@ -44,50 +44,63 @@ def run(entry_path: str, run_dir: Optional[str] = None) -> dict:
 
     # 2. Where loopflow writes its output
     run_root = Path(run_dir) if run_dir else entry_dir
-    output_dir = str((run_root / "repro-data").resolve())
+    output_dir = (run_root / "repro-data").resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     # 3. Stage only public input and resolve the paper inside that bundle
     input_dir = _stage_input(entry_dir, run_root)
     paper_path = _resolve_primary_paper(input_dir, bundle)
 
-    # 4. Launch loopflow — no timeout, loopflow controls its own pace
+    # 4. Launch loopflow with the runner-owned sandbox deadline
+    paper_relative = paper_path.relative_to(input_dir).as_posix()
     args = {
-        "paper_path": str(paper_path),
-        "output_dir": output_dir,
+        "paper_path": f"/input/{paper_relative}",
+        "output_dir": "/output",
         "language": metadata.get("language", "en"),
     }
     start_time = time.time()
 
-    # Find the loop CLI — prefer venv-local, fall back to PATH
-    loop_bin = _find_loop_bin()
     workspace = run_root / "workspace"
     workspace.mkdir(parents=True, exist_ok=True)
-    proc = subprocess.Popen(
-        [loop_bin, "run", "bio-reproducer", "--args", json.dumps(args)],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        cwd=str(workspace),
+    request = SandboxRequest(
+        command=["loop", "run", "bio-reproducer", "--args", json.dumps(args)],
+        input_dir=input_dir,
+        workspace=workspace,
+        output_dir=output_dir,
     )
-
-    # 5. Wait for loopflow to complete — no timeout, no stall detection
     try:
-        proc.wait()
-    except FileNotFoundError:
+        executor = sandbox or DockerSandbox.from_environment()
+        proc = executor.run(request)
+    except (SandboxError, ValueError) as exc:
         return _make_blocked_output(
-            metadata, run_root, "system",
-            "loopflow CLI not found. Is 'loop' installed and on PATH?"
+            metadata,
+            run_root,
+            "system",
+            str(exc),
+            duration=int(time.time() - start_time),
+            sandbox=_sandbox_provenance(locals().get("executor")),
         )
 
     duration = int(time.time() - start_time)
+    (run_root / "execution.stdout.log").write_text(proc.stdout or "")
+    (run_root / "execution.stderr.log").write_text(proc.stderr or "")
 
     if proc.returncode != 0:
         return _make_blocked_output(
             metadata, run_root, "system",
-            f"loopflow exited with code {proc.returncode}"
+            f"loopflow exited with code {proc.returncode}",
+            duration=duration,
+            sandbox=_sandbox_provenance(executor),
         )
 
     # 6. Describe loopflow's artifacts without assigning evaluator-owned scores
-    return _build_submission(metadata, run_root, Path(output_dir), duration)
+    return _build_submission(
+        metadata,
+        run_root,
+        output_dir,
+        duration,
+        sandbox=_sandbox_provenance(executor),
+    )
 
 
 def _stage_input(entry_dir: Path, run_root: Path) -> Path:
@@ -123,25 +136,6 @@ def _read_metadata(entry_dir: Path) -> dict:
         raise FileNotFoundError(f"metadata.yaml not found in {entry_dir}")
     with open(metadata_path) as f:
         return yaml.safe_load(f)
-
-
-def _find_loop_bin() -> str:
-    """Find the loop CLI binary."""
-    # Check common venv locations
-    candidates = [
-        Path(__file__).parent.parent.parent.parent / "loopflow" / ".venv" / "bin" / "loop",
-        Path.home() / "Project" / "loopflow" / ".venv" / "bin" / "loop",
-    ]
-    for c in candidates:
-        if c.exists():
-            return str(c)
-    # Fall back to PATH
-    found = shutil.which("loop")
-    if found:
-        return found
-    raise FileNotFoundError(
-        "loopflow CLI not found. Is 'loop' installed and on PATH?"
-    )
 
 
 def build_submission_from_existing(
@@ -185,6 +179,7 @@ def _build_submission(
     submission_id: str | None = None,
     claimed_verdict: str | None = None,
     stages: list[dict] | None = None,
+    sandbox: dict | None = None,
 ) -> dict:
     """Describe actual artifacts; score and verdict remain evaluator-owned."""
     entry_id = metadata.get("id", "unknown")
@@ -203,16 +198,19 @@ def _build_submission(
 
     if claimed_verdict is None:
         claimed_verdict, _ = _read_verdict_and_score(repro_dir)
+    execution = {
+        "duration_seconds": duration,
+        "stages": stages if stages is not None else _read_stages(repro_dir),
+    }
+    if sandbox:
+        execution["sandbox"] = sandbox
     return {
         "submission_id": submission_id,
         "bench_id": entry_id,
         "system": {"name": "bio-reproducer", "version": "0.1.0"},
         "claimed_verdict": claimed_verdict,
         "artifacts": artifacts,
-        "execution": {
-            "duration_seconds": duration,
-            "stages": stages if stages is not None else _read_stages(repro_dir),
-        },
+        "execution": execution,
     }
 
 
@@ -416,18 +414,39 @@ def _read_verdict_and_score(repro_dir: Path) -> tuple:
     return "BLOCKED", 0
 
 
-def _make_blocked_output(metadata: dict, run_root: Path, reason: str, error: str) -> dict:
+def _sandbox_provenance(executor) -> dict | None:
+    config = getattr(executor, "config", None)
+    if config is None:
+        return {"runtime": "custom"} if executor is not None else None
+    return {
+        "runtime": "docker",
+        "profile": config.profile,
+        "image": config.image,
+    }
+
+
+def _make_blocked_output(
+    metadata: dict,
+    run_root: Path,
+    reason: str,
+    error: str,
+    duration: int = 0,
+    sandbox: dict | None = None,
+) -> dict:
     entry_id = metadata.get("id", "unknown")
     submission_id = f"{entry_id}-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
+    execution = {
+        "duration_seconds": duration,
+        "stages": [],
+        "blocked_reason": reason,
+        "error": error,
+    }
+    if sandbox:
+        execution["sandbox"] = sandbox
     return {
         "submission_id": submission_id,
         "bench_id": entry_id,
         "system": {"name": "bio-reproducer", "version": "0.1.0"},
         "artifacts": [],
-        "execution": {
-            "duration_seconds": 0,
-            "stages": [],
-            "blocked_reason": reason,
-            "error": error,
-        },
+        "execution": execution,
     }
