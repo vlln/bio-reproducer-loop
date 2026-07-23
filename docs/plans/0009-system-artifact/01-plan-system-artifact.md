@@ -2,7 +2,7 @@
 title: Plan 009 — Opaque Bio-Reproducer System Artifact
 description: 构建可校验、自包含的 bio-reproducer system artifact，以稳定 launcher 接入 disposable VM，并正式 smoke 一个构造 entry。
 type: plan
-status: pending
+status: done
 created: 2026-07-23T00:00:00Z
 ---
 

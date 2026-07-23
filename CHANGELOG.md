@@ -30,6 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 冻结 paper 与 entry 身份分离、正交任务 taxonomy，以及“manifest 独立声明、内容寻址去重、Curator 物化”的同论文多任务资源复用原则
 - 将可发布 benchmark 的唯一正式边界改为 QEMU/KVM disposable VM；Pixi/OCI 保持 guest 内实现细节，Docker sandbox 降为 validation-only backend
 - 实现 QEMU/KVM disposable worker、formal ExecutionEnvelope、release-check、最小 worker image 配方与 success/timeout 真实 VM smoke；Docker 运行改为显式 validation backend
+- 构建可校验的 opaque bio-reproducer system artifact，固定 loopflow、Pixi runtime、loop source 与 skills provenance，并由 `/system/run-system` 接入 disposable VM
+- 强化 worker provisioning 完成条件并修复 release gate 的 JSON 字符串比较；唯一 bench-001 formal smoke 如实保留为 blocked，不建立 baseline
 
 ## [0.1.0] — 2026-07-19
 
