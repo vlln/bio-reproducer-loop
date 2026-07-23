@@ -1,9 +1,11 @@
 import json
+import shutil
 from pathlib import Path
 
 import pytest
 
 from benchmarks.runner.system_artifact import (
+    FORBIDDEN_SOURCE_NAMES,
     SystemArtifactError,
     build_system_artifact,
     validate_system_artifact,
@@ -24,6 +26,14 @@ def _skill(tmp_path: Path, name: str) -> Path:
 
 def _build(tmp_path: Path, **overrides):
     tmp_path.mkdir(parents=True, exist_ok=True)
+    loop_dir = overrides.get("loop_dir")
+    if loop_dir is None:
+        loop_dir = tmp_path / "loop-source"
+        shutil.copytree(
+            LOOP_DIR,
+            loop_dir,
+            ignore=shutil.ignore_patterns(*FORBIDDEN_SOURCE_NAMES),
+        )
     runtime = tmp_path / "bio-reproducer-runtime.tar"
     runtime.write_bytes(b"pinned OCI archive")
     skills = {
@@ -40,7 +50,7 @@ def _build(tmp_path: Path, **overrides):
     }
     values = {
         "output_dir": tmp_path / "artifact",
-        "loop_dir": LOOP_DIR,
+        "loop_dir": loop_dir,
         "runtime_oci": runtime,
         "runtime_image": "sha256:" + "a" * 64,
         "skills": skills,
