@@ -160,10 +160,21 @@ def test_runtime_recipe_pins_bases_agent_cli_and_required_skill_binary():
     recipe = (
         ROOT / "benchmarks" / "runner" / "system_artifact" / "Dockerfile"
     ).read_text()
+    builder = (
+        ROOT
+        / "benchmarks"
+        / "runner"
+        / "system_artifact"
+        / "build-runtime.sh"
+    ).read_text()
 
     assert "prefix-dev/pixi:0.72.2@sha256:" in recipe
     assert "python:3.10-slim@sha256:" in recipe
     assert "CLAUDE_CODE_VERSION=2.1.126" in recipe
     assert "MIP_VERSION=0.2.0" in recipe
     assert "ccb4d164197d0c39750041b312bda6f804c74626a168e97539c8fdd7cc6597f0" in recipe
+    assert "ARG MIP_URL=https://github.com/vlln/mip/releases/download/v0.2.0/" in recipe
+    assert '"${MIP_URL}"' in recipe
+    assert "BIO_REPRODUCER_MIP_URL" in builder
+    assert '--build-arg "MIP_URL=$mip_url"' in builder
     assert ":latest" not in recipe

@@ -25,7 +25,13 @@ cp "$recipe_dir/../../../loops/bio-reproducer/pixi.lock" "$tmp/pixi.lock"
 
 tag="bio-reproducer-runtime:plan009"
 build_network=${BIO_REPRODUCER_BUILD_NETWORK:-default}
-docker build --network "$build_network" --platform linux/amd64 --tag "$tag" "$tmp"
+mip_url=${BIO_REPRODUCER_MIP_URL:-https://github.com/vlln/mip/releases/download/v0.2.0/mip_0.2.0_linux_amd64.tar.gz}
+docker build \
+    --network "$build_network" \
+    --build-arg "MIP_URL=$mip_url" \
+    --platform linux/amd64 \
+    --tag "$tag" \
+    "$tmp"
 image_id=$(docker image inspect --format '{{.Id}}' "$tag")
 docker save --output "$output" "$image_id"
 sha256sum "$output" >"$output.sha256"

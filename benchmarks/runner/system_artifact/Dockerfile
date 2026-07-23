@@ -27,9 +27,10 @@ RUN python -m pip install --no-cache-dir /build/loopflow \
     && npm install --global "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}" \
     && rm -rf /build/loopflow /root/.cache /root/.npm
 
+ARG MIP_URL=https://github.com/vlln/mip/releases/download/v0.2.0/mip_0.2.0_linux_amd64.tar.gz
 RUN curl --fail --location \
         --output /tmp/mip.tar.gz \
-        "https://github.com/vlln/mip/releases/download/v${MIP_VERSION}/mip_${MIP_VERSION}_linux_amd64.tar.gz" \
+        "${MIP_URL}" \
     && echo "${MIP_SHA256}  /tmp/mip.tar.gz" | sha256sum --check --status \
     && tar -xzf /tmp/mip.tar.gz -C /tmp \
     && install -m 0755 "/tmp/mip_${MIP_VERSION}_linux_amd64/mip" /usr/local/bin/mip \
