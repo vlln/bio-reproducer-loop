@@ -64,14 +64,20 @@ def run_entry(
 def _make_error_submission(entry_id: str, run_num: int, error: str) -> dict:
     submission_id = f"{entry_id}-run-{run_num:02d}-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
     return {
+        "protocol_version": "2.0",
         "submission_id": submission_id,
         "bench_id": entry_id,
         "system": {"name": "bio-reproducer", "version": "0.1.0"},
         "artifacts": [],
         "execution": {
+            "purpose": "validation-only",
+            "isolation": "runner",
+            "provider": "unavailable",
             "duration_seconds": 0,
             "stages": [],
-            "blocked_reason": "system",
+            "blocked_reason": "infrastructure",
+            "error_code": "EXECUTION_BLOCKED",
             "error": error,
+            "teardown": {"status": "unknown"},
         },
     }

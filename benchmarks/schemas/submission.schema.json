@@ -2,8 +2,9 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "submission.schema.json",
   "type": "object",
-  "required": ["submission_id", "bench_id", "system", "artifacts", "execution"],
+  "required": ["protocol_version", "submission_id", "bench_id", "system", "artifacts", "execution"],
   "properties": {
+    "protocol_version": {"const": "2.0"},
     "submission_id": {"type": "string", "minLength": 1},
     "bench_id": {"type": "string", "minLength": 1},
     "claimed_verdict": {
@@ -30,6 +31,70 @@
         }
       }
     },
-    "execution": {"type": "object"}
-  }
+    "execution": {
+      "type": "object",
+      "required": ["purpose", "isolation", "provider", "teardown", "stages"],
+      "properties": {
+        "purpose": {"enum": ["formal", "validation-only"]},
+        "isolation": {"type": "string", "minLength": 1},
+        "provider": {"type": "string", "minLength": 1},
+        "network_policy": {"enum": ["offline", "controlled-egress"]},
+        "deadline_seconds": {"type": "integer", "minimum": 1},
+        "duration_seconds": {"type": "integer", "minimum": 0},
+        "boot_seconds": {"type": "number", "minimum": 0},
+        "worker_image": {"type": "object"},
+        "system_artifact": {"type": "object"},
+        "teardown": {
+          "type": "object",
+          "required": ["status"],
+          "properties": {
+            "status": {"enum": ["not-run", "completed", "failed", "unknown"]},
+            "worker_absent": {"type": "boolean"},
+            "overlay_absent": {"type": "boolean"},
+            "secrets_revoked": {"type": "boolean"}
+          }
+        },
+        "stages": {"type": "array"},
+        "blocked_reason": {"enum": ["system", "infrastructure"]},
+        "error_code": {"type": "string"},
+        "error": {"type": "string"}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"execution": {"properties": {"purpose": {"const": "formal"}}}}},
+      "then": {
+        "properties": {
+          "execution": {
+            "required": ["worker_image", "system_artifact", "network_policy", "deadline_seconds"],
+            "properties": {
+              "isolation": {"const": "disposable-vm"},
+              "provider": {"const": "qemu-kvm"},
+              "worker_image": {
+                "required": ["digest"],
+                "properties": {"digest": {"pattern": "^sha256:[0-9a-f]{64}$"}}
+              },
+              "system_artifact": {
+                "required": ["digest", "adapter"],
+                "properties": {
+                  "digest": {"pattern": "^sha256:[0-9a-f]{64}$"},
+                  "adapter": {"type": "string", "minLength": 1}
+                }
+              },
+              "teardown": {
+                "required": ["worker_absent", "overlay_absent", "secrets_revoked"],
+                "properties": {
+                  "status": {"const": "completed"},
+                  "worker_absent": {"const": true},
+                  "overlay_absent": {"const": true},
+                  "secrets_revoked": {"const": true}
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
 }

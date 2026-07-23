@@ -120,12 +120,21 @@ def _validate_protocol(entry_dir: Path, rubric: Any, submission: Any) -> None:
     if not isinstance(rubric, dict) or not isinstance(rubric.get("checks"), list):
         raise EvaluationError("INVALID_ORACLE", "Rubric must contain a checks list")
 
-    required = {"submission_id", "bench_id", "system", "artifacts", "execution"}
+    required = {
+        "protocol_version",
+        "submission_id",
+        "bench_id",
+        "system",
+        "artifacts",
+        "execution",
+    }
     if not isinstance(submission, dict) or required - submission.keys():
         missing = sorted(required - submission.keys()) if isinstance(submission, dict) else []
         raise EvaluationError("INVALID_SUBMISSION", f"Missing submission fields: {missing}")
     if submission["bench_id"] != entry_dir.name:
         raise EvaluationError("INVALID_SUBMISSION", "Submission bench_id does not match entry")
+    if submission["protocol_version"] != "2.0":
+        raise EvaluationError("INVALID_SUBMISSION", "Unsupported submission protocol_version")
     if not isinstance(submission["artifacts"], list):
         raise EvaluationError("INVALID_SUBMISSION", "artifacts must be a list")
 

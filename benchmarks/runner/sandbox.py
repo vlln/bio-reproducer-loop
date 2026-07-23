@@ -9,7 +9,8 @@ import subprocess
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Sequence
+
+from .execution import ExecutionError, ExecutionRequest
 
 
 PROFILE_NETWORKS = {
@@ -19,7 +20,7 @@ PROFILE_NETWORKS = {
 }
 
 
-class SandboxError(RuntimeError):
+class SandboxError(ExecutionError):
     """Base class for stable sandbox failures."""
 
 
@@ -83,12 +84,7 @@ class SandboxConfig:
         )
 
 
-@dataclass(frozen=True)
-class SandboxRequest:
-    command: Sequence[str]
-    input_dir: Path
-    workspace: Path
-    output_dir: Path
+SandboxRequest = ExecutionRequest
 
 
 class DockerSandbox:
@@ -96,6 +92,7 @@ class DockerSandbox:
 
     def __init__(self, config: SandboxConfig):
         self.config = config
+        self._teardown = {"status": "not-run"}
 
     @classmethod
     def from_environment(cls) -> "DockerSandbox":
@@ -156,42 +153,43 @@ class DockerSandbox:
         if shutil.which(self.config.docker_bin) is None:
             raise SandboxUnavailable(f"Container runtime not found: {self.config.docker_bin}")
         try:
-            return subprocess.run(
+            result = subprocess.run(
                 command,
                 capture_output=True,
                 text=True,
                 timeout=self.config.timeout_seconds,
                 check=False,
             )
+            self._teardown = {"status": "completed"}
+            return result
         except subprocess.TimeoutExpired as exc:
             self._remove_container(container_name)
+            self._teardown = {"status": "completed"}
             raise SandboxTimeout(
                 f"Sandbox execution exceeded {self.config.timeout_seconds} seconds"
             ) from exc
         except OSError as exc:
             raise SandboxUnavailable(f"Could not launch sandbox: {exc}") from exc
 
+    def execution_envelope(self) -> dict:
+        return {
+            "purpose": "validation-only",
+            "isolation": "container",
+            "provider": "docker",
+            "network_policy": (
+                "offline" if self.config.profile == "offline" else "controlled-egress"
+            ),
+            "deadline_seconds": self.config.timeout_seconds,
+            "worker_image": {"id": self.config.image},
+            "teardown": dict(self._teardown),
+        }
+
     @staticmethod
     def _validate_directories(request: SandboxRequest) -> tuple[Path, Path, Path]:
-        directories = tuple(
-            Path(path).resolve()
-            for path in (request.input_dir, request.workspace, request.output_dir)
-        )
-        for directory in directories:
-            if not directory.is_dir():
-                raise ValueError(f"Sandbox directory does not exist: {directory}")
-        for index, directory in enumerate(directories):
-            others = directories[:index] + directories[index + 1:]
-            if any(
-                directory == other
-                or directory in other.parents
-                or other in directory.parents
-                for other in others
-            ):
-                raise ValueError(
-                    "Sandbox input, workspace, and output directories must not overlap"
-                )
-        return directories
+        try:
+            return request.validated_directories()
+        except ValueError as exc:
+            raise ValueError(str(exc).replace("Execution", "Sandbox", 1)) from exc
 
     def _remove_container(self, container_name: str) -> None:
         """Ensure a timed-out container cannot outlive the runner process."""

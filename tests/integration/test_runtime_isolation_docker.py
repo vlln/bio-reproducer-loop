@@ -166,7 +166,7 @@ printf 'analysis complete\n' > /output/05_run/results/analysis.log
         run_root,
         output_dir,
         duration=1,
-        sandbox={"runtime": "docker", "profile": "offline", "image": sandbox.config.image},
+        envelope=sandbox.execution_envelope(),
     )
 
     assert result.returncode == 0, result.stderr
@@ -174,4 +174,6 @@ printf 'analysis complete\n' > /output/05_run/results/analysis.log
         "result_table",
         "analysis_log",
     }
-    assert submission["execution"]["sandbox"]["profile"] == "offline"
+    assert submission["execution"]["purpose"] == "validation-only"
+    assert submission["execution"]["provider"] == "docker"
+    assert submission["execution"]["teardown"]["status"] == "completed"

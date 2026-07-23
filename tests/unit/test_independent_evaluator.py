@@ -46,6 +46,7 @@ def _write_submission(tmp_path: Path, correct: bool = True, **extra) -> Path:
     )
 
     submission = {
+        "protocol_version": "2.0",
         "submission_id": "bench-001-test",
         "bench_id": "bench-001",
         "system": {"name": "test-system", "version": "1.0"},
@@ -93,6 +94,7 @@ def test_rejects_artifact_path_outside_submission(tmp_path):
     outside = tmp_path.parent / "outside.csv"
     outside.write_text("secret")
     submission = {
+        "protocol_version": "2.0",
         "submission_id": "bench-001-test",
         "bench_id": "bench-001",
         "system": {"name": "test-system", "version": "1.0"},
@@ -174,6 +176,7 @@ def test_bench_100_scores_published_cuffdiff_conclusions(tmp_path):
         "Taffeta workflow\nCufflinks 2.0.2\nCuffdiff 2.0.2\n"
     )
     submission = {
+        "protocol_version": "2.0",
         "submission_id": "bench-100-cuffdiff",
         "bench_id": "bench-100",
         "system": {"name": "test-system", "version": "1.0"},

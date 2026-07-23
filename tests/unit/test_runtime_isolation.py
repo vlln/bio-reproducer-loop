@@ -164,18 +164,42 @@ def test_adapter_protocolizes_nonzero_sandbox_exit(tmp_path):
         config = SandboxConfig(image="bio-reproducer:test", profile="offline")
 
         def run(self, request):
+            results = request.output_dir / "05_run" / "results"
+            results.mkdir(parents=True)
+            (results / "deseq_results.csv").write_text("gene,log2FoldChange\nA,1\n")
             return subprocess.CompletedProcess(request.command, 23, "partial output", "failure")
 
     run_root = tmp_path / "run"
     result = loopflow.run(ENTRY, run_dir=run_root, sandbox=FailedSandbox())
 
-    assert result["artifacts"] == []
+    assert result["artifacts"] == [
+        {
+            "role": "result_table",
+            "path": "repro-data/05_run/results/deseq_results.csv",
+        }
+    ]
     assert result["execution"]["blocked_reason"] == "system"
     assert result["execution"]["error"] == "loopflow exited with code 23"
-    assert result["execution"]["sandbox"] == {
-        "runtime": "docker",
-        "profile": "offline",
-        "image": "bio-reproducer:test",
+    assert result["protocol_version"] == "2.0"
+    assert {
+        key: result["execution"][key]
+        for key in (
+            "purpose",
+            "isolation",
+            "provider",
+            "network_policy",
+            "deadline_seconds",
+            "worker_image",
+            "teardown",
+        )
+    } == {
+        "purpose": "validation-only",
+        "isolation": "container",
+        "provider": "docker",
+        "network_policy": "offline",
+        "deadline_seconds": 3600,
+        "worker_image": {"id": "bio-reproducer:test"},
+        "teardown": {"status": "unknown"},
     }
     assert (run_root / "execution.stdout.log").read_text() == "partial output"
     assert (run_root / "execution.stderr.log").read_text() == "failure"
@@ -203,8 +227,16 @@ def test_runner_injects_sandbox_into_adapter(tmp_path, monkeypatch):
     assert captured is expected
 
 
-def test_cli_rejects_run_without_sandbox_image(monkeypatch, capsys):
+def test_cli_defaults_to_formal_vm_and_rejects_missing_pins(monkeypatch, capsys):
     monkeypatch.delenv("BIO_REPRODUCER_SANDBOX_IMAGE", raising=False)
+    for name in (
+        "BIO_REPRODUCER_WORKER_IMAGE",
+        "BIO_REPRODUCER_WORKER_SHA256",
+        "BIO_REPRODUCER_SYSTEM_DIR",
+        "BIO_REPRODUCER_SYSTEM_SHA256",
+        "BIO_REPRODUCER_WORKER_SSH_KEY",
+    ):
+        monkeypatch.delenv(name, raising=False)
     monkeypatch.setattr(
         "sys.argv",
         ["bench-run", "run", "--entry", "bench-001", "--runs", "0"],
@@ -214,4 +246,19 @@ def test_cli_rejects_run_without_sandbox_image(monkeypatch, capsys):
         cli.main()
 
     assert error.value.code == 2
-    assert "INVALID_SANDBOX" in capsys.readouterr().err
+    assert "WORKER_UNAVAILABLE" in capsys.readouterr().err
+
+
+def test_cli_requires_explicit_docker_validation_backend(monkeypatch):
+    args = cli.argparse.Namespace(
+        backend="docker-validation",
+        sandbox_image="bio-reproducer:test",
+        sandbox_profile="offline",
+        timeout=10,
+        pass_env=[],
+    )
+
+    executor = cli._build_executor(args)
+
+    assert isinstance(executor, DockerSandbox)
+    assert executor.execution_envelope()["purpose"] == "validation-only"

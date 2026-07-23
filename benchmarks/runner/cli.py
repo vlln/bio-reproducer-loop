@@ -48,29 +48,75 @@ def cmd_run(args: argparse.Namespace) -> None:
         sys.exit(2)
 
     from .bundle_validator import BundleValidationError
-
-    from .sandbox import DockerSandbox, SandboxConfig
+    from .execution import ExecutionError
 
     try:
-        sandbox = DockerSandbox(SandboxConfig(
-            image=args.sandbox_image,
-            profile=args.sandbox_profile,
-            timeout_seconds=args.timeout,
-            pass_env=tuple(args.pass_env),
-        ))
+        executor = _build_executor(args)
         results = run_entry(
             str(entry_path),
             runs=args.runs,
             output_dir=args.output,
-            sandbox=sandbox,
+            sandbox=executor,
         )
     except BundleValidationError as exc:
         print(f"ERROR [{exc.code}]: {exc}", file=sys.stderr)
         raise SystemExit(2) from exc
+    except ExecutionError as exc:
+        code = {
+            "WorkerUnavailable": "WORKER_UNAVAILABLE",
+            "WorkerIntegrityError": "INVALID_EXECUTION_ENVIRONMENT",
+        }.get(type(exc).__name__, "EXECUTION_BLOCKED")
+        print(f"ERROR [{code}]: {exc}", file=sys.stderr)
+        raise SystemExit(2) from exc
     except ValueError as exc:
-        print(f"ERROR [INVALID_SANDBOX]: {exc}", file=sys.stderr)
+        print(f"ERROR [INVALID_EXECUTION_ENVIRONMENT]: {exc}", file=sys.stderr)
         raise SystemExit(2) from exc
     print(f"Completed {len(results)} runs for {args.entry}")
+
+
+def _build_executor(args: argparse.Namespace):
+    if args.backend == "docker-validation":
+        from .sandbox import DockerSandbox, SandboxConfig
+
+        return DockerSandbox(
+            SandboxConfig(
+                image=args.sandbox_image,
+                profile=args.sandbox_profile,
+                timeout_seconds=args.timeout,
+                pass_env=tuple(args.pass_env or _sandbox_pass_env_default()),
+            )
+        )
+
+    if args.pass_env:
+        raise ValueError(
+            "--pass-env is not implemented for formal VM credentials"
+        )
+    from .worker import QemuWorker, VmWorkerConfig, WorkerUnavailable
+
+    required = {
+        "worker image": args.worker_image,
+        "worker SHA256": args.worker_sha256,
+        "system directory": args.system_dir,
+        "system SHA256": args.system_sha256,
+        "worker SSH key": args.worker_ssh_key,
+    }
+    missing = [name for name, value in required.items() if not value]
+    if missing:
+        raise WorkerUnavailable(
+            f"Formal VM configuration is incomplete: {', '.join(missing)}"
+        )
+    return QemuWorker(
+        VmWorkerConfig(
+            worker_image=Path(args.worker_image),
+            worker_sha256=args.worker_sha256,
+            system_dir=Path(args.system_dir),
+            system_sha256=args.system_sha256,
+            ssh_key=Path(args.worker_ssh_key),
+            network_policy=args.network_policy,
+            timeout_seconds=args.timeout,
+            boot_timeout_seconds=args.boot_timeout,
+        )
+    )
 
 
 def cmd_eval(args: argparse.Namespace) -> None:
@@ -103,6 +149,20 @@ def cmd_submit(args: argparse.Namespace) -> None:
         submission_path = run_dir / "submission.json"
         submission_path.write_text(json.dumps(submission, indent=2))
         print(f"Wrote {submission_path}")
+
+
+def cmd_release_check(args: argparse.Namespace) -> None:
+    """Require formal VM provenance before a submission can be released."""
+    from .release_gate import ReleaseGateError, require_formal_submission
+
+    submission_path = Path(args.submission)
+    try:
+        submission = json.loads(submission_path.read_text())
+        require_formal_submission(submission)
+    except (OSError, json.JSONDecodeError, ReleaseGateError) as exc:
+        print(f"ERROR [RELEASE_GATE]: {exc}", file=sys.stderr)
+        raise SystemExit(2) from exc
+    print(f"FORMAL: {submission_path}")
 
 
 def _evaluate_submissions(entry_path: Path, results_dir: Path) -> None:
@@ -201,6 +261,49 @@ def main() -> None:
     run_parser.add_argument("--runs", type=int, default=5, help="Number of runs (default: 5)")
     run_parser.add_argument("--output", default=None, help="Output directory for results")
     run_parser.add_argument(
+        "--backend",
+        choices=("formal-vm", "docker-validation"),
+        default="formal-vm",
+        help="Execution boundary (default: formal-vm; Docker is validation-only)",
+    )
+    run_parser.add_argument(
+        "--worker-image",
+        default=os.environ.get("BIO_REPRODUCER_WORKER_IMAGE", ""),
+        help="Pinned qcow2 worker base for formal VM runs",
+    )
+    run_parser.add_argument(
+        "--worker-sha256",
+        default=os.environ.get("BIO_REPRODUCER_WORKER_SHA256", ""),
+        help="Expected worker image SHA256",
+    )
+    run_parser.add_argument(
+        "--system-dir",
+        default=os.environ.get("BIO_REPRODUCER_SYSTEM_DIR", ""),
+        help="Opaque system artifact directory attached read-only to the guest",
+    )
+    run_parser.add_argument(
+        "--system-sha256",
+        default=os.environ.get("BIO_REPRODUCER_SYSTEM_SHA256", ""),
+        help="Expected system artifact tree SHA256",
+    )
+    run_parser.add_argument(
+        "--worker-ssh-key",
+        default=os.environ.get("BIO_REPRODUCER_WORKER_SSH_KEY", ""),
+        help="Runner control key provisioned in the worker image",
+    )
+    run_parser.add_argument(
+        "--network-policy",
+        choices=("offline", "controlled-egress"),
+        default=os.environ.get("BIO_REPRODUCER_WORKER_NETWORK_POLICY", "offline"),
+        help="Formal guest egress policy",
+    )
+    run_parser.add_argument(
+        "--boot-timeout",
+        type=int,
+        default=int(os.environ.get("BIO_REPRODUCER_WORKER_BOOT_TIMEOUT", "60")),
+        help="Guest readiness deadline in seconds",
+    )
+    run_parser.add_argument(
         "--sandbox-image",
         default=os.environ.get("BIO_REPRODUCER_SANDBOX_IMAGE", ""),
         help="Container image containing the system under test",
@@ -214,13 +317,18 @@ def main() -> None:
     run_parser.add_argument(
         "--timeout",
         type=int,
-        default=int(os.environ.get("BIO_REPRODUCER_SANDBOX_TIMEOUT", "3600")),
-        help="Per-run sandbox timeout in seconds",
+        default=int(
+            os.environ.get(
+                "BIO_REPRODUCER_WORKER_TIMEOUT",
+                os.environ.get("BIO_REPRODUCER_SANDBOX_TIMEOUT", "3600"),
+            )
+        ),
+        help="Per-run execution deadline in seconds",
     )
     run_parser.add_argument(
         "--pass-env",
         action="append",
-        default=_sandbox_pass_env_default(),
+        default=None,
         help="Explicit host environment variable name to pass into the sandbox",
     )
 
@@ -235,6 +343,11 @@ def main() -> None:
     )
     submit_parser.add_argument("--entry", required=True, help="Benchmark entry ID")
     submit_parser.add_argument("--results-dir", default=None, help="Results directory path")
+
+    release_parser = subparsers.add_parser(
+        "release-check", help="Verify that a submission may enter a release baseline"
+    )
+    release_parser.add_argument("--submission", required=True, help="submission.json path")
 
     # bench-run report
     report_parser = subparsers.add_parser("report", help="Generate summary report")
@@ -254,6 +367,8 @@ def main() -> None:
         cmd_submit(args)
     elif args.command == "eval":
         cmd_eval(args)
+    elif args.command == "release-check":
+        cmd_release_check(args)
     elif args.command == "report":
         cmd_report(args)
     else:
