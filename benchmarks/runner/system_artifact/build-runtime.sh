@@ -24,7 +24,8 @@ cp "$recipe_dir/../../../loops/bio-reproducer/pixi.toml" "$tmp/pixi.toml"
 cp "$recipe_dir/../../../loops/bio-reproducer/pixi.lock" "$tmp/pixi.lock"
 
 tag="bio-reproducer-runtime:plan009"
-docker build --platform linux/amd64 --tag "$tag" "$tmp"
+build_network=${BIO_REPRODUCER_BUILD_NETWORK:-default}
+docker build --network "$build_network" --platform linux/amd64 --tag "$tag" "$tmp"
 image_id=$(docker image inspect --format '{{.Id}}' "$tag")
 docker save --output "$output" "$image_id"
 sha256sum "$output" >"$output.sha256"
