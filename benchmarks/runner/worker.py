@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import shlex
 import shutil
 import socket
@@ -87,6 +88,7 @@ class VmWorkerConfig:
     cpus: int = 4
     worker_image_id: str = "bio-reproducer-worker"
     adapter: str = "loopflow-adapter@0.1.0"
+    pass_env: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         if self.network_policy not in {"offline", "controlled-egress"}:
@@ -95,6 +97,13 @@ class VmWorkerConfig:
             raise ValueError("VM deadlines must be above zero")
         if self.memory_mb <= 0 or self.cpus <= 0:
             raise ValueError("VM memory and CPU counts must be above zero")
+        invalid_env = [
+            name
+            for name in self.pass_env
+            if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", name) is None
+        ]
+        if invalid_env:
+            raise ValueError(f"Invalid environment names: {invalid_env}")
         for name, digest in (
             ("worker_sha256", self.worker_sha256),
             ("system_sha256", self.system_sha256),
@@ -131,11 +140,20 @@ class VmWorkerConfig:
             boot_timeout_seconds=int(
                 os.environ.get("BIO_REPRODUCER_WORKER_BOOT_TIMEOUT", "60")
             ),
+            pass_env=tuple(
+                item.strip()
+                for item in os.environ.get(
+                    "BIO_REPRODUCER_WORKER_PASS_ENV", ""
+                ).split(",")
+                if item.strip()
+            ),
         )
 
 
 class QemuWorker:
     """Execute one request in one fresh QEMU/KVM overlay."""
+
+    system_launcher = "/system/run-system"
 
     def __init__(self, config: VmWorkerConfig):
         self.config = config
@@ -153,8 +171,27 @@ class QemuWorker:
         actual_system = sha256_tree(self.config.system_dir)
         if actual_system != self.config.system_sha256:
             raise WorkerIntegrityError("system artifact digest does not match configured digest")
+        manifest_path = self.config.system_dir / "manifest.json"
+        if manifest_path.is_file():
+            from .system_artifact import SystemArtifactError, validate_system_artifact
+
+            try:
+                manifest = validate_system_artifact(self.config.system_dir)
+            except SystemArtifactError as exc:
+                raise WorkerIntegrityError(str(exc)) from exc
+            declared_env = tuple(manifest.get("required_secrets", ()))
+            if tuple(sorted(self.config.pass_env)) != tuple(sorted(declared_env)):
+                raise WorkerIntegrityError(
+                    "Configured secret environment does not match system artifact manifest"
+                )
         if not self.config.ssh_key.is_file():
             raise WorkerIntegrityError(f"SSH key does not exist: {self.config.ssh_key}")
+        missing_env = [name for name in self.config.pass_env if name not in os.environ]
+        if missing_env:
+            raise WorkerIntegrityError(
+                "Required secret environment is unavailable: "
+                + ", ".join(missing_env)
+            )
 
     def preflight(self) -> None:
         for binary in (self.config.qemu_bin, self.config.qemu_img_bin, self.config.ssh_bin):
@@ -294,16 +331,21 @@ class QemuWorker:
             f"sudo mountpoint -q /{tag} || sudo mount -t 9p -o trans=virtio,version=9p2000.L {tag} /{tag}"
             for tag in ("input", "workspace", "output", "system")
         )
-        system_command = shlex.join([str(item) for item in request.command])
-        root_command = shlex.join(
-            [
-                "env",
-                "PATH=/system:/system/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-                "bash",
-                "-c",
-                f"cd /workspace && exec {system_command}",
-            ]
+        guest_exec = (
+            "import json,os,sys; "
+            "secrets=json.load(sys.stdin); "
+            "env=os.environ.copy(); env.update(secrets); "
+            "os.chdir('/workspace'); "
+            "os.execvpe(sys.argv[1],sys.argv[1:],env)"
         )
+        root_command = shlex.join([
+            "env",
+            "PATH=/system:/system/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+            "python3",
+            "-c",
+            guest_exec,
+            *[str(item) for item in request.command],
+        ])
         remote = (
             "set -eu; "
             "sudo mkdir -p /input /workspace /output /system; "
@@ -314,6 +356,9 @@ class QemuWorker:
             self._ssh_command(ssh_port, remote),
             capture_output=True,
             text=True,
+            input=json.dumps(
+                {name: os.environ[name] for name in self.config.pass_env}
+            ),
             timeout=self.config.timeout_seconds,
             check=False,
         )
@@ -439,4 +484,9 @@ class QemuWorker:
         }
         if self._boot_seconds is not None:
             envelope["boot_seconds"] = self._boot_seconds
+        if self.config.pass_env:
+            envelope["secrets"] = [
+                {"name": name, "type": "environment"}
+                for name in sorted(self.config.pass_env)
+            ]
         return envelope

@@ -2,7 +2,6 @@
 name: validate
 description: Phase 6 — 验证复现结果
 extends: _base
-model: "alibaba-cn/qwen3.7-plus"
 output:
   type: object
   properties:
@@ -312,4 +311,3 @@ BLOCKED 在评分前判定：当数据受限、代码缺失、权限不足或外
 ## 返回
 
 返回 JSON（见 `_base.md` 返回格式）。`status` 应映射 verdict：`REPRODUCED` → `completed`，`PARTIAL` → `partial`，`FAILED` → `failed`，`BLOCKED` → `blocked`。`payload` 包含完整的验证报告数据。
-

@@ -90,6 +90,8 @@ SandboxRequest = ExecutionRequest
 class DockerSandbox:
     """Run a system in Docker without exposing the benchmark repository."""
 
+    system_launcher = "loop"
+
     def __init__(self, config: SandboxConfig):
         self.config = config
         self._teardown = {"status": "not-run"}

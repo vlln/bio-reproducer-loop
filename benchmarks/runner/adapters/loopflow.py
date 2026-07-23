@@ -68,16 +68,23 @@ def run(entry_path: str, run_dir: Optional[str] = None, sandbox=None) -> dict:
     }
     start_time = time.time()
 
-    workspace = run_root / "workspace"
-    workspace.mkdir(parents=True, exist_ok=True)
-    request = ExecutionRequest(
-        command=["loop", "run", "bio-reproducer", "--args", json.dumps(args)],
-        input_dir=input_dir,
-        workspace=workspace,
-        output_dir=output_dir,
-    )
     try:
         executor = sandbox or DockerSandbox.from_environment()
+        launcher = getattr(executor, "system_launcher", "/system/run-system")
+        workspace = run_root / "workspace"
+        workspace.mkdir(parents=True, exist_ok=True)
+        request = ExecutionRequest(
+            command=[
+                launcher,
+                "run",
+                "bio-reproducer",
+                "--args",
+                json.dumps(args),
+            ],
+            input_dir=input_dir,
+            workspace=workspace,
+            output_dir=output_dir,
+        )
         proc = executor.run(request)
     except (ExecutionError, ValueError) as exc:
         blocked_reason, error_code = _execution_error(exc)

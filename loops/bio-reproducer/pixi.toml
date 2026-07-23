@@ -9,7 +9,6 @@ version = "0.1.0"
 SKILLS_HOME = "${PIXI_PROJECT_ROOT}/.skills"
 SKIT_BINDIR = "${PIXI_PROJECT_ROOT}/.local/bin"
 MIP_BINDIR = "${PIXI_PROJECT_ROOT}/.local/bin"
-MINERU_API_URL = "http://172.16.218.40:8000"  # 填写 MinerU API 服务器地址
 PATH = "${PIXI_PROJECT_ROOT}/.local/bin:${PATH}"
 
 [dependencies]

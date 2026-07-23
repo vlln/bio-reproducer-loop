@@ -154,9 +154,26 @@ def test_adapter_uses_container_paths_and_never_passes_entry_path(tmp_path):
     assert result["bench_id"] == "bench-001"
     assert captured is not None
     serialized = json.dumps(captured.command)
+    assert captured.command[0] == "/system/run-system"
     assert "/input/paper.md" in serialized
     assert "/output" in serialized
     assert str(ENTRY) not in serialized
+
+
+def test_adapter_keeps_legacy_docker_validation_image_entrypoint(tmp_path):
+    captured = None
+
+    class FakeDockerValidation:
+        system_launcher = "loop"
+
+        def run(self, request):
+            nonlocal captured
+            captured = request
+            return subprocess.CompletedProcess(request.command, 0, "", "")
+
+    loopflow.run(ENTRY, run_dir=tmp_path / "run", sandbox=FakeDockerValidation())
+
+    assert captured.command[:3] == ["loop", "run", "bio-reproducer"]
 
 
 def test_adapter_protocolizes_nonzero_sandbox_exit(tmp_path):
