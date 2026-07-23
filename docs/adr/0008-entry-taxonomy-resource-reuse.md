@@ -22,6 +22,10 @@ ADR-0007 使用 L3/L4/L5 表达构造输入、冻结真实材料与在线资源�
 本 ADR 补充 ADR-0005/0007，不改变 InputBundle、SubmissionBundle 与 private oracle 的
 运行时信任边界。
 
+> 2026-07-22 runtime 修订：ADR-0009 取代本文对 Plan 005 Docker sandbox 的正式运行
+> 边界引用。Paper/Entry identity、taxonomy、资源声明与内容寻址复用决策继续有效；下文
+> 的 sandbox/runtime path 均按 disposable VM execution environment 解释。
+
 ## 决策内容
 
 ### 1. Paper 与 Entry 是不同身份
@@ -69,9 +73,9 @@ provenance。只有内容 hash 相同的资源可以复用对象；语义相似�
 2. 校验 content hash 和可用性；
 3. 通过 copy、reflink 或受控 hardlink 物化普通文件到本次 staged `input/`；
 4. 拒绝 path collision、缺失对象、hash mismatch 和未声明文件；
-5. 只将物化后的 entry-local `/input` 只读挂载进 sandbox。
+5. 只将物化后的 entry-local `/input` 以只读语义 attach 到正式 execution environment。
 
-跨 entry symlink、指向共享仓库的 runtime path 和共享对象库 mount 均被禁止。分发单个
+跨 entry symlink、指向共享仓库的 guest path 和共享对象库 mount 均被禁止。分发单个
 entry 时，publisher 必须随包物化所需对象或提供可验证的对象获取机制；消费者不需要了解
 其他 entry。
 
@@ -98,7 +102,7 @@ entry 时，publisher 必须随包物化所需对象或提供可验证的对象�
 - Entry 保持可独立运行、评分、发布和撤回。
 - 正交分类避免继续给 L3/L4/L5 增加互不相关的含义。
 - 内容寻址复用消除大文件字节重复，同时不牺牲 manifest 可审计性。
-- Curator 物化保持 Plan 005 的 sandbox mount 和路径边界不变。
+- Curator 物化保持 entry-local InputBundle 与路径边界；正式 VM boundary 由 ADR-0009 定义。
 - 延迟实现避免在只有一个真实论文 task 时提前引入对象存储复杂度。
 
 ## 后果
@@ -122,7 +126,7 @@ entry 时，publisher 必须随包物化所需对象或提供可验证的对象�
 | ET-001 | 一个 entry 必须有明确 scored scope 和独立 oracle | metadata/oracle review |
 | ET-002 | 同 paper 的多个 entry 不共享隐式输入状态 | bundle contract test |
 | ET-003 | 资源只按 content hash 去重，不按名称或描述去重 | object resolver test |
-| ET-004 | 被测系统只能看到物化后的 entry-local InputBundle | Docker escape probe |
+| ET-004 | 被测系统只能看到物化后的 entry-local InputBundle | VM escape probe |
 | ET-005 | 禁止跨 entry symlink 和共享对象库 runtime mount | validator + mount inspection |
 | ET-006 | Input、oracle 或 runtime 边界变化必须按表中规则使旧结果失效 | release checklist |
 

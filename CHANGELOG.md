@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 完成 12 个 component 与 2 个 handoff 的真实 LLM smoke，并修复标量断言、blocked 文本误判与 Package phase-only 恢复
 - 将被测系统迁入 Docker sandbox，仅挂载只读 InputBundle 与两个可写运行目录；新增 offline/discovery/tool-runtime profile、资源限制、env allowlist、timeout 强制清理和 CI escape probe
 - 冻结 paper 与 entry 身份分离、正交任务 taxonomy，以及“manifest 独立声明、内容寻址去重、Curator 物化”的同论文多任务资源复用原则
+- 将可发布 benchmark 的唯一正式边界改为 QEMU/KVM disposable VM；Pixi/OCI 保持 guest 内实现细节，Docker sandbox 降为 validation-only backend
 
 ## [0.1.0] — 2026-07-19
 

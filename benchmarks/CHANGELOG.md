@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reserved IDs below 100 for constructed papers and IDs from 100 onward for real papers.
 - Completed cited-resource fidelity review for all six entries and kept runtime isolation and executable-environment freezing outside the InputBundle claim.
 - Separated paper identity from scored entry tasks and adopted independent manifests with content-addressed reuse and Curator materialization for future same-paper tasks.
+- Adopted QEMU/KVM disposable VMs as the only formal execution boundary; container sandbox observations are validation-only and require a VM rerun before entering a baseline.
 
 ## [2.0.0] - 2026-07-19
 
