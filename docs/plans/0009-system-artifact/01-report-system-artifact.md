@@ -29,9 +29,10 @@ worker provisioning 与 release gate 缺陷，使用独立 VM probe 验证修复
 | Runtime | 固定 Pixi 0.72.2、Python base digest、Claude Code 2.1.126、MIP 0.2.0 与 MIP archive SHA256 |
 | Worker | Ready marker 仅在 `docker`、active daemon 和 `docker.io` package 全部存在后写入；失败 provisioning 不再关机伪装成功 |
 | Release gate | JSON round-trip 后 teardown status 使用值比较，仍拒绝 infrastructure-blocked 或 teardown 不完整的 submission |
-| Test isolation | 动态加载 workflow 的 eval harness 不再把 `__pycache__` 写入受检 loop source |
+| Test isolation | 动态加载 workflow 不写 bytecode；artifact tests 从排除本地 generated state 的 source fixture 构建，仍单独验证 builder 严格拒绝这些目录 |
 
-实现 commits：`83ce804`、`5465c23`、`15e5b15`、`345da6a`、`8adbac1`、`838d193`。
+实现 commits：`83ce804`、`5465c23`、`15e5b15`、`345da6a`、`8adbac1`、`838d193`、
+`4c212d1`。
 
 # Artifact 证据
 
