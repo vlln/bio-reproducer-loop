@@ -9,6 +9,17 @@ from evals.runner.loopflow import assert_text_checks
 ROOT = Path(__file__).parents[2]
 
 
+def _workflow_bytecode_state():
+    cache = ROOT / "loops" / "bio-reproducer" / "__pycache__"
+    if not cache.exists():
+        return {}
+    return {
+        path.name: (path.stat().st_size, path.stat().st_mtime_ns)
+        for path in cache.iterdir()
+        if path.is_file()
+    }
+
+
 def _load_workflow_module():
     path = ROOT / "loops" / "bio-reproducer" / "workflow.py"
     spec = importlib.util.spec_from_file_location("bio_reproducer_workflow", path)
@@ -32,7 +43,8 @@ def test_validation_verdict_falls_back_to_metrics_for_phase_resume(tmp_path):
     metrics.parent.mkdir()
     metrics.write_text('{"verdict": "REPRODUCED"}')
 
+    bytecode_before = _workflow_bytecode_state()
     workflow = _load_workflow_module()
 
     assert workflow._validation_verdict(SimpleNamespace(value=None), tmp_path) == "REPRODUCED"
-    assert not (ROOT / "loops" / "bio-reproducer" / "__pycache__").exists()
+    assert _workflow_bytecode_state() == bytecode_before
