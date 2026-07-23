@@ -2,16 +2,17 @@
 
 | 字段 | 值 |
 |------|-----|
-| **当前阶段** | `TEST_INFRA`（VM worker backend pending） |
+| **当前阶段** | `DEVELOP`（VM worker 基建已就绪，system artifact pending） |
 | **设计评估** | ADR-0009 accepted；Spec v4、Interface 0001 与 AC-0004 active |
-| **基建评估** | Plan 006 已验证 QEMU/KVM disposable VM；Docker sandbox 已降为 validation backend，正式 VM runner 尚未实现 |
-| **系统测试** | 73 个确定性测试与 4 个显式真实 Docker probe 通过；12 个 component 与 2 个 handoff 真实 LLM smoke 有效通过；开发期不建立 tracked baseline |
+| **基建评估** | Plan 008 已实现 QEMU/KVM worker、ExecutionEnvelope、release gate 与 pinned worker recipe；`gs` success/timeout smoke 通过 |
+| **系统测试** | 87 个确定性测试、4 个显式 Docker probe 与 2 个真实 KVM smoke 通过；12 个 component 与 2 个 handoff 真实 LLM smoke 有效通过；开发期不建立 tracked baseline |
 
 正式契约要求 Runner/Curator 在可信控制面校验并 stage InputBundle，被测系统在每次
 新建的 QEMU/KVM disposable VM 中读取只读 `/input` 并写入 `/workspace`、`/output`。Guest 可以
 使用 root 与 VM-local Docker，但仓库、oracle、其他 entry、历史结果和 host runtime
-socket 不进入 VM。Worker 使用预构建最小 image 与 fresh qcow2 overlay，cold boot 目标
-小于 60 秒；下一步创建 VM runner 的 TEST_INFRA Plan。
+socket 不进入 VM。Worker 使用预构建最小 image 与 fresh qcow2 overlay，实测 cold boot
+约 10-11 秒。下一步在 DEVELOP Plan 中构建 opaque bio-reproducer system artifact，并先以
+最小 entry smoke 验证 adapter；完整 MinerU/R 等依赖不进入 worker base。
 
 ## 子目录
 
