@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Completed cited-resource fidelity review for all six entries and kept runtime isolation and executable-environment freezing outside the InputBundle claim.
 - Separated paper identity from scored entry tasks and adopted independent manifests with content-addressed reuse and Curator materialization for future same-paper tasks.
 - Adopted QEMU/KVM disposable VMs as the only formal execution boundary; container sandbox observations are validation-only and require a VM rerun before entering a baseline.
+- Added the QEMU/KVM worker backend, protocol-v2 execution envelopes, formal release gate, pinned minimal worker-image recipe, and opt-in success/timeout VM smoke.
 
 ## [2.0.0] - 2026-07-19
 
