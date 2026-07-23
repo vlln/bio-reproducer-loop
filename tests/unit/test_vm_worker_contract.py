@@ -389,6 +389,7 @@ def _formal_submission() -> dict:
 
 def test_release_gate_accepts_only_completed_qemu_vm_runs():
     require_formal_submission(_formal_submission())
+    require_formal_submission(json.loads(json.dumps(_formal_submission())))
 
     validation = _formal_submission()
     validation["execution"]["purpose"] = "validation-only"
@@ -409,6 +410,20 @@ def test_release_gate_accepts_only_completed_qemu_vm_runs():
     infrastructure_failure["execution"]["blocked_reason"] = "infrastructure"
     with pytest.raises(ReleaseGateError, match="infrastructure"):
         require_formal_submission(infrastructure_failure)
+
+
+def test_worker_recipe_requires_docker_before_marking_image_ready():
+    recipe = (
+        ROOT / "benchmarks" / "runner" / "worker_image" / "build-worker.sh"
+    ).read_text()
+
+    assert "nameserver 223.5.5.5" in recipe
+    assert "command -v docker" in recipe
+    assert "systemctl is-active --quiet docker" in recipe
+    assert "dpkg-query -W docker.io" in recipe
+    assert "touch /var/lib/bio-reproducer-worker-ready" in recipe
+    assert "condition: test -f /var/lib/bio-reproducer-worker-ready" in recipe
+    assert "condition: true" not in recipe
 
 
 def test_release_check_cli_returns_nonzero_for_validation_submission(tmp_path, capsys):

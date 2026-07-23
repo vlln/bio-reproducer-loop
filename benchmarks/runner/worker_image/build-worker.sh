@@ -61,18 +61,19 @@ users:
     ssh_authorized_keys:
       - $(cat "$public_key")
 ssh_pwauth: false
+bootcmd:
+  - [sh, -c, 'rm -f /etc/resolv.conf && printf "nameserver 223.5.5.5\noptions timeout:5 attempts:5\n" > /etc/resolv.conf']
 package_update: true
 packages:
   - docker.io
 runcmd:
   - [usermod, -aG, docker, benchmark]
   - [systemctl, enable, --now, docker]
-  - [sh, -c, 'cloud-init status --long > /var/lib/bio-reproducer-cloud-init.txt']
-  - [touch, /var/lib/bio-reproducer-worker-ready]
+  - [sh, -c, 'command -v docker >/dev/null && systemctl is-active --quiet docker && dpkg-query -W docker.io >/dev/null && docker --version > /var/lib/bio-reproducer-worker-validation.txt && touch /var/lib/bio-reproducer-worker-ready']
 power_state:
   mode: poweroff
   timeout: 2400
-  condition: true
+  condition: test -f /var/lib/bio-reproducer-worker-ready
 EOF
 
 cloud-localds "$seed" "$work/user-data" "$work/meta-data"

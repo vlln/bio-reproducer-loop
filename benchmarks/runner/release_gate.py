@@ -35,7 +35,7 @@ def require_formal_submission(submission: Mapping[str, object]) -> None:
 
     teardown = execution.get("teardown")
     teardown_complete = isinstance(teardown, Mapping) and all(
-        teardown.get(field) is expected
+        teardown.get(field) == expected
         for field, expected in (
             ("status", "completed"),
             ("worker_absent", True),
