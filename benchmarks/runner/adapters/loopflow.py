@@ -18,7 +18,15 @@ from typing import Optional
 import yaml
 
 from ..bundle_validator import validate_entry
-from ..sandbox import DockerSandbox, SandboxError, SandboxRequest
+from ..execution import ExecutionError, ExecutionRequest
+from ..sandbox import DockerSandbox
+from ..worker import (
+    WorkerBootError,
+    WorkerIntegrityError,
+    WorkerTeardownError,
+    WorkerTimeout,
+    WorkerUnavailable,
+)
 
 
 def run(entry_path: str, run_dir: Optional[str] = None, sandbox=None) -> dict:
@@ -62,7 +70,7 @@ def run(entry_path: str, run_dir: Optional[str] = None, sandbox=None) -> dict:
 
     workspace = run_root / "workspace"
     workspace.mkdir(parents=True, exist_ok=True)
-    request = SandboxRequest(
+    request = ExecutionRequest(
         command=["loop", "run", "bio-reproducer", "--args", json.dumps(args)],
         input_dir=input_dir,
         workspace=workspace,
@@ -71,14 +79,17 @@ def run(entry_path: str, run_dir: Optional[str] = None, sandbox=None) -> dict:
     try:
         executor = sandbox or DockerSandbox.from_environment()
         proc = executor.run(request)
-    except (SandboxError, ValueError) as exc:
+    except (ExecutionError, ValueError) as exc:
+        blocked_reason, error_code = _execution_error(exc)
         return _make_blocked_output(
             metadata,
             run_root,
-            "system",
+            output_dir,
+            blocked_reason,
             str(exc),
+            error_code=error_code,
             duration=int(time.time() - start_time),
-            sandbox=_sandbox_provenance(locals().get("executor")),
+            envelope=_execution_envelope(locals().get("executor")),
         )
 
     duration = int(time.time() - start_time)
@@ -87,10 +98,11 @@ def run(entry_path: str, run_dir: Optional[str] = None, sandbox=None) -> dict:
 
     if proc.returncode != 0:
         return _make_blocked_output(
-            metadata, run_root, "system",
+            metadata, run_root, output_dir, "system",
             f"loopflow exited with code {proc.returncode}",
+            error_code="EXECUTION_BLOCKED",
             duration=duration,
-            sandbox=_sandbox_provenance(executor),
+            envelope=_execution_envelope(executor),
         )
 
     # 6. Describe loopflow's artifacts without assigning evaluator-owned scores
@@ -99,7 +111,7 @@ def run(entry_path: str, run_dir: Optional[str] = None, sandbox=None) -> dict:
         run_root,
         output_dir,
         duration,
-        sandbox=_sandbox_provenance(executor),
+        envelope=_execution_envelope(executor),
     )
 
 
@@ -168,6 +180,12 @@ def build_submission_from_existing(
         submission_id=f"{metadata.get('id', entry_dir.name)}-{run_root.name}",
         claimed_verdict=claimed_verdict,
         stages=stages,
+        envelope={
+            "purpose": "validation-only",
+            "isolation": "historical",
+            "provider": "legacy-import",
+            "teardown": {"status": "unknown"},
+        },
     )
 
 
@@ -179,7 +197,7 @@ def _build_submission(
     submission_id: str | None = None,
     claimed_verdict: str | None = None,
     stages: list[dict] | None = None,
-    sandbox: dict | None = None,
+    envelope: dict | None = None,
 ) -> dict:
     """Describe actual artifacts; score and verdict remain evaluator-owned."""
     entry_id = metadata.get("id", "unknown")
@@ -199,12 +217,17 @@ def _build_submission(
     if claimed_verdict is None:
         claimed_verdict, _ = _read_verdict_and_score(repro_dir)
     execution = {
+        **(envelope or {
+            "purpose": "validation-only",
+            "isolation": "adapter",
+            "provider": "unknown",
+            "teardown": {"status": "unknown"},
+        }),
         "duration_seconds": duration,
         "stages": stages if stages is not None else _read_stages(repro_dir),
     }
-    if sandbox:
-        execution["sandbox"] = sandbox
     return {
+        "protocol_version": "2.0",
         "submission_id": submission_id,
         "bench_id": entry_id,
         "system": {"name": "bio-reproducer", "version": "0.1.0"},
@@ -414,39 +437,67 @@ def _read_verdict_and_score(repro_dir: Path) -> tuple:
     return "BLOCKED", 0
 
 
-def _sandbox_provenance(executor) -> dict | None:
+def _execution_envelope(executor) -> dict | None:
+    if executor is None:
+        return None
+    envelope = getattr(executor, "execution_envelope", None)
+    if callable(envelope):
+        return envelope()
     config = getattr(executor, "config", None)
     if config is None:
-        return {"runtime": "custom"} if executor is not None else None
+        return {
+            "purpose": "validation-only",
+            "isolation": "test-double",
+            "provider": "custom",
+            "teardown": {"status": "unknown"},
+        }
     return {
-        "runtime": "docker",
-        "profile": config.profile,
-        "image": config.image,
+        "purpose": "validation-only",
+        "isolation": "container",
+        "provider": "docker",
+        "network_policy": "offline" if config.profile == "offline" else "controlled-egress",
+        "deadline_seconds": config.timeout_seconds,
+        "worker_image": {"id": config.image},
+        "teardown": {"status": "unknown"},
     }
+
+
+def _execution_error(exc: BaseException) -> tuple[str, str]:
+    if isinstance(exc, WorkerUnavailable):
+        return "infrastructure", "WORKER_UNAVAILABLE"
+    if isinstance(exc, WorkerIntegrityError):
+        return "infrastructure", "INVALID_EXECUTION_ENVIRONMENT"
+    if isinstance(exc, WorkerBootError):
+        return "infrastructure", "WORKER_BOOT_FAILED"
+    if isinstance(exc, WorkerTeardownError):
+        return "infrastructure", "TEARDOWN_ERROR"
+    if isinstance(exc, WorkerTimeout):
+        return "system", "EXECUTION_TIMEOUT"
+    return "infrastructure", "EXECUTION_BLOCKED"
 
 
 def _make_blocked_output(
     metadata: dict,
     run_root: Path,
+    repro_dir: Path,
     reason: str,
     error: str,
+    error_code: str,
     duration: int = 0,
-    sandbox: dict | None = None,
+    envelope: dict | None = None,
 ) -> dict:
-    entry_id = metadata.get("id", "unknown")
-    submission_id = f"{entry_id}-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
-    execution = {
-        "duration_seconds": duration,
-        "stages": [],
-        "blocked_reason": reason,
-        "error": error,
-    }
-    if sandbox:
-        execution["sandbox"] = sandbox
-    return {
-        "submission_id": submission_id,
-        "bench_id": entry_id,
-        "system": {"name": "bio-reproducer", "version": "0.1.0"},
-        "artifacts": [],
-        "execution": execution,
-    }
+    submission = _build_submission(
+        metadata,
+        run_root,
+        repro_dir,
+        duration,
+        envelope=envelope,
+    )
+    submission["execution"].update(
+        {
+            "blocked_reason": reason,
+            "error_code": error_code,
+            "error": error,
+        }
+    )
+    return submission
