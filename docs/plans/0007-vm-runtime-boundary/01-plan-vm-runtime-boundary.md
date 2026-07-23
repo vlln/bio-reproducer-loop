@@ -2,7 +2,7 @@
 title: Plan 007 — Formalize Disposable VM Runtime Boundary
 description: 将已验证的 disposable VM 决策传导到 ADR、Spec、Interface、AC 与项目状态，不在本 Plan 实现 runner。
 type: plan
-status: pending
+status: done
 created: 2026-07-22T00:00:00Z
 ---
 
@@ -44,5 +44,5 @@ control plane 留在 VM 外。完成设计冻结后再创建 TEST_INFRA Plan 实
 
 # 审查门禁
 
-本 Plan 先将 ADR、Spec、Interface 和 AC 置为 `proposed`。用户完成内容审查后才可将
-ADR 标记为 `accepted`，将 Spec/Interface/AC 标记为 `active`，并把 Plan/Report 收尾。
+本 Plan 先将 ADR、Spec、Interface 和 AC 置为 `proposed`，经用户逐项审查后才完成
+`accepted`/`active` 提升与 Plan/Report 收尾；该门禁现已通过。

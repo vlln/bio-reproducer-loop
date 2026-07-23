@@ -2,15 +2,16 @@
 
 | 字段 | 值 |
 |------|-----|
-| **当前阶段** | `DESIGN`（VM runtime architecture revision） |
-| **设计评估** | ADR-0009、Spec v4、Interface 0001 与 AC-0004 proposed，等待内容审查 |
-| **基建评估** | Plan 006 已验证 disposable VM 可行；现有 Docker sandbox 降为 validation backend，VM runner 尚未实现 |
+| **当前阶段** | `TEST_INFRA`（VM worker backend pending） |
+| **设计评估** | ADR-0009 accepted；Spec v4、Interface 0001 与 AC-0004 active |
+| **基建评估** | Plan 006 已验证 QEMU/KVM disposable VM；Docker sandbox 已降为 validation backend，正式 VM runner 尚未实现 |
 | **系统测试** | 73 个确定性测试与 4 个显式真实 Docker probe 通过；12 个 component 与 2 个 handoff 真实 LLM smoke 有效通过；开发期不建立 tracked baseline |
 
-正式设计草案要求 Runner/Curator 在可信控制面校验并 stage InputBundle，被测系统在每次
-新建的 disposable VM 中读取只读 `/input` 并写入 `/workspace`、`/output`。Guest 可以
+正式契约要求 Runner/Curator 在可信控制面校验并 stage InputBundle，被测系统在每次
+新建的 QEMU/KVM disposable VM 中读取只读 `/input` 并写入 `/workspace`、`/output`。Guest 可以
 使用 root 与 VM-local Docker，但仓库、oracle、其他 entry、历史结果和 host runtime
-socket 不进入 VM。设计冻结后才能创建 VM runner 的 TEST_INFRA Plan。
+socket 不进入 VM。Worker 使用预构建最小 image 与 fresh qcow2 overlay，cold boot 目标
+小于 60 秒；下一步创建 VM runner 的 TEST_INFRA Plan。
 
 ## 子目录
 

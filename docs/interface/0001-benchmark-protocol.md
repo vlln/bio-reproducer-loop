@@ -2,7 +2,7 @@
 title: Interface 001 — Benchmark 输入、执行、提交与评估协议
 description: 定义 disposable VM execution envelope、可追溯 InputBundle、SubmissionBundle、EvaluatorResult 及其信任边界。
 type: interface
-status: proposed
+status: active
 created: 2026-07-19T00:00:00Z
 ---
 
@@ -133,6 +133,10 @@ System artifact 可以在内部使用 Pixi、Conda、OCI、源码安装或多 co
 这些形式不得进入 entry schema 或 formal runtime enum。公共协议只记录 artifact digest
 和 adapter identity。
 
+当前 formal provider 固定为 `qemu-kvm`，使用 immutable Ubuntu base、fresh qcow2
+overlay、virtio block/network、virtiofs I/O 与 QMP lifecycle。Worker image 预装 Docker；
+不得在每个 run 中在线安装基础设施依赖。QEMU 无法启用 KVM 时必须失败，不得回退 TCG。
+
 ### 生命周期
 
 1. 校验 InputBundle、worker image digest、system artifact digest 与 network policy。
@@ -152,7 +156,9 @@ System artifact 可以在内部使用 Pixi、Conda、OCI、源码安装或多 co
 
 Entry 的 `offline` interaction mode 映射为 `offline`；`discovery` 与 `tool-runtime` 映射为
 `controlled-egress`。这是网络策略差异，不是 runtime backend 差异。临时凭据的值不得写入
-ExecutionEnvelope、日志或报告；只记录凭据名称、来源类型与失效状态。
+ExecutionEnvelope、Runner-owned 日志或报告；只记录凭据名称、来源类型与失效状态。被测
+系统获得凭据后仍可能主动写入 output 或经允许网络外传，控制面必须使用最小权限、独立
+额度、短期有效且可撤销的凭据，不能把 VM isolation 当作 secret confinement。
 
 ### ExecutionEnvelope
 
@@ -160,6 +166,7 @@ ExecutionEnvelope、日志或报告；只记录凭据名称、来源类型与失
 {
   "purpose": "formal",
   "isolation": "disposable-vm",
+  "provider": "qemu-kvm",
   "worker_image": {
     "id": "bio-reproducer-worker",
     "digest": "sha256:<64 lowercase hex characters>"
@@ -181,9 +188,9 @@ ExecutionEnvelope、日志或报告；只记录凭据名称、来源类型与失
 }
 ```
 
-`purpose=formal` 时 `isolation`、两个 digest、network policy、deadline 和 completed teardown
-全部必需。`purpose=validation-only` 可以记录 Docker sandbox provenance，但不得伪装成
-`disposable-vm`。
+`purpose=formal` 时 `isolation`、`provider=qemu-kvm`、两个 digest、network policy、
+deadline 和 completed teardown 全部必需。当前不允许 provider fallback。`purpose` 为
+`validation-only` 时可以记录 Docker sandbox provenance，但不得伪装成 `disposable-vm`。
 
 ## SubmissionBundle
 
@@ -204,6 +211,7 @@ ExecutionEnvelope、日志或报告；只记录凭据名称、来源类型与失
   "execution": {
     "purpose": "formal",
     "isolation": "disposable-vm",
+    "provider": "qemu-kvm",
     "worker_image": {"id": "bio-reproducer-worker", "digest": "sha256:<digest>"},
     "system_artifact": {"digest": "sha256:<digest>", "adapter": "loopflow-adapter@0.1.0"},
     "network_policy": "offline",

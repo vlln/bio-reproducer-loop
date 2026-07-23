@@ -2,11 +2,11 @@
 
 | 文件 | 类型 | 状态 |
 |------|------|------|
-| [01-plan-vm-runtime-boundary.md](01-plan-vm-runtime-boundary.md) | Plan | pending |
-| [01-report-vm-runtime-boundary.md](01-report-vm-runtime-boundary.md) | Report | draft |
+| [01-plan-vm-runtime-boundary.md](01-plan-vm-runtime-boundary.md) | Plan | done |
+| [01-report-vm-runtime-boundary.md](01-report-vm-runtime-boundary.md) | Report | complete |
 
-状态：in progress。该执行容器只完成 disposable VM 正式运行边界的 ADR、Spec、Interface
-与 AC 设计传导，不实现 VM runner。设计审查通过并冻结后，由后续 TEST_INFRA 执行容器
-实现 worker backend。
+状态：done。Disposable VM 正式运行边界已完成 ADR、Spec、Interface 与 AC 传导并通过
+用户审查；QEMU/KVM、预构建最小 worker、VM-local Docker 与 `<60s` cold boot 目标已经
+冻结。本执行容器不实现 VM runner，后续由 TEST_INFRA 执行容器实现 worker backend。
 
 计划分支：`docs/0007-vm-runtime-boundary`

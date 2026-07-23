@@ -2,7 +2,7 @@
 title: Spec 001 — 测试、评测与基准体系
 description: bio-reproducer 的确定性测试、内部 LLM 评测，以及采用 disposable VM、分层 InputBundle 和独立评分的公开黑盒 benchmark。
 type: spec
-status: proposed
+status: active
 version: 4
 created: 2026-07-15T00:00:00Z
 ---
@@ -376,6 +376,7 @@ ExecutionEnvelope 是 formal run 的控制面记录，不向被测系统暴露 p
 | 字段 | 类型 | 约束 | 说明 |
 |------|------|------|------|
 | isolation | enum | 固定 `disposable-vm` | 可发布结果的唯一正式隔离类型 |
+| provider | enum | 固定 `qemu-kvm` | 当前 formal worker backend；不得静默 fallback |
 | purpose | enum | formal/validation-only | 是否允许进入 release report/baseline |
 | worker_image | object | digest 必需 | Runner-owned immutable VM base identity |
 | system_artifact | object | digest 必需 | 被测系统 opaque artifact 与 adapter identity |
@@ -462,6 +463,7 @@ workflow 不进入 ExecutionEnvelope 的 runtime enum。
 | 维度 | 指标 | 目标值 |
 |------|------|--------|
 | 性能 | L3 单篇论文执行时间 | < 10 min |
+| 性能 | QEMU/KVM worker cold boot 到可执行状态 | < 60 s |
 | 性能 | 确定性 `pytest tests/` | < 30 s |
 | 隔离性 | 被测系统读取 oracle 的能力 | 不可读取 |
 | 隔离性 | 被测系统控制 host runtime 的能力 | 不可获得 host socket/control channel |
@@ -478,7 +480,7 @@ workflow 不进入 ExecutionEnvelope 的 runtime enum。
 | loopflow | ≥0.13.0 | Agent 执行引擎 |
 | pytest | ≥8.0 | 确定性单元与契约测试框架 |
 | Python | ≥3.10 | 运行环境 |
-| Hardware virtualization/VM provider | 实现定义 | Formal benchmark worker isolation |
+| QEMU + KVM | QEMU 实现版本固定并记录 | Formal benchmark worker isolation |
 
 ---
 

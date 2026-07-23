@@ -2,7 +2,7 @@
 title: AC 004 — Disposable VM Runtime Boundary
 description: 验收正式 benchmark 的 disposable VM 生命周期、guest 权限、control-plane 隔离、I/O、provenance 和 teardown。
 type: ac
-status: proposed
+status: active
 created: 2026-07-22T00:00:00Z
 ---
 
@@ -14,7 +14,7 @@ created: 2026-07-22T00:00:00Z
 
 | 编号 | 前置条件 | 操作步骤 | 预期结果 | 验证方式 |
 |------|---------|---------|---------|---------|
-| AC-0008-N-1 | Worker image 与 system artifact digest 有效 | 启动一次 formal run | Fresh VM 启动，被测系统拥有 guest root 与 VM-local Docker | 自动化 + 真实 VM probe |
+| AC-0008-N-1 | Worker image 与 system artifact digest 有效 | 通过 QEMU/KVM 启动一次 formal run | Fresh VM 在 60 秒内可执行，被测系统拥有 guest root 与 VM-local Docker | 自动化 + 真实 VM probe |
 | AC-0008-N-2 | InputBundle 已物化，output 为空 | 在 guest 与 nested container 中读写 I/O | Input 可读不可写；workspace/output 可写 | 自动化 + 真实 VM probe |
 | AC-0008-N-3 | 被测系统生成 artifacts | 正常停止 guest 并收集 output | 生成标准 SubmissionBundle，VM 内外 artifact checksum 一致 | 自动化 |
 | AC-0008-N-4 | Formal run 完成 | 检查 execution provenance | 记录 disposable-vm、worker/system digest、network policy、deadline 与 teardown 结果 | 自动化 |
@@ -36,6 +36,7 @@ created: 2026-07-22T00:00:00Z
 | AC-0008-E-2 | Worker image/system artifact digest 不匹配 | 启动 run | 返回 INVALID_EXECUTION_ENVIRONMENT，guest 不启动 | 自动化 |
 | AC-0008-E-3 | Guest boot 或 output attach 失败 | 执行 run | 返回 infrastructure error，不计为系统科学能力失败 | 自动化 |
 | AC-0008-E-4 | Teardown 审计发现残留 worker | 完成 run | 标记 TEARDOWN_ERROR，结果不得发布或进入 baseline | 自动化 + process audit |
+| AC-0008-E-5 | QEMU 无法使用 KVM acceleration | 启动 formal run | 返回 WORKER_UNAVAILABLE，不回退 TCG 或其他 provider | 自动化 |
 
 ## 失败场景
 
