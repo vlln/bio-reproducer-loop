@@ -87,10 +87,6 @@ def _build_executor(args: argparse.Namespace):
             )
         )
 
-    if args.pass_env:
-        raise ValueError(
-            "--pass-env is not implemented for formal VM credentials"
-        )
     from .worker import QemuWorker, VmWorkerConfig, WorkerUnavailable
 
     required = {
@@ -115,6 +111,7 @@ def _build_executor(args: argparse.Namespace):
             network_policy=args.network_policy,
             timeout_seconds=args.timeout,
             boot_timeout_seconds=args.boot_timeout,
+            pass_env=tuple(args.pass_env or ()),
         )
     )
 
@@ -163,6 +160,56 @@ def cmd_release_check(args: argparse.Namespace) -> None:
         print(f"ERROR [RELEASE_GATE]: {exc}", file=sys.stderr)
         raise SystemExit(2) from exc
     print(f"FORMAL: {submission_path}")
+
+
+def _named_paths(values: list[str]) -> dict[str, Path]:
+    parsed = {}
+    for value in values:
+        name, separator, path = value.partition("=")
+        if not separator or not name or not path or name in parsed:
+            raise ValueError(f"Invalid or duplicate NAME=PATH value: {value}")
+        parsed[name] = Path(path)
+    return parsed
+
+
+def cmd_build_system(args: argparse.Namespace) -> None:
+    """Build an opaque system artifact from explicit pinned inputs."""
+    from .system_artifact import build_system_artifact
+    from .worker import sha256_tree
+
+    manifest = build_system_artifact(
+        Path(args.output),
+        loop_dir=Path(args.loop_dir),
+        runtime_oci=Path(args.runtime_oci),
+        runtime_image=args.runtime_image,
+        skills=_named_paths(args.skill),
+        provenance={
+            "repository_commit": args.repository_commit,
+            "loopflow_commit": args.loopflow_commit,
+            "loopflow_version": args.loopflow_version,
+        },
+        required_secrets=tuple(args.required_secret),
+        skills_lock=Path(args.skills_lock) if args.skills_lock else None,
+    )
+    print(json.dumps({
+        "artifact": str(Path(args.output).resolve()),
+        "digest": f"sha256:{sha256_tree(Path(args.output))}",
+        "manifest": manifest,
+    }, indent=2))
+
+
+def cmd_validate_system(args: argparse.Namespace) -> None:
+    """Validate an already materialized opaque system artifact."""
+    from .system_artifact import validate_system_artifact
+    from .worker import sha256_tree
+
+    root = Path(args.system_dir)
+    manifest = validate_system_artifact(root)
+    print(json.dumps({
+        "artifact": str(root.resolve()),
+        "digest": f"sha256:{sha256_tree(root)}",
+        "manifest": manifest,
+    }, indent=2))
 
 
 def _evaluate_submissions(entry_path: Path, results_dir: Path) -> None:
@@ -349,6 +396,29 @@ def main() -> None:
     )
     release_parser.add_argument("--submission", required=True, help="submission.json path")
 
+    build_system_parser = subparsers.add_parser(
+        "build-system", help="Build an opaque bio-reproducer system artifact"
+    )
+    build_system_parser.add_argument("--output", required=True)
+    build_system_parser.add_argument("--loop-dir", default="loops/bio-reproducer")
+    build_system_parser.add_argument("--runtime-oci", required=True)
+    build_system_parser.add_argument("--runtime-image", required=True)
+    build_system_parser.add_argument(
+        "--skill", action="append", default=[], metavar="NAME=PATH"
+    )
+    build_system_parser.add_argument("--repository-commit", required=True)
+    build_system_parser.add_argument("--loopflow-commit", required=True)
+    build_system_parser.add_argument("--loopflow-version", required=True)
+    build_system_parser.add_argument("--skills-lock", default=None)
+    build_system_parser.add_argument(
+        "--required-secret", action="append", default=[]
+    )
+
+    validate_system_parser = subparsers.add_parser(
+        "validate-system", help="Validate an opaque system artifact"
+    )
+    validate_system_parser.add_argument("--system-dir", required=True)
+
     # bench-run report
     report_parser = subparsers.add_parser("report", help="Generate summary report")
     report_parser.add_argument(
@@ -369,6 +439,10 @@ def main() -> None:
         cmd_eval(args)
     elif args.command == "release-check":
         cmd_release_check(args)
+    elif args.command == "build-system":
+        cmd_build_system(args)
+    elif args.command == "validate-system":
+        cmd_validate_system(args)
     elif args.command == "report":
         cmd_report(args)
     else:

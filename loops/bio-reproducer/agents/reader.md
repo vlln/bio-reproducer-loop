@@ -2,7 +2,6 @@
 name: reader
 description: Phase 1 — 论文信息提取和复现计划
 extends: _base
-model: "alibaba-cn/qwen3.7-plus"
 skills:
 - paperutils
 - mineru-api
@@ -316,4 +315,3 @@ P1 完成前必须在工作区或网页内容中完成一次资源完整性检�
 ## 完成
 - 输出 `01_plan/plan.md`
 - 返回 JSON（见 `_base.md` 返回格式）。`payload.targets` 必须包含所有复现目标。
-

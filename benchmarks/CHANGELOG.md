@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Separated paper identity from scored entry tasks and adopted independent manifests with content-addressed reuse and Curator materialization for future same-paper tasks.
 - Adopted QEMU/KVM disposable VMs as the only formal execution boundary; container sandbox observations are validation-only and require a VM rerun before entering a baseline.
 - Added the QEMU/KVM worker backend, protocol-v2 execution envelopes, formal release gate, pinned minimal worker-image recipe, and opt-in success/timeout VM smoke.
+- Added a digest-verified opaque system artifact with pinned loopflow, Pixi runtime, loop source, skills provenance, and a stable `/system/run-system` launcher.
+- Hardened worker provisioning validation and preserved the single blocked bench-001 formal smoke without creating a development baseline.
 
 ## [2.0.0] - 2026-07-19
 

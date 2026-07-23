@@ -1,4 +1,5 @@
 import importlib.util
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -13,7 +14,12 @@ def _load_workflow_module():
     spec = importlib.util.spec_from_file_location("bio_reproducer_workflow", path)
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
-    spec.loader.exec_module(module)
+    previous = sys.dont_write_bytecode
+    try:
+        sys.dont_write_bytecode = True
+        spec.loader.exec_module(module)
+    finally:
+        sys.dont_write_bytecode = previous
     return module
 
 
@@ -29,3 +35,4 @@ def test_validation_verdict_falls_back_to_metrics_for_phase_resume(tmp_path):
     workflow = _load_workflow_module()
 
     assert workflow._validation_verdict(SimpleNamespace(value=None), tmp_path) == "REPRODUCED"
+    assert not (ROOT / "loops" / "bio-reproducer" / "__pycache__").exists()

@@ -42,6 +42,7 @@ def _request(tmp_path: Path) -> ExecutionRequest:
 
 
 def _config(tmp_path: Path, **overrides) -> VmWorkerConfig:
+    tmp_path.mkdir(parents=True, exist_ok=True)
     worker_image = tmp_path / "worker.qcow2"
     worker_image.write_bytes(b"immutable worker image")
     system_dir = tmp_path / "system"
@@ -85,6 +86,43 @@ def test_digest_mismatch_is_rejected_before_worker_launch(tmp_path):
 
     with pytest.raises(WorkerIntegrityError, match="worker image digest"):
         worker.verify_assets()
+
+
+def test_formal_secret_names_are_validated_and_values_are_required(tmp_path, monkeypatch):
+    with pytest.raises(ValueError, match="environment names"):
+        _config(tmp_path / "invalid", pass_env=("TOKEN=value",))
+
+    worker = QemuWorker(_config(tmp_path / "missing", pass_env=("MODEL_API_KEY",)))
+    monkeypatch.delenv("MODEL_API_KEY", raising=False)
+    with pytest.raises(WorkerIntegrityError, match="Required secret environment is unavailable"):
+        worker.verify_assets()
+
+
+def test_formal_secrets_travel_over_ssh_stdin_and_provenance_has_names_only(
+    tmp_path, monkeypatch
+):
+    secret_value = "never-serialize-this-token"
+    monkeypatch.setenv("MODEL_API_KEY", secret_value)
+    worker = QemuWorker(_config(tmp_path, pass_env=("MODEL_API_KEY",)))
+    request = _request(tmp_path)
+    captured = {}
+
+    def fake_run(command, **kwargs):
+        captured["command"] = command
+        captured["input"] = kwargs.get("input")
+        return subprocess.CompletedProcess(command, 0, "ok", "")
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+    result = worker._execute_guest(request, 22022)
+
+    assert result.returncode == 0
+    assert json.loads(captured["input"]) == {"MODEL_API_KEY": secret_value}
+    assert secret_value not in " ".join(captured["command"])
+    envelope = worker.execution_envelope()
+    assert envelope["secrets"] == [
+        {"name": "MODEL_API_KEY", "type": "environment"}
+    ]
+    assert secret_value not in json.dumps(envelope)
 
 
 def test_kvm_and_qemu_are_mandatory_without_fallback(tmp_path, monkeypatch):
@@ -351,6 +389,7 @@ def _formal_submission() -> dict:
 
 def test_release_gate_accepts_only_completed_qemu_vm_runs():
     require_formal_submission(_formal_submission())
+    require_formal_submission(json.loads(json.dumps(_formal_submission())))
 
     validation = _formal_submission()
     validation["execution"]["purpose"] = "validation-only"
@@ -371,6 +410,20 @@ def test_release_gate_accepts_only_completed_qemu_vm_runs():
     infrastructure_failure["execution"]["blocked_reason"] = "infrastructure"
     with pytest.raises(ReleaseGateError, match="infrastructure"):
         require_formal_submission(infrastructure_failure)
+
+
+def test_worker_recipe_requires_docker_before_marking_image_ready():
+    recipe = (
+        ROOT / "benchmarks" / "runner" / "worker_image" / "build-worker.sh"
+    ).read_text()
+
+    assert "nameserver 223.5.5.5" in recipe
+    assert "command -v docker" in recipe
+    assert "systemctl is-active --quiet docker" in recipe
+    assert "dpkg-query -W docker.io" in recipe
+    assert "touch /var/lib/bio-reproducer-worker-ready" in recipe
+    assert "condition: test -f /var/lib/bio-reproducer-worker-ready" in recipe
+    assert "condition: true" not in recipe
 
 
 def test_release_check_cli_returns_nonzero_for_validation_submission(tmp_path, capsys):
