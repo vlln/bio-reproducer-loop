@@ -10,6 +10,7 @@
 | [0007-vm-runtime-boundary](0007-vm-runtime-boundary/) | `docs/0007-vm-runtime-boundary` | done |
 | [0008-vm-worker-backend](0008-vm-worker-backend/) | `test/0008-vm-worker-backend` | done |
 | [0009-system-artifact](0009-system-artifact/) | `feat/0009-system-artifact` | done |
+| [0010-fixed-worker-formal-smoke](0010-fixed-worker-formal-smoke/) | `test/0010-fixed-worker-formal-smoke` | pending |
 
 当前阶段：DEVELOP。Plan 006 在保留的 `spike/0006-vm-isolation` 分支验证了 KVM/QEMU、
 VM-local Docker、I/O boundary、oracle 隔离和完整 teardown；Plan 007 已将结论冻结到
@@ -18,3 +19,4 @@ validation backend，不再作为可发布结果的正式边界。Plan 008 已�
 worker contract、fake tests、release gate 与 `gs` 真实 VM smoke。Plan 009 已构建 opaque
 bio-reproducer system artifact；唯一正式 `bench-001` run 暴露并推动修复了 worker
 provisioning 缺陷。修复后的 worker 已独立通过 VM 验证，新的正式 smoke 留给后续执行容器。
+Plan 010 正在使用修复后的 worker 补做一次最小 formal smoke，不运行其他 entry 或建立 baseline。
