@@ -67,3 +67,6 @@ failed 或 timeout，保留实际结果，不自动重跑。
 | FS-006 | Teardown 四项完整，Plan 路径、容器、镜像和 QEMU 无残留 | AC-0008-F-3 |
 | FS-007 | 未运行其他 entry、未建立 baseline、未修改远端 home 项目 | DEVELOP gate |
 | FS-008 | 远端普通 tests、Docker probes、lint、bundle validators 与 diff check 全部通过 | DEVELOP gate |
+
+执行前检查发现 runtime build tag 仍硬编码为 Plan 009。本 Plan 将其改为显式、可覆盖的
+`BIO_REPRODUCER_RUNTIME_TAG`，确保 Plan 资产命名和最终 residue audit 可以闭合。
