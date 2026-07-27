@@ -23,7 +23,7 @@ cp "$recipe_dir/Dockerfile" "$tmp/Dockerfile"
 cp "$recipe_dir/../../../loops/bio-reproducer/pixi.toml" "$tmp/pixi.toml"
 cp "$recipe_dir/../../../loops/bio-reproducer/pixi.lock" "$tmp/pixi.lock"
 
-tag="bio-reproducer-runtime:plan009"
+tag=${BIO_REPRODUCER_RUNTIME_TAG:-bio-reproducer-runtime:local}
 build_network=${BIO_REPRODUCER_BUILD_NETWORK:-default}
 mip_url=${BIO_REPRODUCER_MIP_URL:-https://github.com/vlln/mip/releases/download/v0.2.0/mip_0.2.0_linux_amd64.tar.gz}
 docker build \

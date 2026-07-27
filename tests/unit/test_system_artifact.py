@@ -186,5 +186,7 @@ def test_runtime_recipe_pins_bases_agent_cli_and_required_skill_binary():
     assert "ARG MIP_URL=https://github.com/vlln/mip/releases/download/v0.2.0/" in recipe
     assert '"${MIP_URL}"' in recipe
     assert "BIO_REPRODUCER_MIP_URL" in builder
+    assert "BIO_REPRODUCER_RUNTIME_TAG" in builder
+    assert "bio-reproducer-runtime:local" in builder
     assert '--build-arg "MIP_URL=$mip_url"' in builder
     assert ":latest" not in recipe
