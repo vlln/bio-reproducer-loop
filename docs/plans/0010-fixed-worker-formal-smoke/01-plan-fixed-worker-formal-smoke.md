@@ -27,6 +27,7 @@ envelope、release-check 分类与 teardown 证据，不把 system/scientific fa
 - Worker、runtime、artifact、input 和 secrets 均通过显式 staging；oracle、仓库和历史结果不进入 guest。
 - Secret 只记录逻辑名称；value 不写入 artifact、submission、日志或 Report。
 - 长时间远端构建使用 `background-task`，下载中不得仅因暂时无输出而终止。
+- 普通 tests、Docker probes、lint、bundle validation、构建和 formal smoke 全部在 `gs` 执行；本机只管理 worktree、文档和 Git。
 - 不修改或清理远端 `~/bio-reproducer`；所有 Plan 资产位于新的 `/tmp` 目录。
 - 只清理本 Plan 创建的远端路径、容器和镜像。
 - 不 push；只有用户明确要求时才 push。
@@ -35,10 +36,10 @@ envelope、release-check 分类与 teardown 证据，不把 system/scientific fa
 
 | 编号 | 终止条件 |
 |------|----------|
-| CP-1 | 本地确定性门禁通过，Plan source 可重建且 remote home 状态已记录 |
+| CP-1 | Plan source 已 stage，远端确定性门禁通过且 remote home 状态已记录 |
 | CP-2 | Fixed worker、runtime 和 artifact 构建并通过 digest/self-check/qcow2 校验 |
 | CP-3 | 一次 bench-001 formal run 产生真实 protocol-v2 submission，loopflow 已实际启动 |
-| CP-4 | Release-check 分类、teardown、远端 residue audit 和最终本地门禁完成 |
+| CP-4 | Release-check 分类、teardown、远端 residue audit 和最终远端门禁完成 |
 
 若 worker readiness、digest、KVM、mount、secret staging 或 teardown 失败，分类为 infrastructure
 defect并停止正式运行或发布判断。若基础设施成立后 system/scientific execution 返回 blocked、
@@ -46,8 +47,8 @@ failed 或 timeout，保留实际结果，不自动重跑。
 
 # Steps
 
-1. 运行普通 tests、Docker opt-in probes、lint 和六个 bundle validator。
-2. 记录远端 `~/bio-reproducer` status hash，创建唯一 Plan 临时根目录并 stage 当前 commit。
+1. 记录远端 `~/bio-reproducer` status hash，创建唯一 Plan 临时根目录并 stage 当前 commit。
+2. 在 staged source 上运行普通 tests、Docker opt-in probes、lint 和六个 bundle validator。
 3. 通过 background-task 构建并校验 control image、fixed worker、runtime 和 system artifact。
 4. 在正式运行前确认 worker 内 Docker readiness、artifact digest、无残留 QEMU/container。
 5. 通过 QEMU/KVM adapter 正式运行一次 `bench-001`，不得从失败点自动重试。
@@ -65,4 +66,4 @@ failed 或 timeout，保留实际结果，不自动重跑。
 | FS-005 | Release-check 给出与失败分类一致的接受或拒绝结果 | AC-0008-B-3/F-3 |
 | FS-006 | Teardown 四项完整，Plan 路径、容器、镜像和 QEMU 无残留 | AC-0008-F-3 |
 | FS-007 | 未运行其他 entry、未建立 baseline、未修改远端 home 项目 | DEVELOP gate |
-| FS-008 | 普通 tests、Docker probes、lint、bundle validators 与 diff check 全部通过 | DEVELOP gate |
+| FS-008 | 远端普通 tests、Docker probes、lint、bundle validators 与 diff check 全部通过 | DEVELOP gate |

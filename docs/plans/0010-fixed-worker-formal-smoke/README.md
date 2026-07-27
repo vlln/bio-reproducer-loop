@@ -7,6 +7,7 @@
 
 状态：pending。该 TEST_INFRA 执行容器使用已修复 provisioning contract 的 worker，重新构建
 opaque system artifact，并正式运行一次 `bench-001`，补足 Plan 009 未能证明的 loopflow
-启动路径。它不运行其他 entry，不建立 baseline，也不修改 Plan 009 的 blocked submission。
+启动路径。测试、构建和 smoke 全部在 `gs` 的 Plan 专属临时目录执行；它不运行其他 entry，
+不建立 baseline，也不修改 Plan 009 的 blocked submission。
 
 计划分支：`test/0010-fixed-worker-formal-smoke`
