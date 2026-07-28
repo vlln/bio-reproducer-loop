@@ -10,51 +10,12 @@ input:
       type: string
     output_dir:
       type: string
+    consent:
+      type: string
+      description: 权限模式：ask 或 auto
   required:
   - language
   - output_dir
-output:
-  type: object
-  properties:
-    status:
-      type: string
-      enum: [completed, partial, blocked, failed]
-      description: Phase completion status
-    summary:
-      type: string
-      description: One-line summary for workflow log
-    missing:
-      type: array
-      description: What downstream phases need to know is missing
-      items:
-        type: object
-        properties:
-          item:
-            type: string
-            description: What is missing
-          reason:
-            type: string
-            description: Why it is missing
-          action:
-            type: string
-            enum: [ask_user, block, retry, skip]
-            description: Recommended action for the workflow
-    decisions:
-      type: array
-      description: Decisions made by this phase that need user awareness
-      items:
-        type: object
-        properties:
-          decision:
-            type: string
-          reason:
-            type: string
-    payload:
-      type: object
-      description: Phase-specific output data
-  required:
-  - status
-  - summary
 ---
 ## 工作约定
 
@@ -64,6 +25,11 @@ output:
 - 写入阶段输出前检查是否已存在，避免重复工作。
 - 所有阶段产物、中间文件和日志存放在该阶段自身的输出目录中（如 `03_provision/`）。
 - 在 {{ output_dir }} 内提交有意义的 Git 变更；不得提交该目录外的文件。
+
+### 权限模式
+- 当前权限模式：`{{ consent }}`。
+- `auto`：安装软件、拉取/构建容器、下载数据等操作无需逐条询问，按计划直接执行。
+- `ask`：需要安装软件、修改系统配置或下载大文件前，汇总完整计划（做什么、多大、影响什么）并停止，用自然语言报告计划和风险，等待用户批准。不得假装已询问或擅自执行。
 
 ### 异步任务
 - 耗时命令（安装、下载、容器拉取/构建、Nextflow 运行）通过 background-task 技能异步执行，不要同步等待。
@@ -82,21 +48,11 @@ output:
 - 不受语言配置影响：代码块、命令、文件路径、URL、状态值、模板字段名、日志条目格式。
 - 脚本文件（如 `run.sh`）中的注释和 echo 输出应跟随产出语言。
 
-### 返回格式
+### 返回
 
-任务完成后，你必须返回一个 JSON 对象，不得包含其他内容。字段含义：
+完成后用自然语言简要汇报：完成了什么、关键产出文件路径、需要用户知道的缺失或风险。引擎会另行要求 `__goal` 完成标记，除此之外不要返回结构化业务数据——workflow 不解析返回文本，详细结果一律写入阶段产出文件。
 
-- `status` — 阶段完成状态：
-  - `completed`：全部目标完成，下游可正常运行
-  - `partial`：部分目标完成，下游需降级处理（在 `missing` 中列出缺失项）
-  - `blocked`：关键目标无法完成，下游不应继续
-  - `failed`：阶段执行失败，需要重试或人工介入
-- `summary` — 一句话摘要，用于 workflow 日志
-- `missing` — 缺失项列表。每项包含 `item`（缺失什么）、`reason`（为什么）、`action`（建议动作：`ask_user`/`block`/`retry`/`skip`）
-- `decisions` — 本阶段做出的重要决策，供用户审查
-- `payload` — 阶段特定的结构化输出数据，供下游阶段读取
-
-**重要**：只返回 JSON，不要包裹在 markdown 代码块中。
+例外：如果本阶段 frontmatter 定义了 output schema（如 Phase 6 的 `payload.verdict`），schema 中的字段是被程序消费的，返回的 JSON 必须包含它们。
 
 ### 辅助工具
 - **background-task** — 异步任务提交与状态管理（`async_submit.sh` / `check_status.sh`）
