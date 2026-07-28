@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- loop 适配 loopflow 0.25.1：`loop.md` 声明 phases/args/failure_threshold；workflow 为每个 agent 调用加 label；Reader 后新增人工确认门（`confirm_plan`，无人值守可关闭）；新增 `consent` 权限模式（ask/auto）；phase 间前置产物 fail-fast 检查
+- workflow 确定性 smoke 测试（`tests/unit/test_loop_workflow.py`，fake agent 无 LLM 依赖）
+
+### Changed
+- agent 返回契约精简：仅 validate 保留程序消费的 `payload.verdict` schema，其余 phase 删除 output schema 改为自然语言返回；移除未消费的 missing[]/decisions[]/status 映射
+- 图表生成与验证改为必选，移除 generate/visual-validate 全局模式门控（agents 与 .skills 母本对齐）
+- reader targets 增加稳定 `id`，validate 检查项通过 Target ID 追溯到复现目标
+- provision 的 quay skill 纳入 pixi 安装任务，不再依赖全局 skill 回退
+
+### Removed
+- workflow.py 中已失效的模块级 `meta` dict（loopflow 0.25.1 不再读取）
+
+### Fixed
+- 修复 benchmark adapter 在 Docker 无人值守环境下被 intervene 确认门卡死的问题（adapter 传 `confirm_plan=false`、`consent=auto`）
+
 ### Changed
 - 将确定性软件测试、真实 LLM 内部评测和公开 benchmark 拆分为三个域
 - Benchmark 改为 input、submission、private oracle 三方协议，最终评分由独立 evaluator 生成
