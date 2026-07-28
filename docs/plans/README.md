@@ -11,6 +11,7 @@
 | [0008-vm-worker-backend](0008-vm-worker-backend/) | `test/0008-vm-worker-backend` | done |
 | [0009-system-artifact](0009-system-artifact/) | `feat/0009-system-artifact` | done |
 | [0010-fixed-worker-formal-smoke](0010-fixed-worker-formal-smoke/) | `test/0010-fixed-worker-formal-smoke` | done (acceptance failed) |
+| [0011-runtime-archive-reference](0011-runtime-archive-reference/) | `test/0011-runtime-archive-reference` | pending |
 
 当前阶段：DEVELOP。Plan 006 在保留的 `spike/0006-vm-isolation` 分支验证了 KVM/QEMU、
 VM-local Docker、I/O boundary、oracle 隔离和完整 teardown；Plan 007 已将结论冻结到
@@ -21,4 +22,5 @@ bio-reproducer system artifact；唯一正式 `bench-001` run 暴露并推动修
 provisioning 缺陷。修复后的 worker 已独立通过 VM 验证，新的正式 smoke 留给后续执行容器。
 Plan 010 证明 fixed worker readiness 成立，但唯一 formal smoke 暴露 runtime archive 在不同
 Docker image store 中加载为不同 image ID，因而 loopflow 仍未启动。后续需在新的 TEST_INFRA
-Plan 中改用 archive 内固定 tag 作为 guest 运行引用，再执行新的最小 formal smoke。
+Plan 中改用 archive 内固定 tag 作为 guest 运行引用。Plan 011 正在实现 archive metadata
+校验与 fresh-daemon load/run gate；通过后才会提出新的最小 formal smoke。
