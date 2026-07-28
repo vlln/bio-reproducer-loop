@@ -65,6 +65,8 @@ def run(entry_path: str, run_dir: Optional[str] = None, sandbox=None) -> dict:
         "paper_path": f"/input/{paper_relative}",
         "output_dir": "/output",
         "language": metadata.get("language", "en"),
+        "confirm_plan": False,
+        "consent": "auto",
     }
     start_time = time.time()
 
