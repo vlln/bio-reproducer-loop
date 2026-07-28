@@ -35,3 +35,4 @@ created: 2026-07-28T10:04:37Z
 - loopflow 侧 BL-042~047（框架级候选，已录入其 backlog）
 - 本项目 BL-001（eval harness `--only-phase` 断裂）、BL-002（.skills 死代码清理）、BL-003（resume_from 待 loopflow BL-043）
 - 远端服务器（gs）同步：loop 代码、pixi install-skills（quay）、远端 loopflow ≥0.25.1
+- **PR 规范证据缺口**：CONTRIBUTING 第七节要求 Prompt/Agent 行为变更附 component/handoff eval 报告，但 eval harness 因 BL-001 无法运行，本轮以确定性 smoke（`tests/unit/test_loop_workflow.py`）+ loopflow 加载验证替代。BL-001 修复后应对本轮 prompt 变更补跑 component eval 基线，确认行为无回归。
