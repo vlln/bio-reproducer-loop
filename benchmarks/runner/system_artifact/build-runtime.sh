@@ -33,7 +33,9 @@ docker build \
     --tag "$tag" \
     "$tmp"
 image_id=$(docker image inspect --format '{{.Id}}' "$tag")
-docker save --output "$output" "$image_id"
+docker save --output "$output" "$tag"
 sha256sum "$output" >"$output.sha256"
 printf '%s\n' "$image_id" >"$output.image-id"
-printf 'runtime_image=%s\nruntime_archive=%s\n' "$image_id" "$output"
+printf '%s\n' "$tag" >"$output.image-ref"
+printf 'runtime_image=%s\nruntime_reference=%s\nruntime_archive=%s\n' \
+    "$image_id" "$tag" "$output"
