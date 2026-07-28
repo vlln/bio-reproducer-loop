@@ -2,7 +2,7 @@
 title: Plan 011 - Runtime Archive Reference
 description: Replace build-host image IDs with a validated Docker archive tag for disposable-VM runtime startup.
 type: plan
-status: pending
+status: done
 created: 2026-07-27T00:00:00Z
 ---
 
