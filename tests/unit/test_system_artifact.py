@@ -1,5 +1,7 @@
 import json
 import shutil
+import tarfile
+from io import BytesIO
 from pathlib import Path
 
 import pytest
@@ -15,6 +17,32 @@ from benchmarks.runner.worker import sha256_tree
 
 ROOT = Path(__file__).parents[2]
 LOOP_DIR = ROOT / "loops" / "bio-reproducer"
+RUNTIME_IMAGE = "sha256:" + "a" * 64
+RUNTIME_REFERENCE = "bio-reproducer-runtime:system"
+
+
+def _runtime_archive(
+    path: Path,
+    *,
+    image: str = RUNTIME_IMAGE,
+    tags: list[str] | None = None,
+) -> None:
+    config_digest = image.removeprefix("sha256:")
+    manifest = [
+        {
+            "Config": f"blobs/sha256/{config_digest}",
+            "RepoTags": [RUNTIME_REFERENCE] if tags is None else tags,
+            "Layers": [],
+        }
+    ]
+    with tarfile.open(path, "w") as archive:
+        for name, content in (
+            ("manifest.json", json.dumps(manifest).encode()),
+            (f"blobs/sha256/{config_digest}", b"{}"),
+        ):
+            metadata = tarfile.TarInfo(name)
+            metadata.size = len(content)
+            archive.addfile(metadata, BytesIO(content))
 
 
 def _skill(tmp_path: Path, name: str) -> Path:
@@ -35,7 +63,7 @@ def _build(tmp_path: Path, **overrides):
             ignore=shutil.ignore_patterns(*FORBIDDEN_SOURCE_NAMES),
         )
     runtime = tmp_path / "bio-reproducer-runtime.tar"
-    runtime.write_bytes(b"pinned OCI archive")
+    _runtime_archive(runtime)
     skills = {
         name: _skill(tmp_path, name)
         for name in (
@@ -52,7 +80,8 @@ def _build(tmp_path: Path, **overrides):
         "output_dir": tmp_path / "artifact",
         "loop_dir": loop_dir,
         "runtime_oci": runtime,
-        "runtime_image": "sha256:" + "a" * 64,
+        "runtime_image": RUNTIME_IMAGE,
+        "runtime_reference": RUNTIME_REFERENCE,
         "skills": skills,
         "provenance": {
             "repository_commit": "b" * 40,
@@ -73,10 +102,11 @@ def test_builder_is_deterministic_and_records_pinned_inputs(tmp_path):
 
     assert manifest == second_manifest
     assert sha256_tree(first) == sha256_tree(second)
-    assert manifest["schema_version"] == "1.0"
+    assert manifest["schema_version"] == "1.1"
     assert manifest["launcher"] == "run-system"
-    assert manifest["runtime"]["format"] == "oci-archive"
+    assert manifest["runtime"]["format"] == "docker-archive"
     assert manifest["runtime"]["image"].endswith("a" * 64)
+    assert manifest["runtime"]["reference"] == RUNTIME_REFERENCE
     assert manifest["loop"]["pixi_lock_sha256"] == (
         "c1d0c68a88aad97a7634ec2f4399b7991115783d4445f000c5fd9cac718261e0"
     )
@@ -155,7 +185,32 @@ def test_launcher_uses_guest_local_docker_and_explicit_mounts(tmp_path):
     assert "/var/run/docker.sock:/var/run/docker.sock" in launcher
     assert "DASHSCOPE_API_KEY=" not in launcher
     assert "--env DASHSCOPE_API_KEY" in launcher
+    assert RUNTIME_REFERENCE in launcher
+    assert RUNTIME_IMAGE not in launcher
     assert "eval " not in launcher
+
+
+@pytest.mark.parametrize(
+    ("runtime_reference", "archive_image", "archive_tags", "error"),
+    [
+        ("sha256:" + "a" * 64, RUNTIME_IMAGE, [RUNTIME_REFERENCE], "reference"),
+        (RUNTIME_REFERENCE, RUNTIME_IMAGE, [], "exactly the declared reference"),
+        (RUNTIME_REFERENCE, RUNTIME_IMAGE, ["other-runtime:system"], "declared reference"),
+        (RUNTIME_REFERENCE, "sha256:" + "d" * 64, [RUNTIME_REFERENCE], "config identity"),
+    ],
+)
+def test_builder_rejects_invalid_runtime_archive_binding(
+    tmp_path, runtime_reference, archive_image, archive_tags, error
+):
+    runtime = tmp_path / "runtime.tar"
+    _runtime_archive(runtime, image=archive_image, tags=archive_tags)
+
+    with pytest.raises(SystemArtifactError, match=error):
+        _build(
+            tmp_path / "build",
+            runtime_oci=runtime,
+            runtime_reference=runtime_reference,
+        )
 
 
 def test_manifest_contains_no_secret_values(tmp_path):
@@ -188,5 +243,7 @@ def test_runtime_recipe_pins_bases_agent_cli_and_required_skill_binary():
     assert "BIO_REPRODUCER_MIP_URL" in builder
     assert "BIO_REPRODUCER_RUNTIME_TAG" in builder
     assert "bio-reproducer-runtime:local" in builder
+    assert 'docker save --output "$output" "$tag"' in builder
+    assert 'printf \'%s\\n\' "$tag" >"$output.image-ref"' in builder
     assert '--build-arg "MIP_URL=$mip_url"' in builder
     assert ":latest" not in recipe
