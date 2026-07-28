@@ -2,12 +2,12 @@
 
 | 文件 | 类型 | 状态 |
 |------|------|------|
-| [01-plan-fixed-worker-formal-smoke.md](01-plan-fixed-worker-formal-smoke.md) | Plan | pending |
-| [01-report-fixed-worker-formal-smoke.md](01-report-fixed-worker-formal-smoke.md) | Report | draft |
+| [01-plan-fixed-worker-formal-smoke.md](01-plan-fixed-worker-formal-smoke.md) | Plan | done |
+| [01-report-fixed-worker-formal-smoke.md](01-report-fixed-worker-formal-smoke.md) | Report | complete |
 
-状态：pending。该 TEST_INFRA 执行容器使用已修复 provisioning contract 的 worker，重新构建
-opaque system artifact，并正式运行一次 `bench-001`，补足 Plan 009 未能证明的 loopflow
-启动路径。测试、构建和 smoke 全部在 `gs` 的 Plan 专属临时目录执行；它不运行其他 entry，
-不建立 baseline，也不修改 Plan 009 的 blocked submission。
+状态：done（验收未通过）。该 TEST_INFRA 执行容器证明 fixed worker readiness 成立，但唯一
+`bench-001` formal run 暴露了 runtime archive 的跨 Docker image-store identity 缺陷，loopflow
+仍未启动。真实 BLOCKED submission 与独立诊断已记录；未运行其他 entry、未建立 baseline，
+也未修改 Plan 009 的 blocked submission。修复和下一次 formal smoke 必须进入新的 Plan。
 
 计划分支：`test/0010-fixed-worker-formal-smoke`
