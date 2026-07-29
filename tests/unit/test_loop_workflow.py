@@ -51,20 +51,26 @@ class FakeIntervene:
         return self.answer
 
 
-def write_files(out, *paths):
+def write_files(base, *paths):
     for rel in paths:
-        p = Path(out) / rel
+        p = Path(base) / rel
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text("x")
 
 
 def run_workflow(tmp_path, agent, intervene, args=None):
     logs = []
-    base_args = {"paper_path": "paper.pdf", "output_dir": str(tmp_path)}
+    base_args = {"paper_path": "paper.pdf"}
     base_args.update(args or {})
-    result = wf.run(
-        agent, None, None, logs.append, base_args, None, intervene, None
-    )
+    import os
+    old_cwd = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        result = wf.run(
+            agent, None, None, logs.append, base_args, None, intervene, None
+        )
+    finally:
+        os.chdir(old_cwd)
     return result, logs
 
 
