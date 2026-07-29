@@ -10,6 +10,7 @@
 | [0007-vm-runtime-boundary](0007-vm-runtime-boundary/) | `docs/0007-vm-runtime-boundary` | done |
 | [0008-vm-worker-backend](0008-vm-worker-backend/) | `test/0008-vm-worker-backend` | done |
 | [0009-system-artifact](0009-system-artifact/) | `feat/0009-system-artifact` | done |
+| [0010-loopflow-025-migration](0010-loopflow-025-migration/) | `feat/0010-loopflow-025-migration` | done |
 | [0011-fixed-worker-formal-smoke](0011-fixed-worker-formal-smoke/) | `test/0011-fixed-worker-formal-smoke` | done (acceptance failed) |
 
 当前阶段：DEVELOP。Plan 006 在保留的 `spike/0006-vm-isolation` 分支验证了 KVM/QEMU、
