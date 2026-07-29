@@ -57,6 +57,21 @@ Nextflow 26.04.6
 fresh_daemon_runtime_probe=PASS
 ```
 
+After merging `develop` at `e044128e4332901c74bbce4335b4c88c2e0e4916`, the MR gate was rerun
+against the integrated tree on Python 3.12 and Docker 29.4.0:
+
+```text
+deterministic tests: 113 passed, 4 skipped
+explicit Docker isolation probes: 4 passed
+make lint: PASS
+git diff --check: PASS
+```
+
+The first local Docker attempt timed out while the engine tried to pull `alpine:3`. The image was
+then obtained through a reachable mirror, verified as
+`alpine@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b`,
+and retagged locally as `alpine:3`; rerunning the failed Docker layer passed without changing tests.
+
 # Acceptance
 
 | ID | Status | Evidence |
@@ -66,7 +81,7 @@ fresh_daemon_runtime_probe=PASS
 | AR-003 | PASS | Schema 1.1 manifest records archive digest, build ID and runtime reference |
 | AR-004 | PASS | Launcher uses validated tag after `docker load` |
 | AR-005 | PASS | Fresh Docker 29 daemon load/run probe passed |
-| AR-006 | PASS | 106 ordinary, 110 Docker, lint and bundle gates passed |
+| AR-006 | PASS | Original remote gates and post-`develop` MR gates passed |
 | AR-007 | PASS | No benchmark, baseline, historical submission or home project changes |
 
 # Cleanup
