@@ -2,13 +2,13 @@ import json
 from pathlib import Path
 
 
-def _validation_verdict(validate_result, output_dir):
+def _validation_verdict(validate_result):
     if validate_result.value:
         verdict = validate_result.value.get("payload", {}).get("verdict")
         if verdict:
             return verdict
 
-    metrics_path = Path(output_dir) / "06_validate" / "metrics.json"
+    metrics_path = Path("06_validate") / "metrics.json"
     try:
         metrics = json.loads(metrics_path.read_text())
     except (OSError, json.JSONDecodeError):
@@ -16,9 +16,9 @@ def _validation_verdict(validate_result, output_dir):
     return metrics.get("verdict")
 
 
-def _require_files(log, output_dir, *paths):
+def _require_files(log, *paths):
     """fail-fast：上一阶段幻觉完成（返回 complete 但没写产物）时立即暴露。"""
-    missing = [p for p in paths if not (Path(output_dir) / p).exists()]
+    missing = [p for p in paths if not Path(p).exists()]
     if missing:
         log(f"前置产物缺失: {', '.join(missing)}；请排查后开新 run 重跑（recover 会 replay 缓存的旧结果，会在同一检查点再次失败）")
         return False
@@ -28,7 +28,6 @@ def _require_files(log, output_dir, *paths):
 def run(agent, parallel, pipeline, log, args, workflow, intervene, state):
     paper_path = args.get("paper_path")
     paper_doi = args.get("paper_doi")
-    out = args.get("output_dir", "repro-data")
     language = args.get("language", "zh")
 
     if not paper_path and not paper_doi:
@@ -39,7 +38,6 @@ def run(agent, parallel, pipeline, log, args, workflow, intervene, state):
         paper_path=paper_path or "",
         paper_doi=paper_doi or "",
         language=language,
-        output_dir=out,
         consent=args.get("consent", "ask"),
     )
 
@@ -55,7 +53,7 @@ def run(agent, parallel, pipeline, log, args, workflow, intervene, state):
     if reader_result.status != "complete":
         log(f"Reader: {reader_result.status} — {reader_result.reason} (turns={reader_result.turns}, tokens={reader_result.tokens})")
         return None
-    if not _require_files(log, out, "01_plan/plan.md"):
+    if not _require_files(log, "01_plan/plan.md"):
         return None
 
     # 人工确认复现计划后再进入高成本阶段（Provision/Data）；
@@ -63,7 +61,7 @@ def run(agent, parallel, pipeline, log, args, workflow, intervene, state):
     if args.get("confirm_plan", True):
         answer = intervene(
             "confirm-plan",
-            f"Reader 已生成 {out}/01_plan/plan.md，请审查复现计划。确认后将继续部署环境和下载数据。",
+            "Reader 已生成 01_plan/plan.md，请审查复现计划。确认后将继续部署环境和下载数据。",
             options=["继续", "终止"],
             allow_custom=False,
         )
@@ -85,7 +83,7 @@ def run(agent, parallel, pipeline, log, args, workflow, intervene, state):
         return None
 
     # ── Phase 3: Provision ───────────────────────────────────────────
-    if not _require_files(log, out, "01_plan/plan.md"):
+    if not _require_files(log, "01_plan/plan.md"):
         return None
     provision_result = agent(
         "部署工具容器环境。",
@@ -100,7 +98,7 @@ def run(agent, parallel, pipeline, log, args, workflow, intervene, state):
         return None
 
     # ── Phase 4: Data ────────────────────────────────────────────────
-    if not _require_files(log, out, "01_plan/plan.md", "03_provision/provision.md"):
+    if not _require_files(log, "01_plan/plan.md", "03_provision/provision.md"):
         return None
     data_result = agent(
         "下载分析所需数据。",
@@ -115,7 +113,7 @@ def run(agent, parallel, pipeline, log, args, workflow, intervene, state):
         return None
 
     # ── Phase 5: Run ─────────────────────────────────────────────────
-    if not _require_files(log, out, "01_plan/plan.md", "03_provision/provision.md", "04_data/data_manifest.md"):
+    if not _require_files(log, "01_plan/plan.md", "03_provision/provision.md", "04_data/data_manifest.md"):
         return None
     run_result = agent(
         "运行分析流水线。",
@@ -130,7 +128,7 @@ def run(agent, parallel, pipeline, log, args, workflow, intervene, state):
         return None
 
     # ── Phase 6: Validate ────────────────────────────────────────────
-    if not _require_files(log, out, "01_plan/plan.md", "05_run/run_results.md"):
+    if not _require_files(log, "01_plan/plan.md", "05_run/run_results.md"):
         return None
     validate_result = agent(
         "对比复现结果与论文声称。",
@@ -145,9 +143,9 @@ def run(agent, parallel, pipeline, log, args, workflow, intervene, state):
         return None
 
     # ── Phase 7: Package ─────────────────────────────────────────────
-    verdict = _validation_verdict(validate_result, out)
+    verdict = _validation_verdict(validate_result)
     if verdict in ("REPRODUCED", "PARTIAL"):
-        if not _require_files(log, out, "06_validate/report.md"):
+        if not _require_files(log, "06_validate/report.md"):
             return validate_result.value
         package_result = agent(
             "打包复现产物：生成 README、run.sh、.gitignore。",

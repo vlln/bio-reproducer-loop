@@ -28,10 +28,6 @@ args:
   - name: paper_doi
     description: 论文 DOI（与 paper_path 二选一）
     required: false
-  - name: output_dir
-    description: 复现产物输出目录
-    default: repro-data
-    required: false
   - name: language
     description: 输出文档语言
     default: zh
