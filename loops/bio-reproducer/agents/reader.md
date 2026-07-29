@@ -14,31 +14,6 @@ input:
     paper_doi:
       type: string
       default: ''
-output:
-  type: object
-  properties:
-    payload:
-      type: object
-      properties:
-        targets:
-          type: array
-          description: Reproduction targets extracted from paper
-          items:
-            type: object
-            properties:
-              target: {type: string, description: "What to reproduce"}
-              priority: {type: string, enum: [critical, primary, secondary]}
-              source: {type: string, description: "Where in paper this target is stated"}
-        resource_count:
-          type: integer
-          description: Total number of resources discovered
-        figure_count:
-          type: integer
-          description: Number of figures in reproduction inventory
-        uncertainties:
-          type: integer
-          description: Number of uncertain items
-      required: [targets]
 ---
 # Phase 1: Reader
 
@@ -199,7 +174,7 @@ DOI: [doi or URL]
 [列出论文声称的主要发现、关键图表和关键数值。]
 
 ### Reproduction Target
-[说明复现时最需要重现的 outputs、figures、tables、metrics 或 qualitative findings。]
+[说明复现时最需要重现的 outputs、figures、tables、metrics 或 qualitative findings。每个目标分配稳定 ID（T1、T2、……），以 `id / target / priority / source` 列表形式呈现；Phase 6 的检查项将通过 Target ID 追溯到这些目标。]
 
 ## Paper Claims
 
@@ -314,4 +289,4 @@ P1 完成前必须在工作区或网页内容中完成一次资源完整性检�
 
 ## 完成
 - 输出 `01_plan/plan.md`
-- 返回 JSON（见 `_base.md` 返回格式）。`payload.targets` 必须包含所有复现目标。
+- 返回自然语言简报（见 `_base.md` 返回）：复现目标数量、关键资源获取情况、需要用户注意的缺失。

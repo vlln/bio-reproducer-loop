@@ -2,20 +2,6 @@
 name: package
 description: Phase 7 — 打包复现产物
 extends: _base
-output:
-  type: object
-  properties:
-    payload:
-      type: object
-      properties:
-        files_written:
-          type: array
-          description: Output files created
-          items: {type: string}
-        readme_summary:
-          type: string
-          description: One-line summary of the README
-      required: [files_written]
 ---
 # Phase 7: Package
 
@@ -196,11 +182,11 @@ work/
 
 1. 读取 `01_plan/plan.md` 的标题、DOI、Paper Understanding
 2. 读取 `06_validate/report.md` 的 Verdict、Score、Deviations
-4. 如果存在 `06_validate/figure_comparison.md`，摘要关键图级结果
-5. 读取 `02_bootstrap/bootstrap.md` 提取系统要求
-6. 从各 phase 产出推断目录结构
-7. 编写 `README.md`、`run.sh` 和 `.gitignore`
-8. Git commit
+3. 如果存在 `06_validate/figure_comparison.md`，摘要关键图级结果
+4. 读取 `02_bootstrap/bootstrap.md` 提取系统要求
+5. 从各 phase 产出推断目录结构
+6. 编写 `README.md`、`run.sh` 和 `.gitignore`
+7. Git commit
 
 ## 规则
 
@@ -216,5 +202,5 @@ work/
 
 ## 返回
 
-返回 JSON（见 `_base.md` 返回格式）。`payload.files_written` 列出所有创建的文件。
+返回自然语言简报（见 `_base.md` 返回）：创建了哪些文件、README 一句话概括。
 
