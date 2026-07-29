@@ -2,13 +2,13 @@ import json
 from pathlib import Path
 
 
-def _validation_verdict(validate_result):
+def _validation_verdict(validate_result, workdir=Path(".")):
     if validate_result.value:
         verdict = validate_result.value.get("payload", {}).get("verdict")
         if verdict:
             return verdict
 
-    metrics_path = Path("06_validate") / "metrics.json"
+    metrics_path = Path(workdir) / "06_validate" / "metrics.json"
     try:
         metrics = json.loads(metrics_path.read_text())
     except (OSError, json.JSONDecodeError):
