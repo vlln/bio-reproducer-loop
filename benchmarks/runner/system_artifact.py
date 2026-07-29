@@ -8,19 +8,25 @@ import os
 import re
 import shutil
 import stat
+import tarfile
 from pathlib import Path
 from typing import Mapping, Sequence
 
 import yaml
 
 
-SCHEMA_VERSION = "1.0"
+SCHEMA_VERSION = "1.1"
 LOOP_NAME = "bio-reproducer"
 LOOP_FILES = ("loop.md", "workflow.py", "pixi.toml", "pixi.lock")
 FORBIDDEN_SOURCE_NAMES = {".git", ".local", ".pixi", ".skills", "__pycache__"}
 SECRET_NAME = re.compile(r"^[A-Z_][A-Z0-9_]*$")
 COMMIT_ID = re.compile(r"^[0-9a-f]{40}$")
 IMAGE_ID = re.compile(r"^sha256:[0-9a-f]{64}$")
+RUNTIME_REFERENCE = re.compile(
+    r"^[a-z0-9]+(?:[._-][a-z0-9]+)*"
+    r"(?:/[a-z0-9]+(?:[._-][a-z0-9]+)*)*"
+    r":[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$"
+)
 
 
 class SystemArtifactError(ValueError):
@@ -97,7 +103,48 @@ def _copy_tree(source: Path, target: Path) -> None:
             _copy_file(path, destination)
 
 
-def _launcher(runtime_image: str, required_secrets: Sequence[str]) -> str:
+def _runtime_archive_binding(
+    archive_path: Path, runtime_image: str, runtime_reference: str
+) -> None:
+    if IMAGE_ID.fullmatch(runtime_reference) or not RUNTIME_REFERENCE.fullmatch(
+        runtime_reference
+    ):
+        raise SystemArtifactError("Runtime reference must be a tagged Docker image name")
+    try:
+        with tarfile.open(archive_path, "r:*") as archive:
+            member = archive.getmember("manifest.json")
+            if not member.isfile() or member.size > 1024 * 1024:
+                raise SystemArtifactError("Runtime archive manifest.json is invalid")
+            handle = archive.extractfile(member)
+            if handle is None:
+                raise SystemArtifactError("Runtime archive manifest.json is unreadable")
+            archive_manifest = json.load(handle)
+    except SystemArtifactError:
+        raise
+    except (OSError, KeyError, tarfile.TarError, json.JSONDecodeError) as exc:
+        raise SystemArtifactError(f"Invalid Docker runtime archive: {exc}") from exc
+
+    if not isinstance(archive_manifest, list) or len(archive_manifest) != 1:
+        raise SystemArtifactError("Runtime archive must contain exactly one image")
+    image = archive_manifest[0]
+    if not isinstance(image, dict):
+        raise SystemArtifactError("Runtime archive image metadata is invalid")
+    tags = image.get("RepoTags")
+    if tags != [runtime_reference]:
+        raise SystemArtifactError(
+            "Runtime archive must contain exactly the declared reference"
+        )
+    config = image.get("Config")
+    if not isinstance(config, str):
+        raise SystemArtifactError("Runtime archive config identity is missing")
+    config_digest = Path(config).name.removesuffix(".json")
+    if f"sha256:{config_digest}" != runtime_image:
+        raise SystemArtifactError(
+            "Runtime archive config identity does not match the declared image"
+        )
+
+
+def _launcher(runtime_reference: str, required_secrets: Sequence[str]) -> str:
     secret_args = "\n".join(
         f'    --env {name} \\' for name in sorted(required_secrets)
     )
@@ -123,7 +170,7 @@ exec docker run --rm --network host \\
     --env HOME=/workspace/.system-home \\
     --env LOOPFLOW_LOOPS_DIR=/opt/loopflow/loops \\
 {secret_args}    --workdir /workspace \\
-    {runtime_image} loop "$@"
+    {runtime_reference} loop "$@"
 """
 
 
@@ -147,6 +194,7 @@ def build_system_artifact(
     loop_dir: Path,
     runtime_oci: Path,
     runtime_image: str,
+    runtime_reference: str,
     skills: Mapping[str, Path],
     provenance: Mapping[str, str],
     required_secrets: Sequence[str] = (),
@@ -159,7 +207,7 @@ def build_system_artifact(
     if output_dir.exists():
         raise SystemArtifactError(f"Output directory already exists: {output_dir}")
     if not IMAGE_ID.fullmatch(runtime_image):
-        raise SystemArtifactError("Runtime image must be a sha256 OCI image ID")
+        raise SystemArtifactError("Runtime image must be a sha256 Docker config ID")
     invalid_secrets = sorted(name for name in required_secrets if not SECRET_NAME.fullmatch(name))
     if invalid_secrets:
         raise SystemArtifactError(
@@ -180,7 +228,10 @@ def build_system_artifact(
     if missing:
         raise SystemArtifactError(f"Missing declared skills: {', '.join(missing)}")
     if not runtime_oci.is_file() or runtime_oci.is_symlink():
-        raise SystemArtifactError(f"Runtime OCI archive is not a regular file: {runtime_oci}")
+        raise SystemArtifactError(
+            f"Runtime Docker archive is not a regular file: {runtime_oci}"
+        )
+    _runtime_archive_binding(runtime_oci, runtime_image, runtime_reference)
     locked_skills = {}
     if skills_lock is not None:
         skills_lock = Path(skills_lock)
@@ -214,7 +265,9 @@ def build_system_artifact(
         if skills_lock is not None:
             _copy_file(skills_lock, output_dir / "provenance" / "skills.lock.yaml")
         launcher = output_dir / "run-system"
-        launcher.write_text(_launcher(runtime_image, required_secrets), encoding="utf-8")
+        launcher.write_text(
+            _launcher(runtime_reference, required_secrets), encoding="utf-8"
+        )
         launcher.chmod(0o755)
 
         for name in sorted(required_skills):
@@ -242,8 +295,9 @@ def build_system_artifact(
             "system": {"name": "bio-reproducer", "version": "0.1.0"},
             "launcher": "run-system",
             "runtime": {
-                "format": "oci-archive",
+                "format": "docker-archive",
                 "image": runtime_image,
+                "reference": runtime_reference,
                 "archive_sha256": _sha256(output_dir / "runtime" / "system-image.tar"),
             },
             "loop": {
@@ -277,6 +331,20 @@ def validate_system_artifact(root: Path) -> dict:
         raise SystemArtifactError(f"Invalid system artifact manifest: {exc}") from exc
     if manifest.get("schema_version") != SCHEMA_VERSION:
         raise SystemArtifactError("Unsupported system artifact schema_version")
+    runtime = manifest.get("runtime")
+    if not isinstance(runtime, dict) or runtime.get("format") != "docker-archive":
+        raise SystemArtifactError("System artifact runtime metadata is invalid")
+    runtime_image = runtime.get("image")
+    runtime_reference = runtime.get("reference")
+    if not isinstance(runtime_image, str) or not IMAGE_ID.fullmatch(runtime_image):
+        raise SystemArtifactError("System artifact runtime image is invalid")
+    if not isinstance(runtime_reference, str):
+        raise SystemArtifactError("System artifact runtime reference is invalid")
+    _runtime_archive_binding(
+        root / "runtime" / "system-image.tar",
+        runtime_image,
+        runtime_reference,
+    )
     expected = manifest.get("files")
     if not isinstance(expected, dict):
         raise SystemArtifactError("System artifact manifest files must be an object")

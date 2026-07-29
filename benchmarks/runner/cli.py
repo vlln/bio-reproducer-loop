@@ -182,6 +182,7 @@ def cmd_build_system(args: argparse.Namespace) -> None:
         loop_dir=Path(args.loop_dir),
         runtime_oci=Path(args.runtime_oci),
         runtime_image=args.runtime_image,
+        runtime_reference=args.runtime_reference,
         skills=_named_paths(args.skill),
         provenance={
             "repository_commit": args.repository_commit,
@@ -403,6 +404,7 @@ def main() -> None:
     build_system_parser.add_argument("--loop-dir", default="loops/bio-reproducer")
     build_system_parser.add_argument("--runtime-oci", required=True)
     build_system_parser.add_argument("--runtime-image", required=True)
+    build_system_parser.add_argument("--runtime-reference", required=True)
     build_system_parser.add_argument(
         "--skill", action="append", default=[], metavar="NAME=PATH"
     )
