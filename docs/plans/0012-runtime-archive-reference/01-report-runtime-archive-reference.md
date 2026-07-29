@@ -1,5 +1,5 @@
 ---
-title: Report 011 - Runtime Archive Reference
+title: Report 012 - Runtime Archive Reference
 description: Record tagged archive validation, fresh-daemon load/run evidence, gates and cleanup.
 type: report
 status: complete
@@ -8,7 +8,7 @@ created: 2026-07-27T00:00:00Z
 
 # Conclusion
 
-Plan 011 completed successfully. It fixes the Plan 010 runtime identity defect without rerunning a
+Plan 012 completed successfully. It fixes the Plan 011 runtime identity defect without rerunning a
 benchmark. The runtime archive now carries a fixed internal tag, the artifact builder parses and
 validates the archive's tag/config binding, and a fresh Docker 29 daemon loaded and executed the
 runtime through that tag.
@@ -88,4 +88,4 @@ remote home status hash before/after: c3797cbac763f0ed8b1387951572efe771964ec2fc
 
 This Plan did not run `bench-001` or any other benchmark. A separate formal smoke may now be
 planned using a freshly built system artifact with the tagged runtime reference. Plan 009 and Plan
-010 BLOCKED submissions remain unchanged.
+011 BLOCKED submissions remain unchanged.

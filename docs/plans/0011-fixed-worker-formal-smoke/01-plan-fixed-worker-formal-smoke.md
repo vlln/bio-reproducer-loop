@@ -1,5 +1,5 @@
 ---
-title: Plan 010 — Fixed Worker Formal Smoke
+title: Plan 011 — Fixed Worker Formal Smoke
 description: 使用严格验证 Docker provisioning 的 disposable VM worker，正式 smoke 一次 bench-001 并分类系统执行结果。
 type: plan
 status: done

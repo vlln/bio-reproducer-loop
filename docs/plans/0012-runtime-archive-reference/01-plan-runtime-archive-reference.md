@@ -1,5 +1,5 @@
 ---
-title: Plan 011 - Runtime Archive Reference
+title: Plan 012 - Runtime Archive Reference
 description: Replace build-host image IDs with a validated Docker archive tag for disposable-VM runtime startup.
 type: plan
 status: done
@@ -8,7 +8,7 @@ created: 2026-07-27T00:00:00Z
 
 # Context
 
-Plan 010 proved fixed-worker readiness but its only formal `bench-001` run stopped before loopflow.
+Plan 011 proved fixed-worker readiness but its only formal `bench-001` run stopped before loopflow.
 The runtime archive had `RepoTags: null`; the build host identified the image as config ID
 `b5ac...`, while a fresh Docker 29/containerd store registered the loaded image as `aac9...`.
 The launcher incorrectly treated a build-host image ID as a portable guest locator.
@@ -27,7 +27,7 @@ fresh-daemon load/run probe on `gs`.
 - The builder must parse archive metadata structurally and reject a missing, ambiguous, malformed,
   or mismatched tag/config binding.
 - No benchmark may run until unit, Docker, archive, artifact, and fresh-daemon load/run gates pass.
-- Plan 009 and Plan 010 submissions remain immutable historical observations.
+- Plan 009 and Plan 011 submissions remain immutable historical observations.
 - All tests, Docker builds and real probes run on `gs`; local execution is limited to documents,
   source edits and Git checks.
 - Remote work uses a Plan-specific `/tmp` root and background-task for long operations. Do not
