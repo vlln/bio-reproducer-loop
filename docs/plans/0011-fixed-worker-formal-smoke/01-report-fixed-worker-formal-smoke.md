@@ -1,5 +1,5 @@
 ---
-title: Report 010 — Fixed Worker Formal Smoke
+title: Report 011 — Fixed Worker Formal Smoke
 description: 记录 fixed worker、opaque artifact、bench-001 formal smoke、release-check、teardown 与清理证据。
 type: report
 status: complete
@@ -8,7 +8,7 @@ created: 2026-07-27T00:00:00Z
 
 # 结论
 
-Plan 010 执行完成，但验收未通过。Fixed worker 的 Docker readiness、qcow2 完整性、冷启动与
+Plan 011 执行完成，但验收未通过。Fixed worker 的 Docker readiness、qcow2 完整性、冷启动与
 teardown 均成立；唯一一次 `bench-001` formal run 生成了真实 protocol-v2 submission，但
 system artifact 在启动 loopflow 前因跨 Docker image store 的 image identity 不稳定而返回
 `BLOCKED`。该观测不建立 baseline，也不得在本 Plan 内重跑。
@@ -124,7 +124,7 @@ tag，并由 launcher 使用该 tag；manifest 继续记录 archive digest 和�
 
 # 远端清理
 
-Plan 010 专属 `/tmp` 树、control/runtime images、临时容器与 QEMU 进程均已删除。部分
+Plan 011 专属 `/tmp` 树、control/runtime images、临时容器与 QEMU 进程均已删除。部分
 container/guest 输出为 root-owned，最终使用已缓存的 `ubuntu:22.04` 只挂载 Plan 根目录完成
 删除，没有挂载或修改远端 home 项目。
 
@@ -144,6 +144,6 @@ Plan worktree 执行，而确定性代码门禁全部在远端 archive 上执行
 
 # 后续边界
 
-Plan 010 按 devloop 规则标记 `done`，但不满足进入下一阶段的门禁。新的最小 TEST_INFRA Plan
+Plan 011 按 devloop 规则标记 `done`，但不满足进入下一阶段的门禁。新的最小 TEST_INFRA Plan
 负责修复 archive 内部 image reference、增加 fresh-daemon load/run 证据，再正式 smoke 一次
 `bench-001`。不得修改或覆盖本 Plan 与 Plan 009 的 BLOCKED 历史观测。

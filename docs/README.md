@@ -2,10 +2,10 @@
 
 | 字段 | 值 |
 |------|-----|
-| **当前阶段** | `DEVELOP`（Plan 010 已结束，等待 runtime archive identity 修复） |
+| **当前阶段** | `DEVELOP`（Plan 011 已结束，等待 runtime archive identity 修复） |
 | **设计评估** | ADR-0009 accepted；Spec v4、Interface 0001 与 AC-0004 active |
 | **基建评估** | Plan 008 已实现 QEMU/KVM worker、ExecutionEnvelope、release gate 与 pinned worker recipe；`gs` success/timeout smoke 通过 |
-| **系统测试** | 102 个确定性测试与 4 个显式 Docker probe 通过；fixed worker readiness 通过；Plan 010 唯一 formal run 因 archive 跨 image-store ID 不稳定被阻塞；开发期不建立 tracked baseline |
+| **系统测试** | 102 个确定性测试与 4 个显式 Docker probe 通过；fixed worker readiness 通过；Plan 011 唯一 formal run 因 archive 跨 image-store ID 不稳定被阻塞；开发期不建立 tracked baseline |
 
 正式契约要求 Runner/Curator 在可信控制面校验并 stage InputBundle，被测系统在每次
 新建的 QEMU/KVM disposable VM 中读取只读 `/input` 并写入 `/workspace`、`/output`。Guest 可以

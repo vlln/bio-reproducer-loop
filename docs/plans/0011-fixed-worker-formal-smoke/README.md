@@ -1,4 +1,4 @@
-# Plan 010 — Fixed Worker Formal Smoke
+# Plan 011 — Fixed Worker Formal Smoke
 
 | 文件 | 类型 | 状态 |
 |------|------|------|
@@ -10,4 +10,4 @@
 仍未启动。真实 BLOCKED submission 与独立诊断已记录；未运行其他 entry、未建立 baseline，
 也未修改 Plan 009 的 blocked submission。修复和下一次 formal smoke 必须进入新的 Plan。
 
-计划分支：`test/0010-fixed-worker-formal-smoke`
+计划分支：`test/0011-fixed-worker-formal-smoke`
