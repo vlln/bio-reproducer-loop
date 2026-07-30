@@ -13,6 +13,7 @@
 | [0010-loopflow-025-migration](0010-loopflow-025-migration/) | `feat/0010-loopflow-025-migration` | done |
 | [0011-fixed-worker-formal-smoke](0011-fixed-worker-formal-smoke/) | `test/0011-fixed-worker-formal-smoke` | done (acceptance failed) |
 | [0012-runtime-archive-reference](0012-runtime-archive-reference/) | `test/0012-runtime-archive-reference` | done |
+| [0014-l3-paired-design](0014-l3-paired-design/) | `feat/0014-l3-paired-design` | pending |
 
 当前阶段：DEVELOP。Plan 006 在保留的 `spike/0006-vm-isolation` 分支验证了 KVM/QEMU、
 VM-local Docker、I/O boundary、oracle 隔离和完整 teardown；Plan 007 已将结论冻结到
