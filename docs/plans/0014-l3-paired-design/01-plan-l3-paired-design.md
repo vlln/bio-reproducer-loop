@@ -2,7 +2,7 @@
 title: Plan 014 - L3 Paired Differential Expression Benchmark
 description: 新增一个构造的 L3 配对 RNA-seq 差异表达 entry，覆盖配对设计公式和 block-aware 结果验证。
 type: plan
-status: pending
+status: done
 created: 2026-07-30T05:59:18Z
 ---
 
