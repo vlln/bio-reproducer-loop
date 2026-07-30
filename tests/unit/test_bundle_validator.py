@@ -13,7 +13,7 @@ from benchmarks.runner import runner
 ROOT = Path(__file__).parents[2]
 ENTRY = ROOT / "benchmarks" / "entries" / "bench-001"
 ENTRIES = ROOT / "benchmarks" / "entries"
-CONSTRUCTED_ENTRY_IDS = ["bench-001", "bench-002", "bench-004", "bench-005", "bench-006"]
+CONSTRUCTED_ENTRY_IDS = ["bench-001", "bench-002", "bench-003", "bench-004", "bench-005", "bench-006"]
 
 
 def _copy_entry(tmp_path: Path) -> Path:

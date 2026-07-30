@@ -1,0 +1,57 @@
+id: bench-003
+benchmark_version: "2.0.0"
+oracle_version: "1.0.0"
+expected_verdict: REPRODUCED
+verdict_match_threshold: 0.6
+verdict_thresholds: {reproduced: 85, partial: 50}
+checks:
+  - id: D1
+    description: "Differential expression result table is non-empty"
+    evidence: {artifact_role: result_table}
+    comparison: {comparator: file_nonempty}
+    weight: 15
+  - id: D2
+    description: "Normalized counts contain six genes and eight samples"
+    evidence: {artifact_role: normalized_counts}
+    comparison: {comparator: csv_shape, rows: 6, columns: 9}
+    weight: 15
+  - id: Q1
+    description: "The environment records DESeq2"
+    evidence: {artifact_role: environment}
+    comparison: {comparator: text_regex, pattern: "(?i)DESeq2[_ ]"}
+    weight: 10
+  - id: R1
+    description: "Gene_P is induced after treatment"
+    evidence: {artifact_role: result_table}
+    comparison:
+      comparator: csv_row
+      key_columns: [gene, Gene, ""]
+      key_equals: Gene_P
+      assertions:
+        - {column: log2FoldChange, operator: greater_than, value: 1.0}
+        - {column: padj, operator: less_than, value: 0.01}
+    weight: 20
+  - id: R2
+    description: "Gene_Q is repressed after treatment"
+    evidence: {artifact_role: result_table}
+    comparison:
+      comparator: csv_row
+      key_columns: [gene, Gene, ""]
+      key_equals: Gene_Q
+      assertions:
+        - {column: log2FoldChange, operator: less_than, value: -1.0}
+        - {column: padj, operator: less_than, value: 0.01}
+    weight: 20
+  - id: R3
+    description: "At least two genes are significant"
+    evidence: {artifact_role: result_table}
+    comparison:
+      comparator: csv_count
+      where: [{column: padj, operator: less_than, value: 0.05}]
+      assertion: {operator: greater_than_or_equal, value: 2}
+    weight: 10
+  - id: F1
+    description: "A non-empty volcano plot was generated"
+    evidence: {artifact_role: figure, artifact_id: volcano}
+    comparison: {comparator: png_valid}
+    weight: 10
