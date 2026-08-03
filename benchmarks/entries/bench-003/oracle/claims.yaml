@@ -1,0 +1,43 @@
+id: bench-003
+paper_title: "Paired RNA-seq Analysis of a Synthetic Treatment Response"
+paper_doi: "10.1234/bench.003"
+experimental_design:
+  - claim_id: ED-1
+    description: "Four donors each contribute matched Control and Treatment samples."
+    source: "Methods"
+    details:
+      donors: 4
+      samples: 8
+      paired: true
+methods:
+  - claim_id: M-1
+    description: "DESeq2 uses donor blocking with design ~ donor + condition."
+    source: "Methods"
+    details:
+      software: DESeq2
+      design: "~ donor + condition"
+quantitative_results:
+  - claim_id: R-1
+    description: "Gene_P is treatment induced."
+    source: "Results"
+    details: {gene: Gene_P, direction: upregulated, significance: true}
+  - claim_id: R-2
+    description: "Gene_Q is treatment repressed."
+    source: "Results"
+    details: {gene: Gene_Q, direction: downregulated, significance: true}
+figures:
+  - claim_id: F-1
+    description: "A volcano plot summarizes paired differential expression."
+    source: "Methods"
+conclusions:
+  - claim_id: C-1
+    description: "Treatment response is recoverable after donor blocking."
+    source: "Results"
+data_availability:
+  - claim_id: DA-1
+    description: "The six-gene, eight-sample count matrix is bundled as data/counts.csv."
+    source: "Data Availability"
+    details:
+      file: data/counts.csv
+      rows: 6
+      columns: 9
