@@ -34,3 +34,8 @@ references/
 nextflow
 repro-data/
 work/
+
+# Local tooling
+.venv/
+.uv-cache/
+.pytest_cache/
