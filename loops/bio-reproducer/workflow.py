@@ -1,5 +1,80 @@
+"""bio-reproducer loop workflow。
+
+PHASES 注册表是所有 phase agent 调用的唯一事实来源：workflow run() 按序执行，
+eval harness 从同一注册表取单 agent 调用的 prompt/agent_def
+（loopflow ≥0.26.0 的 `--agent` 单 agent 运行入口）。
+"""
 import json
 from pathlib import Path
+
+# ── Phase agent 调用注册表（唯一事实来源）───────────────────────────────
+# workflow run() 按序执行；eval harness 从同一注册表取单 agent 调用的
+# prompt/agent_def（loopflow ≥0.26.0 的 `--agent` 单 agent 运行入口），
+# 避免两处维护 phase prompt 造成漂移。
+PHASES = {
+    "Reader": {
+        "prompt": "提取论文全部声明和资源。",
+        "agent_def": "reader",
+        "label": "Reader",
+        "goal": "完整提取论文的所有方法声明、数据声明、工具声明和结果声明，创建完整的复现计划 plan.md。",
+        "goal_max_iterations": 5,
+    },
+    "Bootstrap": {
+        "prompt": "检查 Java 11+、Nextflow、容器运行时。",
+        "agent_def": "bootstrap",
+        "label": "Bootstrap",
+        "goal": "完整检查所有系统运行时环境：Java、Nextflow、Docker，每个组件必须实际运行验证。",
+        "goal_max_iterations": 3,
+    },
+    "Provision": {
+        "prompt": "部署工具容器环境。",
+        "agent_def": "provision",
+        "label": "Provision",
+        "goal": "成功部署所有必需的工具容器镜像，每个镜像必须拉取成功并通过验证。",
+        "goal_max_iterations": 5,
+    },
+    "Data": {
+        "prompt": "下载分析所需数据。",
+        "agent_def": "data",
+        "label": "Data",
+        "goal": "完整下载所有必需数据文件：FASTQ 样本、参考基因组、微阵列数据。验证每个文件的完整性和预期大小。",
+        "goal_max_iterations": 8,
+    },
+    "Run": {
+        "prompt": "运行分析流水线。",
+        "agent_def": "run",
+        "label": "Run",
+        "goal": "成功运行完整的 RNA-Seq 分析流水线，生成所有图表和结果文件。",
+        "goal_max_iterations": 5,
+    },
+    "Validate": {
+        "prompt": "对比复现结果与论文声称。",
+        "agent_def": "validate",
+        "label": "Validate",
+        "goal": "完整验证所有可复现的图表和指标，给出最终评分和偏差分析。",
+        "goal_max_iterations": 3,
+    },
+    "Package": {
+        "prompt": "打包复现产物：生成 README、run.sh、.gitignore。",
+        "agent_def": "package",
+        "label": "Package",
+        "goal": "创建完整的复现产物包：README.md、run.sh、.gitignore。",
+        "goal_max_iterations": 3,
+    },
+}
+
+
+def _phase(agent, name, common):
+    """按 PHASES 注册表发起一个 phase agent 调用。"""
+    spec = PHASES[name]
+    return agent(
+        spec["prompt"],
+        agent_def=spec["agent_def"],
+        label=spec["label"],
+        goal=spec["goal"],
+        goal_max_iterations=spec["goal_max_iterations"],
+        **common,
+    )
 
 
 def _validation_verdict(validate_result, workdir=Path(".")):
@@ -42,14 +117,7 @@ def run(agent, parallel, pipeline, log, args, workflow, intervene, state):
     )
 
     # ── Phase 1: Reader ──────────────────────────────────────────────
-    reader_result = agent(
-        "提取论文全部声明和资源。",
-        agent_def="reader",
-        label="Reader",
-        goal="完整提取论文的所有方法声明、数据声明、工具声明和结果声明，创建完整的复现计划 plan.md。",
-        goal_max_iterations=5,
-        **common,
-    )
+    reader_result = _phase(agent, "Reader", common)
     if reader_result.status != "complete":
         log(f"Reader: {reader_result.status} — {reader_result.reason} (turns={reader_result.turns}, tokens={reader_result.tokens})")
         return None
@@ -70,14 +138,7 @@ def run(agent, parallel, pipeline, log, args, workflow, intervene, state):
             return None
 
     # ── Phase 2: Bootstrap ───────────────────────────────────────────
-    bootstrap_result = agent(
-        "检查 Java 11+、Nextflow、容器运行时。",
-        agent_def="bootstrap",
-        label="Bootstrap",
-        goal="完整检查所有系统运行时环境：Java、Nextflow、Docker，每个组件必须实际运行验证。",
-        goal_max_iterations=3,
-        **common,
-    )
+    bootstrap_result = _phase(agent, "Bootstrap", common)
     if bootstrap_result.status != "complete":
         log(f"Bootstrap: {bootstrap_result.status} — {bootstrap_result.reason} (turns={bootstrap_result.turns}, tokens={bootstrap_result.tokens})")
         return None
@@ -85,14 +146,7 @@ def run(agent, parallel, pipeline, log, args, workflow, intervene, state):
     # ── Phase 3: Provision ───────────────────────────────────────────
     if not _require_files(log, "01_plan/plan.md"):
         return None
-    provision_result = agent(
-        "部署工具容器环境。",
-        agent_def="provision",
-        label="Provision",
-        goal="成功部署所有必需的工具容器镜像，每个镜像必须拉取成功并通过验证。",
-        goal_max_iterations=5,
-        **common,
-    )
+    provision_result = _phase(agent, "Provision", common)
     if provision_result.status != "complete":
         log(f"Provision: {provision_result.status} — {provision_result.reason} (turns={provision_result.turns}, tokens={provision_result.tokens})")
         return None
@@ -100,14 +154,7 @@ def run(agent, parallel, pipeline, log, args, workflow, intervene, state):
     # ── Phase 4: Data ────────────────────────────────────────────────
     if not _require_files(log, "01_plan/plan.md", "03_provision/provision.md"):
         return None
-    data_result = agent(
-        "下载分析所需数据。",
-        agent_def="data",
-        label="Data",
-        goal="完整下载所有必需数据文件：FASTQ 样本、参考基因组、微阵列数据。验证每个文件的完整性和预期大小。",
-        goal_max_iterations=8,
-        **common,
-    )
+    data_result = _phase(agent, "Data", common)
     if data_result.status != "complete":
         log(f"Data: {data_result.status} — {data_result.reason} (turns={data_result.turns}, tokens={data_result.tokens})")
         return None
@@ -115,14 +162,7 @@ def run(agent, parallel, pipeline, log, args, workflow, intervene, state):
     # ── Phase 5: Run ─────────────────────────────────────────────────
     if not _require_files(log, "01_plan/plan.md", "03_provision/provision.md", "04_data/data_manifest.md"):
         return None
-    run_result = agent(
-        "运行分析流水线。",
-        agent_def="run",
-        label="Run",
-        goal="成功运行完整的 RNA-Seq 分析流水线，生成所有图表和结果文件。",
-        goal_max_iterations=5,
-        **common,
-    )
+    run_result = _phase(agent, "Run", common)
     if run_result.status != "complete":
         log(f"Run: {run_result.status} — {run_result.reason} (turns={run_result.turns}, tokens={run_result.tokens})")
         return None
@@ -130,14 +170,7 @@ def run(agent, parallel, pipeline, log, args, workflow, intervene, state):
     # ── Phase 6: Validate ────────────────────────────────────────────
     if not _require_files(log, "01_plan/plan.md", "05_run/run_results.md"):
         return None
-    validate_result = agent(
-        "对比复现结果与论文声称。",
-        agent_def="validate",
-        label="Validate",
-        goal="完整验证所有可复现的图表和指标，给出最终评分和偏差分析。",
-        goal_max_iterations=3,
-        **common,
-    )
+    validate_result = _phase(agent, "Validate", common)
     if validate_result.status != "complete":
         log(f"Validate: {validate_result.status} — {validate_result.reason} (turns={validate_result.turns}, tokens={validate_result.tokens})")
         return None
@@ -147,14 +180,7 @@ def run(agent, parallel, pipeline, log, args, workflow, intervene, state):
     if verdict in ("REPRODUCED", "PARTIAL"):
         if not _require_files(log, "06_validate/report.md"):
             return validate_result.value
-        package_result = agent(
-            "打包复现产物：生成 README、run.sh、.gitignore。",
-            agent_def="package",
-            label="Package",
-            goal="创建完整的复现产物包：README.md、run.sh、.gitignore。",
-            goal_max_iterations=3,
-            **common,
-        )
+        package_result = _phase(agent, "Package", common)
         if package_result.status != "complete":
             log(f"Package: {package_result.status} — {package_result.reason} (turns={package_result.turns}, tokens={package_result.tokens})")
     else:

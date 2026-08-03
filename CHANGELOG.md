@@ -10,12 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - loop 适配 loopflow 0.25.1：`loop.md` 声明 phases/args/failure_threshold；workflow 为每个 agent 调用加 label；Reader 后新增人工确认门（`confirm_plan`，无人值守可关闭）；新增 `consent` 权限模式（ask/auto）；phase 间前置产物 fail-fast 检查
 - workflow 确定性 smoke 测试（`tests/unit/test_loop_workflow.py`，fake agent 无 LLM 依赖）
+- workflow.py 新增模块级 `PHASES` 注册表：全部 phase agent 调用（prompt/agent_def/label/goal/goal_max_iterations）单一事实来源，`run()` 与 eval harness 共用，杜绝 prompt 双处维护漂移
 
 ### Changed
 - agent 返回契约精简：仅 validate 保留程序消费的 `payload.verdict` schema，其余 phase 删除 output schema 改为自然语言返回；移除未消费的 missing[]/decisions[]/status 映射
 - 图表生成与验证改为必选，移除 generate/visual-validate 全局模式门控（agents 与 .skills 母本对齐）
 - reader targets 增加稳定 `id`，validate 检查项通过 Target ID 追溯到复现目标
 - provision 的 quay skill 纳入 pixi 安装任务，不再依赖全局 skill 回退
+- eval harness 迁移到 loopflow 0.26.0 单 agent 运行入口：`run_phase` 由 `--only-phase`（0.24.0 已删除）改为 `--agent <agent_def> --prompt <prompt> --work-dir <output_dir> --param ...`，prompt/agent_def 从 `PHASES` 注册表读取（BL-001 闭环）
+- benchmark adapter 以 `--work-dir /output` 对齐"agent 产物写当前工作目录"的新契约（loop 已移除 `output_dir`），`--args` 删除失效的 `output_dir` 键，产物回到声明的 repro-data
 
 ### Removed
 - workflow.py 中已失效的模块级 `meta` dict（loopflow 0.25.1 不再读取）

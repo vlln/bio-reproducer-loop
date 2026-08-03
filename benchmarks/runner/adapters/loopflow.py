@@ -63,7 +63,6 @@ def run(entry_path: str, run_dir: Optional[str] = None, sandbox=None) -> dict:
     paper_relative = paper_path.relative_to(input_dir).as_posix()
     args = {
         "paper_path": f"/input/{paper_relative}",
-        "output_dir": "/output",
         "language": metadata.get("language", "en"),
         "confirm_plan": False,
         "consent": "auto",
@@ -80,6 +79,11 @@ def run(entry_path: str, run_dir: Optional[str] = None, sandbox=None) -> dict:
                 launcher,
                 "run",
                 "bio-reproducer",
+                # loop 已移除 output_dir（agent 产物直接写当前工作目录）；
+                # loopflow ≥0.23 的 --work-dir 把统一工作目录指向 /output，
+                # 使复现产物落在适配器声明的输出目录 repro-data 下。
+                "--work-dir",
+                "/output",
                 "--args",
                 json.dumps(args),
             ],
