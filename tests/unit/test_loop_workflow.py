@@ -135,3 +135,27 @@ def test_phase_failure_returns_none(tmp_path):
     assert agent.calls == ["Reader", "Bootstrap", "Provision"]
     assert result is None
     assert any("docker missing" in line for line in logs)
+
+
+def test_phases_registry_is_complete_and_consistent():
+    """PHASES 注册表：完整覆盖全部 phase，且 agent_def 对应 agents/ 下真实定义。"""
+    agents_dir = WORKFLOW_PATH.parent / "agents"
+    agent_defs = {
+        path.stem for path in agents_dir.glob("*.md") if not path.stem.startswith("_")
+    }
+    assert set(wf.PHASES) == set(ALL_PHASES)
+    for name, spec in wf.PHASES.items():
+        assert spec["label"] == name
+        assert spec["agent_def"] in agent_defs, f"{name} -> {spec['agent_def']}"
+        assert spec["prompt"].strip()
+        assert spec["goal"].strip()
+        assert spec["goal_max_iterations"] > 0
+
+
+def test_phases_registry_drives_agent_calls(tmp_path):
+    """workflow 的 agent 调用完全由 PHASES 注册表驱动（单一事实来源）。"""
+    write_files(tmp_path, *REQUIRED_FILES)
+    agent, intervene = FakeAgent(), FakeIntervene()
+    result, _ = run_workflow(tmp_path, agent, intervene)
+    assert agent.calls == list(wf.PHASES)
+    assert result["payload"]["verdict"] == "REPRODUCED"
