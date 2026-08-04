@@ -20,7 +20,7 @@
 | [0017-eval-scope-baseline](0017-eval-scope-baseline/) | `test/0017-eval-scope-baseline` | done |
 | [0018-provision-image-reuse](0018-provision-image-reuse/) | `feat/0018-provision-image-reuse` | done |
 
-当前阶段：DEVELOP。Plan 006 在保留的 `spike/0006-vm-isolation` 分支验证了 KVM/QEMU、
+当前阶段：SYSTEM_TEST（2026-08-04 收敛 DEVELOP，全量测试层通过）。Plan 006 在保留的 `spike/0006-vm-isolation` 分支验证了 KVM/QEMU、
 VM-local Docker、I/O boundary、oracle 隔离和完整 teardown；Plan 007 已将结论冻结到
 ADR-0009、Spec v4、Interface 0001 与 AC-0004。Plan 005 的 Docker sandbox 保留为开发/CI
 validation backend，不再作为可发布结果的正式边界。Plan 008 已实现最小 QEMU/KVM
