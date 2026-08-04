@@ -38,5 +38,5 @@ Dockerfile 反复全量重建导致 2GB 层重复下载、mip 缺失。经确认
 
 ## 关联
 
-- BL-007（provision 镜像复用与技能纪律）
+- BL-009（provision 镜像复用与技能纪律）
 - 0016/0017 的 paper-01 scope 运行观察
