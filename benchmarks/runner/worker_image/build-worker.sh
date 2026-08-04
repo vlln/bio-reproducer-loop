@@ -63,6 +63,7 @@ users:
 ssh_pwauth: false
 bootcmd:
   - [sh, -c, 'rm -f /etc/resolv.conf && printf "nameserver 223.5.5.5\noptions timeout:5 attempts:5\n" > /etc/resolv.conf']
+  - [sh, -c, 'grep -q bio-reproducer-worker /etc/hosts || printf "127.0.1.1 bio-reproducer-worker\n" >> /etc/hosts']
 package_update: true
 packages:
   - docker.io
