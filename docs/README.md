@@ -2,7 +2,7 @@
 
 | 字段 | 值 |
 |------|-----|
-| **当前阶段** | `SYSTEM_TEST`（2026-08-04 收敛 DEVELOP：0013-0018 全部闭环；全量测试层通过：125 单测 + 4 Docker probe + lint/bench-validate 全绿，无阻塞缺陷） |
+| **当前阶段** | `DESIGN`（v0.2.0 已发布：main 947f5c3 + tag v0.2.0；新一轮迭代从 backlog 拉取候选） |
 | **设计评估** | ADR-0009 accepted；Spec v4、Interface 0001 与 AC-0004 active |
 | **基建评估** | Plan 008 已实现 QEMU/KVM worker、ExecutionEnvelope、release gate 与 pinned worker recipe；`gs` success/timeout smoke 通过；Plan 013 修复 launcher 三处缺陷（skills 挂载、非 root 运行、HOME 权限） |
 | **系统测试** | Plan 013 正式 smoke：`bench-001` 在 QEMU/KVM disposable VM 中全 7 阶段真实跑通，claimed_verdict REPRODUCED、93/100，release-check FORMAL，teardown 完整；合并态 125 个确定性测试与 4 个显式 Docker probe 通过；不建立 tracked baseline（按 Plan 013 约定） |
