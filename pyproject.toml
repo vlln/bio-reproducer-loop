@@ -1,6 +1,6 @@
 [project]
 name = "bio-reproducer"
-version = "0.1.0"
+version = "0.2.0"
 description = "AI Agent 驱动的生物信息学论文复现系统，配套确定性测试、内部评测和公开 benchmark"
 requires-python = ">=3.10"
 license = {text = "MIT"}
