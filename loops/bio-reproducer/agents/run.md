@@ -8,7 +8,9 @@ extends: _base
 ## 目标
 使用 Nextflow 作为编排层运行分析 pipeline。Nextflow 负责输入/输出、
 容器、资源、resume、日志和并行调度；具体分析逻辑应由论文指定的
-脚本、工具、notebook、命令或已有 workflow 承担。
+脚本、工具、notebook、命令或已有 workflow 承担。复现范围非空时只运行
+范围内目标（见 `01_plan/plan.md` Reproduction Target 表与 `_base.md`
+「复现范围」）对应的分析步骤；范围外步骤标注 `out-of-scope` 不执行。
 
 ## 输入
 - `01_plan/plan.md` - 步骤和参数

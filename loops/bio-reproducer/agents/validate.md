@@ -19,6 +19,9 @@ output:
 
 ## 目标
 结构化、量化地对比复现结果与论文声称，生成可追溯的验证报告和综合评分。
+复现范围非空时，检查项只从范围内目标（`01_plan/plan.md` Reproduction Target
+表，见 `_base.md`「复现范围」）推导，report.md 明示本次验证的 scored scope
+（含 out-of-scope 说明），避免对未复现的范围外内容评分或声称完成。
 
 ## 输入
 - `01_plan/plan.md` — 论文声称的 Expected Results

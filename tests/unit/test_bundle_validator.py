@@ -66,6 +66,25 @@ def test_missing_bundle_is_invalid(tmp_path):
     assert error.value.code == "INVALID_BUNDLE"
 
 
+def test_accepts_optional_scope_declared_in_metadata(tmp_path):
+    entry = _copy_entry(tmp_path)
+    metadata = yaml.safe_load((entry / "metadata.yaml").read_text())
+    metadata["scope"] = "figures=figure4,figure5,figure6"
+    (entry / "metadata.yaml").write_text(yaml.safe_dump(metadata, sort_keys=False))
+
+    validate_entry(entry)
+
+
+def test_rejects_empty_scope_in_metadata(tmp_path):
+    entry = _copy_entry(tmp_path)
+    metadata = yaml.safe_load((entry / "metadata.yaml").read_text())
+    metadata["scope"] = "   "
+    (entry / "metadata.yaml").write_text(yaml.safe_dump(metadata, sort_keys=False))
+
+    with pytest.raises(BundleValidationError, match="scope must be a non-empty string"):
+        validate_entry(entry)
+
+
 def test_rejects_undeclared_dotfile(tmp_path):
     entry = _copy_entry(tmp_path)
     (entry / "input" / ".answer.csv").write_text("hidden")

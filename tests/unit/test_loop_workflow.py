@@ -159,3 +159,29 @@ def test_phases_registry_drives_agent_calls(tmp_path):
     result, _ = run_workflow(tmp_path, agent, intervene)
     assert agent.calls == list(wf.PHASES)
     assert result["payload"]["verdict"] == "REPRODUCED"
+
+
+class ScopeCapturingAgent(FakeAgent):
+    def __init__(self):
+        super().__init__()
+        self.kwargs = []
+
+    def __call__(self, prompt, **kwargs):
+        self.kwargs.append(kwargs)
+        return super().__call__(prompt, **kwargs)
+
+
+def test_scope_arg_passes_through_to_all_agents(tmp_path):
+    write_files(tmp_path, *REQUIRED_FILES)
+    agent, intervene = ScopeCapturingAgent(), FakeIntervene()
+    run_workflow(tmp_path, agent, intervene, {"scope": "figures=figure4,figure5"})
+    assert len(agent.kwargs) == len(ALL_PHASES)
+    assert all(kwargs.get("scope") == "figures=figure4,figure5" for kwargs in agent.kwargs)
+
+
+def test_scope_defaults_to_empty(tmp_path):
+    write_files(tmp_path, *REQUIRED_FILES)
+    agent, intervene = ScopeCapturingAgent(), FakeIntervene()
+    run_workflow(tmp_path, agent, intervene)
+    assert len(agent.kwargs) == len(ALL_PHASES)
+    assert all(kwargs.get("scope") == "" for kwargs in agent.kwargs)

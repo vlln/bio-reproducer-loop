@@ -243,6 +243,12 @@ def _validate_metadata(entry: Path, bundle: dict[str, Any]) -> None:
     _require(isinstance(metadata, dict), "metadata.yaml must contain a mapping")
     _require(metadata.get("id") == bundle["entry_id"], "metadata id conflicts with bundle")
     _require(metadata.get("input_dir") == "input/", "metadata input_dir must be input/")
+    scope = metadata.get("scope")
+    if scope is not None:
+        _require(
+            isinstance(scope, str) and scope.strip(),
+            "metadata scope must be a non-empty string when declared",
+        )
     paper_type = metadata.get("complexity_profile", {}).get("paper", {}).get("paper_type")
     entry_number = int(bundle["entry_id"].removeprefix("bench-"))
     _require(entry_number > 0, "entry IDs start at bench-001")

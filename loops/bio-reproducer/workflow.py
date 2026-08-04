@@ -114,6 +114,7 @@ def run(agent, parallel, pipeline, log, args, workflow, intervene, state):
         paper_doi=paper_doi or "",
         language=language,
         consent=args.get("consent", "ask"),
+        scope=args.get("scope", ""),
     )
 
     # ── Phase 1: Reader ──────────────────────────────────────────────

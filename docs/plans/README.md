@@ -15,6 +15,7 @@
 | [0012-runtime-archive-reference](0012-runtime-archive-reference/) | `test/0012-runtime-archive-reference` | done |
 | [0014-l3-paired-design](0014-l3-paired-design/) | `feat/0014-l3-paired-design` | done |
 | [0015-loopflow-028-migration](0015-loopflow-028-migration/) | `feat/0015-loopflow-028-migration` | done |
+| [0016-partial-reproduction-scope](0016-partial-reproduction-scope/) | `feat/0016-partial-reproduction-scope` | done |
 
 当前阶段：DEVELOP。Plan 006 在保留的 `spike/0006-vm-isolation` 分支验证了 KVM/QEMU、
 VM-local Docker、I/O boundary、oracle 隔离和完整 teardown；Plan 007 已将结论冻结到
@@ -29,3 +30,6 @@ Docker image store 中加载为不同 image ID，因而 loopflow 仍未启动。
 下一步才可提出新的最小 formal smoke。Plan 015 完成 loopflow 0.26~0.28 兼容检查：eval
 harness 迁移到 `--agent` 单 agent 入口（BL-001 闭环）、benchmark adapter 以 `--work-dir
 /output` 对齐移除 `output_dir` 后的工作目录契约，并核对本地/远端/运行时镜像版本。
+Plan 016 新增 `scope` 部分复现范围入口（paper-01 试跑暴露的缺口）：限定只复现指定
+figure/目标，贯通 Reader→Data→Run→Validate→Package，benchmark adapter 经 metadata
+`scope` 字段透传（物化 ADR-0008 的 entry scored scope）。

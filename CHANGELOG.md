@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - loop 适配 loopflow 0.25.1：`loop.md` 声明 phases/args/failure_threshold；workflow 为每个 agent 调用加 label；Reader 后新增人工确认门（`confirm_plan`，无人值守可关闭）；新增 `consent` 权限模式（ask/auto）；phase 间前置产物 fail-fast 检查
 - workflow 确定性 smoke 测试（`tests/unit/test_loop_workflow.py`，fake agent 无 LLM 依赖）
 - workflow.py 新增模块级 `PHASES` 注册表：全部 phase agent 调用（prompt/agent_def/label/goal/goal_max_iterations）单一事实来源，`run()` 与 eval harness 共用，杜绝 prompt 双处维护漂移
+- **部分复现范围入口**：`loop.md` 新增可选 arg `scope`（空=全论文；非空=只复现指定 figure/目标），贯通 Reader（Reproduction Target 表只列范围内目标）→ Data/Run（只执行范围内）→ Validate（只验证范围内、明示 scored scope）→ Package；benchmark metadata 可选 `scope` 字段透传（BL-006，paper-01 试跑暴露的缺口）
 
 ### Changed
 - agent 返回契约精简：仅 validate 保留程序消费的 `payload.verdict` schema，其余 phase 删除 output schema 改为自然语言返回；移除未消费的 missing[]/decisions[]/status 映射

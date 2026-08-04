@@ -67,6 +67,10 @@ def run(entry_path: str, run_dir: Optional[str] = None, sandbox=None) -> dict:
         "confirm_plan": False,
         "consent": "auto",
     }
+    # Entry 可声明部分复现范围（ADR-0008：一个 entry = 一个 scored scope），
+    # 透传为 loop 的 scope 参数，使 Reader/Data/Run/Validate 只覆盖范围内目标。
+    if metadata.get("scope"):
+        args["scope"] = str(metadata["scope"])
     start_time = time.time()
 
     try:

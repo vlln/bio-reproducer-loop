@@ -8,7 +8,7 @@ skills:
 # Phase 4: Data
 
 ## 目标
-获取分析所需数据。
+获取分析所需数据。复现范围非空时只获取范围内目标（见 `01_plan/plan.md` Reproduction Target 表与 `_base.md`「复现范围」）所需数据；范围外数据源记录但标记 `out-of-scope`，不下载。
 
 ## 输入
 - `01_plan/plan.md` - Data Requirements 和 External Identifier Records
