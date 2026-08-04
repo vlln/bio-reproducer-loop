@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - 修复 benchmark adapter 在 Docker 无人值守环境下被 intervene 确认门卡死的问题（adapter 传 `confirm_plan=false`、`consent=auto`）
+- 修复 system artifact launcher 三处缺陷（Plan 013 正式 smoke 暴露，先于唯一 formal run 阻断）：skills 挂载改到 `~/.loopflow/skills`（原嵌套挂载进只读 loop 目录导致 docker mountpoint 创建失败）、runtime 容器以非 root 用户运行（Claude Code 拒绝 root 下 `--dangerously-skip-permissions`）、预创建并开放 HOME 目录链（docker 以 root 创建的 0755 目录阻断非 root 写入）
+- 修复 worker cloud-init 未写 /etc/hosts hostname 条目导致的 `sudo: unable to resolve host bio-reproducer-worker` 警告（build-worker.sh bootcmd 追加 127.0.1.1 条目）
 
 ### Changed
 - 将确定性软件测试、真实 LLM 内部评测和公开 benchmark 拆分为三个域
