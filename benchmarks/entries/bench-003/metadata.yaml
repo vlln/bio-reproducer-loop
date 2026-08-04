@@ -1,0 +1,46 @@
+id: bench-003
+version: "2.0.0"
+protocol_version: "2.0"
+oracle_version: "1.0.0"
+title: "Paired RNA-seq Analysis of a Synthetic Treatment Response"
+scenario: mixed
+difficulty: easy
+input_dir: input/
+oracle_dir: oracle/
+description: >
+  A constructed paired differential-expression study with four donor blocks.
+  It requires a DESeq2 design formula of ~ donor + condition and produces a
+  result table plus volcano plot from a six-gene local count matrix.
+complexity_profile:
+  data:
+    data_size: tiny
+    data_source: synthetic
+    data_format: csv
+    supplementary: simple
+  environment:
+    tool_count: 1-2
+    tool_chain: single_language
+    version_sensitivity: moderate
+    container: existing_image
+  analysis:
+    design: paired
+    method_complexity: standard
+    compute: light
+  figure:
+    figure_count: 1
+    figure_type: statistical
+    figure_layout: simple
+    figure_rendering: standard
+  evaluation:
+    ground_truth: fully_known
+    claim_type: directional
+    tolerance: moderate
+  paper:
+    paper_type: constructed
+    paper_format: markdown
+    multi_version: none
+    missing_info: none
+reproducibility:
+  known_limitations:
+    - "Exact p-values may vary by DESeq2 version; oracle checks direction and significance thresholds."
+  container_image: "bioconductor/bioconductor_docker:latest"

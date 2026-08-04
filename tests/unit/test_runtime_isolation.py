@@ -158,6 +158,14 @@ def test_adapter_uses_container_paths_and_never_passes_entry_path(tmp_path):
     assert "/input/paper.md" in serialized
     assert "/output" in serialized
     assert str(ENTRY) not in serialized
+    # loop 已移除 output_dir arg（agent 产物写当前工作目录）；适配器用
+    # loopflow ≥0.23 的 --work-dir 把统一工作目录指向 /output，使产物落在 repro-data。
+    assert captured.command[captured.command.index("--work-dir") + 1] == "/output"
+    run_args = json.loads(captured.command[captured.command.index("--args") + 1])
+    assert "output_dir" not in run_args
+    assert run_args["paper_path"] == "/input/paper.md"
+    assert run_args["confirm_plan"] is False
+    assert run_args["consent"] == "auto"
 
 
 def test_adapter_keeps_legacy_docker_validation_image_entrypoint(tmp_path):

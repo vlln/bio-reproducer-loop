@@ -14,6 +14,8 @@
 | [0011-fixed-worker-formal-smoke](0011-fixed-worker-formal-smoke/) | `test/0011-fixed-worker-formal-smoke` | done (acceptance failed) |
 | [0012-runtime-archive-reference](0012-runtime-archive-reference/) | `test/0012-runtime-archive-reference` | done |
 | [0013-tagged-runtime-formal-smoke](0013-tagged-runtime-formal-smoke/) | `test/0013-tagged-runtime-formal-smoke` | pending |
+| [0014-l3-paired-design](0014-l3-paired-design/) | `feat/0014-l3-paired-design` | done |
+| [0015-loopflow-028-migration](0015-loopflow-028-migration/) | `feat/0015-loopflow-028-migration` | done |
 
 当前阶段：DEVELOP。Plan 006 在保留的 `spike/0006-vm-isolation` 分支验证了 KVM/QEMU、
 VM-local Docker、I/O boundary、oracle 隔离和完整 teardown；Plan 007 已将结论冻结到
@@ -25,4 +27,10 @@ provisioning 缺陷。修复后的 worker 已独立通过 VM 验证，新的正�
 Plan 011 证明 fixed worker readiness 成立，但唯一 formal smoke 暴露 runtime archive 在不同
 Docker image store 中加载为不同 image ID，因而 loopflow 仍未启动。Plan 012 已改用 archive
 内固定 tag 作为 guest 运行引用，并完成 archive metadata 校验与 fresh-daemon load/run gate；
+<<<<<<< HEAD
 Plan 013 将基于该修复正式 smoke 一次 `bench-001`，验证 loopflow 实际启动，不建立 baseline。
+=======
+下一步才可提出新的最小 formal smoke。Plan 015 完成 loopflow 0.26~0.28 兼容检查：eval
+harness 迁移到 `--agent` 单 agent 入口（BL-001 闭环）、benchmark adapter 以 `--work-dir
+/output` 对齐移除 `output_dir` 后的工作目录契约，并核对本地/远端/运行时镜像版本。
+>>>>>>> develop
