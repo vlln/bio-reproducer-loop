@@ -1,6 +1,8 @@
 capabilities:
   paper_fact_extraction:
     cases: [reader-basic-de]
+  partial_reproduction_scope:
+    cases: [reader-scoped-targets]
   missing_input_handling:
     cases: [reader-missing-paper]
   runtime_detection:

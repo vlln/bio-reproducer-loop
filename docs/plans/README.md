@@ -16,6 +16,7 @@
 | [0014-l3-paired-design](0014-l3-paired-design/) | `feat/0014-l3-paired-design` | done |
 | [0015-loopflow-028-migration](0015-loopflow-028-migration/) | `feat/0015-loopflow-028-migration` | done |
 | [0016-partial-reproduction-scope](0016-partial-reproduction-scope/) | `feat/0016-partial-reproduction-scope` | done |
+| [0017-eval-scope-baseline](0017-eval-scope-baseline/) | `test/0017-eval-scope-baseline` | done |
 
 当前阶段：DEVELOP。Plan 006 在保留的 `spike/0006-vm-isolation` 分支验证了 KVM/QEMU、
 VM-local Docker、I/O boundary、oracle 隔离和完整 teardown；Plan 007 已将结论冻结到

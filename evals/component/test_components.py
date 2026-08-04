@@ -40,6 +40,12 @@ def test_reader_missing_paper(case, eval_run, tmp_path):
     assert result.returncode != 0 or "blocked" in content
 
 
+@pytest.mark.eval_case("reader-scoped-targets")
+def test_reader_scoped_targets(case, eval_run, tmp_path):
+    """部分复现范围（scope）语义：reader 只产出范围内目标并记录 scope 决策。"""
+    _evaluate_text_case(case, tmp_path / "repro-data")
+
+
 @pytest.mark.eval_case("bootstrap-runtime-detection")
 def test_bootstrap_runtime_detection(case, eval_run, tmp_path):
     _evaluate_text_case(case, tmp_path / "repro-data")

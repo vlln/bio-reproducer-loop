@@ -62,6 +62,9 @@ def run_phase(case: dict, output_dir: Path) -> subprocess.CompletedProcess:
     spec = phase_spec(case["phase"])
     # consent=ask 与完整 workflow 缺省一致（_base.md 权限模式缺省 ask）。
     params = [f"language={case.get('language', 'en')}", "consent=ask"]
+    # case 可声明部分复现范围（scope 语义评测），透传为 agent 模板参数。
+    if case.get("scope"):
+        params.append(f"scope={case['scope']}")
     if paper.is_file():
         params.append(f"paper_path={paper}")
     param_args = [item for pair in (("--param", p) for p in params) for item in pair]

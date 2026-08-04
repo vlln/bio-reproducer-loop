@@ -1,0 +1,12 @@
+id: reader-scoped-targets
+level: L1
+phase: Reader
+capabilities: [partial_reproduction_scope]
+input: {benchmark: bench-001}
+scope: "figures=figure1"
+output: 01_plan/plan.md
+checks:
+  min_chars: 100
+  contains: [figure1]
+  contains_any: [[Decision Record, decision, 复现范围]]
+  not_contains: [figure2, figure3]
