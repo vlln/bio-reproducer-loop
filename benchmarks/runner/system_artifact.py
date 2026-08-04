@@ -159,13 +159,23 @@ test -d /input
 test -d /workspace
 test -d /output
 
+# Claude Code refuses --dangerously-skip-permissions as root; run the runtime
+# container as a non-root user with the guest's docker group on the socket.
+# Docker creates the skills mountpoint parents as root (0755), which would
+# block the non-root user's HOME writes — pre-create the chain and open it.
+DOCKER_GID=$(stat -c '%g' /var/run/docker.sock)
+chmod 777 /workspace /output
+mkdir -p /workspace/.system-home/.loopflow
+chmod 777 /workspace/.system-home /workspace/.system-home/.loopflow
 docker load --input "$RUNTIME_ARCHIVE" >/dev/null
 exec docker run --rm --network host \\
+    --user 1000:1000 \\
+    --group-add "$DOCKER_GID" \\
     --volume /input:/input:ro \\
     --volume /workspace:/workspace \\
     --volume /output:/output \\
     --volume /system/loop/{LOOP_NAME}:/opt/loopflow/loops/{LOOP_NAME}:ro \\
-    --volume /system/skills:/opt/loopflow/loops/{LOOP_NAME}/.skills:ro \\
+    --volume /system/skills:/workspace/.system-home/.loopflow/skills:ro \\
     --volume /var/run/docker.sock:/var/run/docker.sock \\
     --env HOME=/workspace/.system-home \\
     --env LOOPFLOW_LOOPS_DIR=/opt/loopflow/loops \\
