@@ -2,10 +2,10 @@
 
 | 字段 | 值 |
 |------|-----|
-| **当前阶段** | `DEVELOP`（Plan 012 基建 gate 已通过，等待新的 formal smoke） |
+| **当前阶段** | `DEVELOP`（Plan 013 tagged-runtime formal smoke 已规划，等待执行） |
 | **设计评估** | ADR-0009 accepted；Spec v4、Interface 0001 与 AC-0004 active |
 | **基建评估** | Plan 008 已实现 QEMU/KVM worker、ExecutionEnvelope、release gate 与 pinned worker recipe；`gs` success/timeout smoke 通过 |
-| **系统测试** | Plan 012：106 个确定性测试、110 个 Docker probe、tagged archive fresh-daemon load/run 与 artifact validate 全部通过；尚未重跑 formal benchmark，不建立 tracked baseline |
+| **系统测试** | Plan 012 远端门禁与 fresh-daemon load/run 通过；合并态 113 个确定性测试和 4 个显式 Docker probe 通过；Plan 013 尚未运行 formal benchmark，不建立 tracked baseline |
 
 正式契约要求 Runner/Curator 在可信控制面校验并 stage InputBundle，被测系统在每次
 新建的 QEMU/KVM disposable VM 中读取只读 `/input` 并写入 `/workspace`、`/output`。Guest 可以
