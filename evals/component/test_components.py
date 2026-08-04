@@ -56,6 +56,12 @@ def test_provision_standard_de(case, eval_run, tmp_path):
     _evaluate_provision_case(case, tmp_path / "repro-data")
 
 
+@pytest.mark.eval_case("provision-image-reuse")
+def test_provision_image_reuse(case, eval_run, tmp_path):
+    """镜像复用纪律：provision.md 必须记录镜像检查/复用决策（行为审计）。"""
+    _evaluate_provision_case(case, tmp_path / "repro-data")
+
+
 @pytest.mark.eval_case("provision-multi-language")
 def test_provision_multi_language(case, eval_run, tmp_path):
     _evaluate_provision_case(case, tmp_path / "repro-data")

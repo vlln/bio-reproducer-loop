@@ -1,0 +1,9 @@
+id: provision-image-reuse
+level: L1
+phase: Provision
+capabilities: [image_reuse_decision]
+input: {benchmark: bench-001}
+output: 03_provision/provision.md
+checks:
+  min_chars: 50
+  contains: [image & reuse decisions, docker images]
