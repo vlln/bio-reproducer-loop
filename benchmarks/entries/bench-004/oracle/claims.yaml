@@ -1,0 +1,61 @@
+id: bench-004
+paper_title: "Cross-Platform Transcriptomic Profiling of Mouse Brain Regions"
+paper_doi: "10.1234/bench.004"
+
+experimental_design:
+  - claim_id: ED-1
+    description: "Fifty genes were profiled across four independent mouse brain-region groups"
+    source: "Abstract, Methods"
+    details:
+      n_genes: 50
+      n_samples: 16
+      groups: {Cortex: 4, Hippocampus: 4, Striatum: 4, Thalamus: 4}
+
+methods:
+  - claim_id: M-1
+    description: "Python was used for count-matrix quality control and filtering"
+    source: "Methods"
+    details: {language: Python, tools: [pandas, numpy], mean_count_filter: 10}
+  - claim_id: M-2
+    description: "DESeq2 used a region-only design and adjusted p-value below 0.05"
+    source: "Methods"
+    details: {software: DESeq2, version: "1.42.0", design: "~ region", padj_threshold: 0.05}
+
+quantitative_results:
+  - claim_id: R-1
+    description: "Twenty-eight genes were differentially expressed across brain regions"
+    source: "Abstract, Results"
+    details: {n_significant: 28}
+  - claim_id: R-2
+    description: "Neurod6, Tbr1, and Satb2 were enriched in Cortex"
+    source: "Abstract, Results"
+    details: {genes: [Neurod6, Tbr1, Satb2], region: Cortex, direction: enriched}
+  - claim_id: R-3
+    description: "Prox1 and Dcx were enriched in Hippocampus"
+    source: "Abstract, Results"
+    details: {genes: [Prox1, Dcx], region: Hippocampus, direction: enriched}
+  - claim_id: R-4
+    description: "Drd1, Drd2, and Ppp1r1b were enriched in Striatum"
+    source: "Abstract, Results"
+    details: {genes: [Drd1, Drd2, Ppp1r1b], region: Striatum, direction: enriched}
+  - claim_id: R-5
+    description: "Rora and Gbx2 were enriched in Thalamus"
+    source: "Abstract, Results"
+    details: {genes: [Rora, Gbx2], region: Thalamus, direction: enriched}
+
+figures:
+  - claim_id: F-1
+    description: "A Cortex-versus-Thalamus volcano plot and top-30-gene heatmap were reported"
+    source: "Abstract, Results"
+    details: {figures: [volcano, heatmap]}
+
+conclusions:
+  - claim_id: C-1
+    description: "The workflow recovers brain-region expression patterns consistent with known markers"
+    source: "Conclusions"
+
+data_availability:
+  - claim_id: DA-1
+    description: "Supplementary Table S1 contains the 50-gene by 16-sample count matrix"
+    source: "Data Availability"
+    details: {file: counts.csv, n_genes: 50, n_samples: 16}

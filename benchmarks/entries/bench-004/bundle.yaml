@@ -1,0 +1,66 @@
+schema_version: "1.0"
+entry_id: bench-004
+level: L3
+input_root: input
+primary_paper: paper-markdown
+resources:
+  - id: paper-markdown
+    role: paper
+    authority: original
+    availability: bundled
+    path: paper.md
+    source: urn:benchmark:bench-004:paper-markdown
+    sha256: 7f8de554fbb67556cac5ed856efff6df6cb71fd51693a49e672e45ddc0235edc
+    retrieved_at: "2026-07-21T00:00:00Z"
+    media_type: text/markdown
+    license: MIT
+  - id: supplementary-table-s1
+    role: data
+    authority: original
+    availability: bundled
+    path: data/counts.csv
+    source: urn:benchmark:bench-004:supplementary-table-s1
+    sha256: e2edddcd246374bf70f478a833dff6ba4ed0162368f6490dc259d53d624f84de
+    retrieved_at: "2026-07-21T00:00:00Z"
+    media_type: text/csv
+    license: MIT
+  - id: paper-doi
+    role: metadata
+    authority: original
+    availability: unavailable
+    source: https://doi.org/10.1234/bench.004
+    checked_at: "2026-07-21T00:00:00Z"
+    access_notes: The DOI resolver returned HTTP 404 during entry review.
+  - id: geo-deposit
+    role: data
+    authority: original
+    availability: external
+    source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE88888
+  - id: analysis-code
+    role: code
+    authority: original
+    availability: unavailable
+    source: https://github.com/example/brain-region-transcriptomics
+    checked_at: "2026-07-21T00:00:00Z"
+    access_notes: The cited repository returned HTTP 404 during entry review.
+  - id: supplementary-table-s2
+    role: supplementary
+    authority: original
+    availability: unavailable
+    source: urn:benchmark:bench-004:supplementary-table-s2
+    checked_at: "2026-07-21T00:00:00Z"
+    access_notes: The paper cites Supplementary Table S2, but it is absent from staged input.
+  - id: figure-1
+    role: supplementary
+    authority: original
+    availability: unavailable
+    source: urn:benchmark:bench-004:figure-1
+    checked_at: "2026-07-21T00:00:00Z"
+    access_notes: The referenced figures/figure1_volcano.png is absent from staged input.
+  - id: figure-2
+    role: supplementary
+    authority: original
+    availability: unavailable
+    source: urn:benchmark:bench-004:figure-2
+    checked_at: "2026-07-21T00:00:00Z"
+    access_notes: The referenced figures/figure2_heatmap.png is absent from staged input.

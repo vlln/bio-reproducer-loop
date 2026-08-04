@@ -1,0 +1,13 @@
+id: bootstrap-runtime-detection
+level: L1
+phase: Bootstrap
+capabilities: [runtime_detection]
+input: {benchmark: bench-001}
+upstream:
+  01_plan/plan.md: phase-states/valid/bench-001/01_plan/plan.md
+output: 02_bootstrap/bootstrap.md
+checks:
+  min_chars: 50
+  contains_any:
+    - [java, docker, container, nextflow, runtime]
+    - [available, missing, found, not found, version]

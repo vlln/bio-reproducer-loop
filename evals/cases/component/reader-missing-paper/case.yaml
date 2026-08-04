@@ -1,0 +1,7 @@
+id: reader-missing-paper
+level: L1
+phase: Reader
+capabilities: [missing_input_handling]
+input: {benchmark: bench-001, override_paper: /nonexistent/path/paper.pdf}
+checks:
+  acceptable_outcomes: [nonzero_exit, blocked_output]

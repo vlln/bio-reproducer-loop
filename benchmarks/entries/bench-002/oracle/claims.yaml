@@ -1,0 +1,71 @@
+id: bench-002
+paper_title: "Transcriptomic Profiling of Drug Response Reveals Dysregulated Pathways in Inflammatory and Apoptotic Signaling"
+paper_doi: "10.1234/bench.002"
+
+experimental_design:
+  - claim_id: ED-1
+    description: "Twenty genes were profiled in three control and three Compound X-treated samples"
+    source: "Abstract, Methods"
+    details: {n_genes: 20, n_samples: 6, control_replicates: 3, drug_replicates: 3}
+
+methods:
+  - claim_id: M-1
+    description: "Differential expression used DESeq2 with design formula ~ condition and adjusted p-value below 0.05"
+    source: "Methods"
+    details: {software: DESeq2, version: "1.42.0", design: "~ condition", padj_threshold: 0.05}
+  - claim_id: M-2
+    description: "Significant genes were analyzed with clusterProfiler for GO enrichment"
+    source: "Methods"
+    details: {software: clusterProfiler, ontology: Biological Process}
+  - claim_id: M-3
+    description: "Differentially expressed genes were mapped to the TNF signaling pathway with pathview"
+    source: "Methods"
+    details: {software: pathview, pathway: "TNF signaling", pathway_id: hsa04668}
+
+quantitative_results:
+  - claim_id: R-1
+    description: "IL6, TNF, CXCL8, and IL1B were significantly upregulated after Compound X treatment"
+    source: "Abstract, Results"
+    details:
+      genes:
+        - {gene: IL6, log2fc: 3.0, padj: 0.0003, direction: upregulated}
+        - {gene: TNF, log2fc: 2.5, padj: 0.001, direction: upregulated}
+        - {gene: CXCL8, log2fc: 2.2, padj: 0.002, direction: upregulated}
+        - {gene: IL1B, log2fc: 2.0, padj: 0.005, direction: upregulated}
+  - claim_id: R-2
+    description: "BCL2 and MCL1 were significantly downregulated after Compound X treatment"
+    source: "Abstract, Results"
+    details:
+      genes:
+        - {gene: BCL2, log2fc: -2.2, padj: 0.0008, direction: downregulated}
+        - {gene: MCL1, log2fc: -1.8, padj: 0.003, direction: downregulated}
+  - claim_id: R-3
+    description: "Six genes were significantly differentially expressed"
+    source: "Results"
+    details: {n_significant: 6, padj_threshold: 0.05}
+  - claim_id: R-4
+    description: "GO enrichment implicated inflammatory response, cytokine signaling, and apoptotic regulation"
+    source: "Results"
+    details:
+      go_terms: ["GO:0006954", "GO:0019221", "GO:0071345", "GO:0043067", "GO:0006915"]
+
+figures:
+  - claim_id: F-1
+    description: "The study reports a volcano plot, a GO enrichment bar plot, and a TNF signaling pathway diagram"
+    source: "Methods, Results"
+    details: {figures: [volcano, go_barplot, kegg_pathway]}
+
+conclusions:
+  - claim_id: C-1
+    description: "Compound X induces inflammatory transcription while suppressing anti-apoptotic expression"
+    source: "Abstract, Conclusions"
+
+data_availability:
+  - claim_id: DA-1
+    description: "Supplementary Table S1 is a 20-gene by 6-sample count matrix"
+    source: "Data Availability"
+    details: {file: counts.csv, n_genes: 20, n_samples: 6}
+  - claim_id: DA-2
+    description: "The paper references GEO accession GSE99999 and a separate Supplementary Table S2"
+    source: "Data Availability"
+    details: {geo_accession: GSE99999, missing_local_material: "Supplementary Table S2"}

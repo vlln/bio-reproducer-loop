@@ -1,0 +1,15 @@
+id: validate-missing-result-table
+level: L1
+phase: Validate
+capabilities: [missing_result_table_validation]
+input: {benchmark: bench-006}
+upstream:
+  01_plan/plan.md: phase-states/valid/bench-006/01_plan/plan.md
+  05_run/run_results.md: phase-states/valid/bench-006/05_run/run_results_missing_table.md
+output: 06_validate/report.md
+checks:
+  min_chars: 100
+  contains_any:
+    - [missing, absent, unavailable, no result table]
+    - [FAILED, PARTIAL, BLOCKED]
+  not_contains: [Status | REPRODUCED]

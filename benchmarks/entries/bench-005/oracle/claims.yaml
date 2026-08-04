@@ -1,0 +1,57 @@
+id: bench-005
+paper_title: "Integrative Analysis of Pharmacogenomic Response in Cancer Cell Lines"
+paper_doi: "10.1234/bench.005"
+
+experimental_design:
+  - claim_id: ED-1
+    description: "Thirty genes were profiled in DMSO, Drug A, and Drug B groups with four replicates per group"
+    source: "Abstract, Methods"
+    details: {n_genes: 30, n_samples: 12, groups: {DMSO: 4, DrugA: 4, DrugB: 4}}
+
+methods:
+  - claim_id: M-1
+    description: "Differential expression used DESeq2 on Linux x86_64"
+    source: "Methods"
+    details: {software: DESeq2, version: "1.34.0", r_version: "4.1.0", platform: "Ubuntu 20.04 x86_64"}
+  - claim_id: M-2
+    description: "The prose specifies ~ condition while the embedded code uses ~ treatment"
+    source: "Methods"
+    details: {prose_design: "~ condition", code_design: "~ treatment"}
+  - claim_id: M-3
+    description: "Drug A and Drug B were each contrasted with DMSO at adjusted p-value below 0.05"
+    source: "Methods"
+    details: {contrasts: ["DrugA vs DMSO", "DrugB vs DMSO"], padj_threshold: 0.05}
+
+quantitative_results:
+  - claim_id: R-1
+    description: "ERBB2, EGFR, MYC, and JUN were upregulated by Drug A"
+    source: "Abstract, Results"
+    details: {genes: [ERBB2, EGFR, MYC, JUN], contrast: "DrugA vs DMSO", direction: upregulated}
+  - claim_id: R-2
+    description: "BCL2, MCL1, and BAX were downregulated by Drug A"
+    source: "Abstract, Results"
+    details: {genes: [BCL2, MCL1, BAX], contrast: "DrugA vs DMSO", direction: downregulated}
+  - claim_id: R-3
+    description: "BRAF, CDKN1A, and CASP3 were upregulated and MTOR was downregulated by Drug B"
+    source: "Abstract, Results"
+    details:
+      contrast: "DrugB vs DMSO"
+      upregulated: [BRAF, CDKN1A, CASP3]
+      downregulated: [MTOR]
+
+figures:
+  - claim_id: F-1
+    description: "The study reports a Drug-A volcano plot and a PCA plot separating treatment groups"
+    source: "Methods, Results"
+    details: {figures: [volcano, pca]}
+
+conclusions:
+  - claim_id: C-1
+    description: "Drug A and Drug B produce distinct transcriptional signatures and mechanisms of action"
+    source: "Conclusions"
+
+data_availability:
+  - claim_id: DA-1
+    description: "Supplementary Table S1 contains the 30-gene by 12-sample count matrix"
+    source: "Data Availability"
+    details: {file: counts.csv, n_genes: 30, n_samples: 12}

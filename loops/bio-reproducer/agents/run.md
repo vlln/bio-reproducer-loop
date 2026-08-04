@@ -2,42 +2,15 @@
 name: run
 description: Phase 5 — 运行分析流水线
 extends: _base
-output:
-  type: object
-  properties:
-    payload:
-      type: object
-      properties:
-        steps:
-          type: array
-          description: Pipeline steps executed
-          items:
-            type: object
-            properties:
-              step: {type: string}
-              status: {type: string, enum: [success, failed, skipped]}
-              metrics: {type: object, description: "Key metrics from this step"}
-        figures:
-          type: array
-          description: Figure generation status
-          items:
-            type: object
-            properties:
-              panel: {type: string}
-              status: {type: string, enum: [generated, partial, blocked]}
-              path: {type: string}
-              source: {type: string, enum: [author_code, author_notebook, handwritten_fallback, N/A]}
-        pipeline_duration:
-          type: string
-          description: Total pipeline execution time
-      required: [steps, figures]
 ---
 # Phase 5: Run
 
 ## 目标
 使用 Nextflow 作为编排层运行分析 pipeline。Nextflow 负责输入/输出、
 容器、资源、resume、日志和并行调度；具体分析逻辑应由论文指定的
-脚本、工具、notebook、命令或已有 workflow 承担。
+脚本、工具、notebook、命令或已有 workflow 承担。复现范围非空时只运行
+范围内目标（见 `01_plan/plan.md` Reproduction Target 表与 `_base.md`
+「复现范围」）对应的分析步骤；范围外步骤标注 `out-of-scope` 不执行。
 
 ## 输入
 - `01_plan/plan.md` - 步骤和参数
@@ -64,6 +37,7 @@ agent 必须尝试运行作者代码或记录阻止执行的具体不兼容性�
 手写绘图代码。"手写更方便"不是跳过作者代码的有效理由。
 
 ## 工作流程
+1. 确认输入文件齐全且非空：`plan.md`、`provision.md`、`data_manifest.md`；缺失时停止并报告，不猜测继续。
 2. 从 `plan.md` 提取步骤、参数和预期输出。
 3. 从 `provision.md` 选择已验证的工具/容器；不猜测未部署环境。
 4. 从 `data_manifest.md` 读取实际数据路径；不使用未记录数据。
@@ -84,7 +58,7 @@ agent 必须尝试运行作者代码或记录阻止执行的具体不兼容性�
 | `nextflow.config` | 可选，仅在需要 Phase 5 覆盖配置时创建；可 include `../02_bootstrap/nextflow.base.config` |
 | `run_results.md` | 结果摘要 |
 | `results/` | 输出文件 |
-| `figures/` | 可选生成图表文件、绘图脚本和图表输入表 |
+| `figures/` | 生成图表文件、绘图脚本和图表输入表 |
 | `work/` | Nextflow work 目录 |
 | `reports/` | Nextflow 报告、timeline、trace 和日志 |
 
@@ -144,5 +118,5 @@ Trace/report files: reports/...
 
 ## 返回
 
-返回 JSON（见 `_base.md` 返回格式）。`payload.steps` 列出所有 pipeline 步骤及执行状态，`payload.figures` 列出图表生成状态。若 pipeline 完全无法运行，`status` 为 `failed`。部分步骤失败但核心结果可用时为 `partial`。
+返回自然语言简报（见 `_base.md` 返回）：pipeline 各步骤执行状态、图表生成情况、总耗时。详细结果写入 `05_run/run_results.md`。
 

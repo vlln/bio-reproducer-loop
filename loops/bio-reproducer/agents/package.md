@@ -2,26 +2,14 @@
 name: package
 description: Phase 7 — 打包复现产物
 extends: _base
-output:
-  type: object
-  properties:
-    payload:
-      type: object
-      properties:
-        files_written:
-          type: array
-          description: Output files created
-          items: {type: string}
-        readme_summary:
-          type: string
-          description: One-line summary of the README
-      required: [files_written]
 ---
 # Phase 7: Package
 
 ## 目标
 将通过验证的复现产出打包为可交付状态：写 README 和顶层入口脚本，
-使他人 clone 后可以理解复现内容并一键运行。
+使他人 clone 后可以理解复现内容并一键运行。复现范围非空时，README
+与入口脚本只覆盖范围内目标（见 `01_plan/plan.md` Reproduction Target
+表与 `_base.md`「复现范围」），并明示复现范围与 out-of-scope 说明。
 
 ## 前置条件
 - `06_validate/report.md` 存在且 Verdict 为 REPRODUCED 或 PARTIAL
@@ -196,11 +184,11 @@ work/
 
 1. 读取 `01_plan/plan.md` 的标题、DOI、Paper Understanding
 2. 读取 `06_validate/report.md` 的 Verdict、Score、Deviations
-4. 如果存在 `06_validate/figure_comparison.md`，摘要关键图级结果
-5. 读取 `02_bootstrap/bootstrap.md` 提取系统要求
-6. 从各 phase 产出推断目录结构
-7. 编写 `README.md`、`run.sh` 和 `.gitignore`
-8. Git commit
+3. 如果存在 `06_validate/figure_comparison.md`，摘要关键图级结果
+4. 读取 `02_bootstrap/bootstrap.md` 提取系统要求
+5. 从各 phase 产出推断目录结构
+6. 编写 `README.md`、`run.sh` 和 `.gitignore`
+7. Git commit
 
 ## 规则
 
@@ -216,5 +204,5 @@ work/
 
 ## 返回
 
-返回 JSON（见 `_base.md` 返回格式）。`payload.files_written` 列出所有创建的文件。
+返回自然语言简报（见 `_base.md` 返回）：创建了哪些文件、README 一句话概括。
 

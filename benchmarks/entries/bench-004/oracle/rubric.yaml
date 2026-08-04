@@ -1,0 +1,149 @@
+id: bench-004
+benchmark_version: "2.0.0"
+oracle_version: "1.0.0"
+expected_verdict: REPRODUCED
+verdict_match_threshold: 0.6
+verdict_thresholds: {reproduced: 80, partial: 50}
+
+checks:
+  - id: D1
+    description: A primary or combined differential expression table is non-empty
+    evidence:
+      alternatives:
+        - {artifact_role: result_table, artifact_id: cortex_vs_thalamus}
+        - {artifact_role: result_table, artifact_id: thalamus_vs_cortex}
+        - {artifact_role: result_table, artifact_id: all_contrasts}
+    comparison: {comparator: file_nonempty}
+    weight: 10
+  - id: R1-CORTEX
+    description: Neurod6 is enriched in Cortex relative to Thalamus
+    evidence:
+      alternatives:
+        - artifact_role: result_table
+          artifact_id: cortex_vs_thalamus
+          comparison: &neuro_up
+            comparator: csv_row
+            key_columns: &keys [gene, Gene, symbol, SYMBOL, ""]
+            key_equals: Neurod6
+            assertions:
+              - {columns: &lfc [log2FoldChange, log2FC, logFC], operator: greater_than, value: 1.0}
+              - {columns: &padj [padj, FDR, adj.P.Val], operator: less_than, value: 0.05}
+        - artifact_role: result_table
+          artifact_id: thalamus_vs_cortex
+          comparison: &neuro_down
+            comparator: csv_row
+            key_columns: *keys
+            key_equals: Neurod6
+            assertions:
+              - {columns: *lfc, operator: less_than, value: -1.0}
+              - {columns: *padj, operator: less_than, value: 0.05}
+        - artifact_role: result_table
+          artifact_id: all_contrasts
+          comparison:
+            <<: *neuro_up
+            where:
+              - {columns: [contrast, Contrast], operator: matches, value: "^Cortex_vs_Thalamus$"}
+        - artifact_role: result_table
+          artifact_id: all_contrasts
+          comparison:
+            <<: *neuro_down
+            where:
+              - {columns: [contrast, Contrast], operator: matches, value: "^Thalamus_vs_Cortex$"}
+    comparison: *neuro_up
+    weight: 15
+  - id: R1-STRIATUM
+    description: Drd2 is enriched in Striatum relative to Cortex
+    evidence:
+      alternatives:
+        - artifact_role: result_table
+          artifact_id: striatum_vs_cortex
+          comparison: &drd2_up
+            comparator: csv_row
+            key_columns: *keys
+            key_equals: Drd2
+            assertions:
+              - {columns: *lfc, operator: greater_than, value: 1.0}
+              - {columns: *padj, operator: less_than, value: 0.05}
+        - artifact_role: result_table
+          artifact_id: all_contrasts
+          comparison:
+            <<: *drd2_up
+            where:
+              - {columns: [contrast, Contrast], operator: matches, value: "^Striatum_vs_Cortex$"}
+        - artifact_role: result_table
+          artifact_id: all_contrasts
+          comparison:
+            comparator: csv_row
+            key_columns: *keys
+            key_equals: Drd2
+            where:
+              - {columns: [contrast, Contrast], operator: matches, value: "^Cortex_vs_Striatum$"}
+            assertions:
+              - {columns: *lfc, operator: less_than, value: -1.0}
+              - {columns: *padj, operator: less_than, value: 0.05}
+    comparison: *drd2_up
+    weight: 15
+  - id: R1-HIPPOCAMPUS
+    description: Prox1 is enriched in Hippocampus relative to Cortex
+    evidence:
+      alternatives:
+        - artifact_role: result_table
+          artifact_id: hippocampus_vs_cortex
+          comparison: &prox1_up
+            comparator: csv_row
+            key_columns: *keys
+            key_equals: Prox1
+            assertions:
+              - {columns: *lfc, operator: greater_than, value: 1.0}
+              - {columns: *padj, operator: less_than, value: 0.05}
+        - artifact_role: result_table
+          artifact_id: all_contrasts
+          comparison:
+            <<: *prox1_up
+            where:
+              - {columns: [contrast, Contrast], operator: matches, value: "^Hippocampus_vs_Cortex$"}
+        - artifact_role: result_table
+          artifact_id: all_contrasts
+          comparison:
+            comparator: csv_row
+            key_columns: *keys
+            key_equals: Prox1
+            where:
+              - {columns: [contrast, Contrast], operator: matches, value: "^Cortex_vs_Hippocampus$"}
+            assertions:
+              - {columns: *lfc, operator: less_than, value: -1.0}
+              - {columns: *padj, operator: less_than, value: 0.05}
+    comparison: *prox1_up
+    weight: 15
+  - id: R2
+    description: At least 15 genes are significant in the Cortex-Thalamus contrast
+    evidence:
+      alternatives:
+        - artifact_role: result_table
+          artifact_id: cortex_vs_thalamus
+        - artifact_role: result_table
+          artifact_id: thalamus_vs_cortex
+        - artifact_role: result_table
+          artifact_id: all_contrasts
+          comparison:
+            comparator: csv_count
+            where:
+              - {columns: *padj, operator: less_than, value: 0.05}
+              - {columns: [contrast, Contrast], operator: matches, value: "^(Cortex_vs_Thalamus|Thalamus_vs_Cortex)$"}
+            assertion: {operator: greater_than_or_equal, value: 15}
+    comparison:
+      comparator: csv_count
+      where:
+        - {columns: *padj, operator: less_than, value: 0.05}
+      assertion: {operator: greater_than_or_equal, value: 15}
+    weight: 15
+  - id: F1
+    description: Volcano plot exists
+    evidence: {artifact_role: figure, artifact_id: volcano}
+    comparison: {comparator: png_valid}
+    weight: 15
+  - id: F2
+    description: Heatmap exists
+    evidence: {artifact_role: figure, artifact_id: heatmap}
+    comparison: {comparator: png_valid}
+    weight: 15

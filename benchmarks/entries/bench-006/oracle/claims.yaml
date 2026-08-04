@@ -1,0 +1,64 @@
+id: bench-006
+paper_title: "Data Recovery and Quality Assessment Pipeline for Gene Expression Signatures"
+paper_doi: "10.1234/bench.006"
+
+experimental_design:
+  - claim_id: ED-1
+    description: "The paper describes fifteen genes measured in four control and four treatment samples"
+    source: "Abstract, Methods"
+    details: {n_genes: 15, n_samples: 8, control_replicates: 4, treatment_replicates: 4}
+
+methods:
+  - claim_id: M-1
+    description: "The paper claims that DataIntegrityR validates missing files, delimiters, and truncated rows"
+    source: "Methods"
+    details: {software: DataIntegrityR, claimed_version: "1.0.0"}
+  - claim_id: M-2
+    description: "Differential expression uses DESeq2 with design formula ~ condition"
+    source: "Methods"
+    details: {software: DESeq2, version: "1.42.0", design: "~ condition", padj_threshold: 0.05}
+
+quantitative_results:
+  - claim_id: R-1
+    description: "IL6, TNF, and CXCL8 were reported as significantly upregulated"
+    source: "Abstract, Results"
+    details: {genes: [IL6, TNF, CXCL8], direction: upregulated}
+  - claim_id: R-2
+    description: "BCL2 and MCL1 were reported as significantly downregulated"
+    source: "Abstract, Results"
+    details: {genes: [BCL2, MCL1], direction: downregulated}
+  - claim_id: R-3
+    description: "The paper reports five significantly differentially expressed genes"
+    source: "Results"
+    details: {n_significant: 5, padj_threshold: 0.05}
+
+figures:
+  - claim_id: F-1
+    description: "The paper reports a Treatment-versus-Control volcano plot"
+    source: "Methods, Results"
+    details: {figure: volcano}
+
+conclusions:
+  - claim_id: C-1
+    description: "The paper concludes that its recovery workflow preserves reliable differential expression analysis"
+    source: "Conclusions"
+
+data_availability:
+  - claim_id: DA-1
+    description: "The paper claims that counts.csv contains fifteen genes and eight samples"
+    source: "Data Availability"
+    details: {file: counts.csv, claimed_genes: 15, n_samples: 8}
+
+input_conditions:
+  - claim_id: I-1
+    description: "The supplied counts.csv exists and contains eleven data rows, not the fifteen claimed by the paper"
+    source: "Benchmark package inspection"
+    details: {file: input/data/counts.csv, supplied_genes: 11, claimed_genes: 15, truncated: true}
+  - claim_id: I-2
+    description: "The supplied counts.csv is tab-delimited despite its CSV extension"
+    source: "Benchmark package inspection"
+    details: {file: input/data/counts.csv, actual_delimiter: tab, declared_format: csv}
+  - claim_id: I-3
+    description: "DataIntegrityR and the cited external recovery resources are intentionally unavailable"
+    source: "Benchmark construction"
+    details: {tool_unavailable: DataIntegrityR, geo_accession: GSE66666}

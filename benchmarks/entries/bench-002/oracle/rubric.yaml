@@ -1,0 +1,72 @@
+id: bench-002
+benchmark_version: "2.0.0"
+oracle_version: "1.0.0"
+expected_verdict: REPRODUCED
+verdict_match_threshold: 0.6
+verdict_thresholds: {reproduced: 80, partial: 50}
+
+checks:
+  - id: D1
+    description: Differential expression table is non-empty
+    evidence: {artifact_role: result_table}
+    comparison: {comparator: file_nonempty}
+    weight: 10
+  - id: R1
+    description: Six expected drug-response genes have the correct direction and significance
+    evidence: {artifact_role: result_table}
+    comparison:
+      comparator: csv_rows
+      key_columns: &gene_columns [gene, Gene, symbol, SYMBOL, ""]
+      rows:
+        - key_equals: IL6
+          assertions: &up_strong
+            - {columns: &lfc_columns [log2FoldChange, log2FC, logFC], operator: greater_than, value: 1.0}
+            - {columns: &padj_columns [padj, FDR, adj.P.Val], operator: less_than, value: 0.05}
+        - {key_equals: TNF, assertions: *up_strong}
+        - {key_equals: CXCL8, assertions: *up_strong}
+        - {key_equals: IL1B, assertions: *up_strong}
+        - key_equals: BCL2
+          assertions: &down_strong
+            - {columns: *lfc_columns, operator: less_than, value: -1.0}
+            - {columns: *padj_columns, operator: less_than, value: 0.05}
+        - {key_equals: MCL1, assertions: *down_strong}
+    weight: 50
+  - id: R2
+    description: At least five genes are significant
+    evidence: {artifact_role: result_table}
+    comparison:
+      comparator: csv_count
+      where:
+        - {columns: *padj_columns, operator: less_than, value: 0.05}
+      assertion: {operator: greater_than_or_equal, value: 5}
+    weight: 10
+  - id: R3
+    description: GO output contains inflammatory or cytokine evidence
+    evidence: {artifact_role: go_enrichment}
+    comparison: {comparator: text_regex, pattern: "(?i)(GO:0006954|inflamm|cytokine|chemokine)"}
+    weight: 5
+  - id: R4
+    description: GO output contains apoptosis evidence
+    evidence: {artifact_role: go_enrichment}
+    comparison: {comparator: text_regex, pattern: "(?i)(GO:0006915|GO:0043067|apopt|programmed cell death)"}
+    weight: 5
+  - id: R5
+    description: GO enrichment table is non-empty
+    evidence: {artifact_role: go_enrichment}
+    comparison: {comparator: file_nonempty}
+    weight: 5
+  - id: F1
+    description: Volcano plot exists
+    evidence: {artifact_role: figure, artifact_id: volcano}
+    comparison: {comparator: png_valid}
+    weight: 5
+  - id: F2
+    description: GO bar plot exists
+    evidence: {artifact_role: figure, artifact_id: go_barplot}
+    comparison: {comparator: png_valid}
+    weight: 5
+  - id: F3
+    description: KEGG pathway figure exists
+    evidence: {artifact_role: figure, artifact_id: kegg_pathway}
+    comparison: {comparator: png_valid}
+    weight: 5

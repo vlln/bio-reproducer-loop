@@ -98,17 +98,25 @@ MAJOR=0 期间（0.x.y）：MINOR 升功能，PATCH 修 bug。
 
 | 命令 | 用途 |
 |------|------|
-| `pytest tests/unit/` | L1 单元测试（单 Phase Agent 业务逻辑） |
-| `pytest tests/integration/` | L2 集成测试（跨 Phase 信息流） |
+| `pytest tests/` | 确定性单元与契约测试；不得调用真实 LLM/网络/容器部署 |
+| `make eval-component` | 单 Phase 真实 LLM 行为评测 |
+| `make eval-handoff` | 跨 Phase 真实 LLM 行为评测，每个场景重复 5 次 |
+| `make bench-l3` | 构造论文黑盒 benchmark |
 
 ### 测试目录
 
-| 层级 | 目录路径 | 说明 |
-|------|---------|------|
-| L1 单元测试 | `tests/unit/` | 单 Phase Agent 业务逻辑正确性 |
-| L2 集成测试 | `tests/integration/` | 跨 Phase 信息流自洽性 |
+| 域 | 目录路径 | 说明 |
+|----|---------|------|
+| 单元测试 | `tests/unit/` | Runner、evaluator、adapter、解析和状态机 |
+| 契约测试 | `tests/contract/` | Phase 协议、状态传播和错误处理 |
+| Component eval | `evals/component/` | 单 Phase 真实 LLM 业务质量 |
+| Handoff eval | `evals/handoff/` | 跨 Phase 语义传递与降级决策 |
 
-注：L1/L2 通过真实 LLM 调用运行，测试 Agent 的业务决策。Schema 合规（字段类型、JSON 格式）是 loopflow 运行时保证，不在此测试范围。
+真实 LLM 运行属于 eval，不属于 unit test。Eval 必须记录模型、Prompt、工具与环境版本，并通过重复运行报告分布。
+
+内部 eval 按能力与失败模式建立 case，不要求每个 benchmark entry 跑全部 Phase。重复次数由
+`evals/profiles.yaml` 控制，禁止在测试函数或 parametrization 中硬编码。上游 Phase 状态属于
+fixture，不得同时作为期望完整输出使用。
 
 ---
 
@@ -116,7 +124,8 @@ MAJOR=0 期间（0.x.y）：MINOR 升功能，PATCH 修 bug。
 
 - 从功能分支发起 PR 到 `develop`
 - PR 描述需包含关联的 AC 编号
-- CI 必须通过（L1 + L2）
+- CI 必须通过全部确定性 `tests/`
+- 涉及 Prompt 或 Agent 行为的 PR 必须附对应 component/handoff eval 报告
 - 至少一人 Review 通过后合并
 
 ---

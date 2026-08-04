@@ -6,10 +6,15 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from .adapters.loopflow import run as loopflow_run
+from .bundle_validator import validate_entry
 
-
-def run_entry(entry_path: str, runs: int = 5, output_dir: Optional[str] = None) -> list:
-    """Run a benchmark entry N times, return list of result.json dicts.
+def run_entry(
+    entry_path: str,
+    runs: int = 5,
+    output_dir: Optional[str] = None,
+    sandbox=None,
+) -> list:
+    """Run a protocol v2 benchmark entry N times and return submissions.
 
     Args:
         entry_path: Path to benchmark entry directory
@@ -20,8 +25,8 @@ def run_entry(entry_path: str, runs: int = 5, output_dir: Optional[str] = None) 
         List of result.json dicts, one per completed run.
     """
     entry_dir = Path(entry_path)
+    validate_entry(entry_dir)
     entry_id = entry_dir.name
-
     if output_dir is None:
         results_root = Path(__file__).parent.parent / "results"
     else:
@@ -33,7 +38,7 @@ def run_entry(entry_path: str, runs: int = 5, output_dir: Optional[str] = None) 
 
     for i in range(1, runs + 1):
         run_dir = entry_results_dir / f"run_{i:02d}"
-        result_file = run_dir / "result.json"
+        result_file = run_dir / "submission.json"
 
         # Skip already-completed runs (AC-0004-B-2)
         if result_file.exists():
@@ -44,9 +49,9 @@ def run_entry(entry_path: str, runs: int = 5, output_dir: Optional[str] = None) 
         run_dir.mkdir(parents=True, exist_ok=True)
 
         try:
-            result = loopflow_run(entry_path, run_dir=str(run_dir))
+            result = loopflow_run(entry_path, run_dir=str(run_dir), sandbox=sandbox)
         except Exception as e:
-            result = _make_error_result(entry_id, i, str(e))
+            result = _make_error_submission(entry_id, i, str(e))
 
         with open(result_file, "w") as f:
             json.dump(result, f, indent=2)
@@ -56,19 +61,23 @@ def run_entry(entry_path: str, runs: int = 5, output_dir: Optional[str] = None) 
     return all_results
 
 
-def _make_error_result(entry_id: str, run_num: int, error: str) -> dict:
-    """Create a BLOCKED result when the runner itself encounters an error."""
-    run_id = f"{entry_id}-run-{run_num:02d}-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
+def _make_error_submission(entry_id: str, run_num: int, error: str) -> dict:
+    submission_id = f"{entry_id}-run-{run_num:02d}-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
     return {
-        "run_id": run_id,
+        "protocol_version": "2.0",
+        "submission_id": submission_id,
         "bench_id": entry_id,
-        "bench_version": "1.0.0",
-        "verdict": "BLOCKED",
-        "score": 0,
-        "stages": [],
-        "duration_seconds": 0,
-        "llm_calls": 0,
-        "human_interventions": 0,
-        "blocked_reason": "system",
-        "error": error,
+        "system": {"name": "bio-reproducer", "version": "0.1.0"},
+        "artifacts": [],
+        "execution": {
+            "purpose": "validation-only",
+            "isolation": "runner",
+            "provider": "unavailable",
+            "duration_seconds": 0,
+            "stages": [],
+            "blocked_reason": "infrastructure",
+            "error_code": "EXECUTION_BLOCKED",
+            "error": error,
+            "teardown": {"status": "unknown"},
+        },
     }

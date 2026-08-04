@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+sudo docker load --input /system/ubuntu-22.04.tar >/dev/null
+sudo docker run --rm --network none \
+  --mount type=bind,src=/input,dst=/input,readonly \
+  --mount type=bind,src=/output,dst=/output \
+  --mount type=bind,src=/,dst=/guest-root,readonly \
+  ubuntu:22.04 sh -euc '
+    test "$(cat /input/public.txt)" = "public benchmark input"
+    if touch /input/write-must-fail 2>/dev/null; then
+      echo "nested container wrote read-only input" >&2
+      exit 1
+    fi
+    test ! -e /guest-root/work/control-plane/oracle.txt
+    printf "%s\n" "nested-docker-artifact-plan008" > /output/nested-artifact.txt
+  '
+
+test "$(cat /output/nested-artifact.txt)" = "nested-docker-artifact-plan008"
+printf '%s\n' "vm_worker_smoke:PASS"

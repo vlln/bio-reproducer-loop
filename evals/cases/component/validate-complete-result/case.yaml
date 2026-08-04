@@ -1,0 +1,14 @@
+id: validate-complete-result
+level: L1
+phase: Validate
+capabilities: [evidence_based_validation]
+input: {benchmark: bench-001}
+upstream:
+  01_plan/plan.md: phase-states/valid/bench-001/01_plan/plan.md
+  05_run/run_results.md: phase-states/valid/bench-001/05_run/run_results.md
+output: 06_validate/report.md
+checks:
+  min_chars: 50
+  contains: [REPRODUCED, Score, Data Integrity, Quantitative]
+  json_output: 06_validate/metrics.json
+  json_fields: [verdict, total_score]

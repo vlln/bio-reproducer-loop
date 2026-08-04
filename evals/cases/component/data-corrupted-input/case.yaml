@@ -1,0 +1,15 @@
+id: data-corrupted-input
+level: L1
+phase: Data
+capabilities: [corrupted_data_recovery]
+input: {benchmark: bench-006}
+upstream:
+  01_plan/plan.md: phase-states/valid/bench-006/01_plan/plan.md
+output: 04_data/data_manifest.md
+checks:
+  min_chars: 100
+  contains: [11, 8]
+  contains_any:
+    - [truncat, missing]
+    - [tab, delimiter, format]
+  not_contains: [15 genes recovered]

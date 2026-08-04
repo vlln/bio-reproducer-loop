@@ -2,7 +2,6 @@
 name: validate
 description: Phase 6 — 验证复现结果
 extends: _base
-model: "alibaba-cn/qwen3.7-plus"
 output:
   type: object
   properties:
@@ -11,75 +10,24 @@ output:
       properties:
         verdict:
           type: string
-          enum:
-          - REPRODUCED
-          - PARTIAL
-          - FAILED
-          - BLOCKED
-        total_score:
-          type: number
-          minimum: 0
-          maximum: 100
-        dimension_scores:
-          type: object
-          properties:
-            data_integrity:
-              type: number
-            process_quality:
-              type: number
-            quantitative_concordance:
-              type: number
-            figure_and_finding:
-              type: number
-        checks_total:
-          type: integer
-        checks_scored:
-          type: integer
-        checks_na:
-          type: integer
-        figure_validation_status:
-          type: string
-          enum:
-          - generated
-          - partial
-          - blocked
-          - validated
-        deviations:
-          type: array
-          items:
-            type: object
-            properties:
-              check_id:
-                type: string
-              deviation:
-                type: string
-              magnitude:
-                type: string
-              likely_cause:
-                type: string
-              fault_phase:
-                type: string
-        next_action:
-          type: string
-          enum:
-          - archive
-          - rollback
-          - wait
-          - mark_unreproducible
-      required:
-      - verdict
-      - total_score
+          enum: [REPRODUCED, PARTIAL, FAILED, BLOCKED]
+          description: 唯一被 workflow 程序消费的字段，用于 Package 门控
+      required: [verdict]
+  required: [payload]
 ---
 # Phase 6: Validate
 
 ## 目标
 结构化、量化地对比复现结果与论文声称，生成可追溯的验证报告和综合评分。
+复现范围非空时，检查项只从范围内目标（`01_plan/plan.md` Reproduction Target
+表，见 `_base.md`「复现范围」）推导，report.md 明示本次验证的 scored scope
+（含 out-of-scope 说明），避免对未复现的范围外内容评分或声称完成。
 
 ## 输入
 - `01_plan/plan.md` — 论文声称的 Expected Results
 - `05_run/run_results.md` — 实际运行结果和指标
 - `05_run/results/` — 输出文件
-- `05_run/figures/` — 可选生成图表和绘图输入
+- `05_run/figures/` — 生成图表和绘图输入
 - `05_run/reports/` — Nextflow 执行报告
 
 ## 验证方法
@@ -100,6 +48,7 @@ output:
 3. 阅读 plan.md 的 **Paper Understanding → Reproduction Target**，每个复现目标至少对应一个检查
 4. 检查项归入四个维度之一（见下），每个维度至少 2 个检查
 5. 标记每个检查为 Auto（可脚本提取对比）、Manual（需人工审查）或 Visual（需图像比较）
+6. 为每个检查标注其来源的复现目标 ID（plan.md 中 targets 的 `id`，如 T1）；无对应目标的通用检查标注 `-`。Target ID 必须写入 checks_plan.md 和 report.md 的 Evidence Compared 表。
 
 维度权重为默认值，当论文的复现重点明显偏向某维度时可调整（调整需在 report.md 中记录理由）。
 
@@ -199,7 +148,7 @@ BLOCKED 在评分前判定：当数据受限、代码缺失、权限不足或外
 
 优先为标记 Auto 的检查编写提取/对比脚本。脚本可以是独立的 Python/R/shell 片段，从 `05_run/results/` 提取数值、计数、文件列表等。
 
-自动化结果写入 `06_validate/metrics.json`，Manual 检查由 agent 审查后填入同一结构。输出格式见 output schema。
+自动化结果写入 `06_validate/metrics.json`，Manual 检查由 agent 审查后填入同一结构。`metrics.json` 保留机器可读的评分数据（`verdict`、`total_score`、`dimension_scores`、checks 计数、`figure_validation_status`、`deviations`），供 workflow 兜底读取 verdict 和后续 audit。
 
 ## 图表比较输出
 
@@ -254,12 +203,12 @@ BLOCKED 在评分前判定：当数据受限、代码缺失、权限不足或外
 
 ## Evidence Compared
 
-| Check ID | Metric | Expected | Actual | Score | Type | Notes |
-|----------|--------|----------|--------|-------|------|-------|
-| D1 | ... | ... | ... | X.X | Auto | |
-| Q1 | ... | ... | ... | X.X | Auto | |
-| R1 | ... | ... | ... | X.X | Manual | See analysis below |
-| K1 | ... | ... | ... | X.X | Visual | See figure_comparison.md |
+| Check ID | Target ID | Metric | Expected | Actual | Score | Type | Notes |
+|----------|-----------|--------|----------|--------|-------|------|-------|
+| D1 | T1 | ... | ... | ... | X.X | Auto | |
+| Q1 | T1 | ... | ... | ... | X.X | Auto | |
+| R1 | T2 | ... | ... | ... | X.X | Manual | See analysis below |
+| K1 | T3 | ... | ... | ... | X.X | Visual | See figure_comparison.md |
 
 （每个检查一行，按维度分组。Manual/Visual 检查需在 Notes 列指明详细分析位置。）
 
@@ -305,11 +254,10 @@ BLOCKED 在评分前判定：当数据受限、代码缺失、权限不足或外
 - Figure validation 是必须步骤。
 - 关键 figure check 的主证据必须是 original image vs generated image 的 panel-level visual comparison。
 - 维度权重为默认值；如有调整，在 Score Breakdown 的 Notes 列记录理由。
-- 验证失败时在 report.md 记录问题分析，然后遵循 SKILL.md 的 Rollback Protocol。
+- 验证失败时在 report.md 记录问题分析，并给出 rollback 建议（rollback 由用户或 workflow 决定，本阶段不自行执行）。
 - Rollback 时指出最早可能出错的 phase 和对应 check ID。
 - Interpretation Guide 必须包含在 report.md 中，使读者无需参考本文件即可理解判定。
 
 ## 返回
 
-返回 JSON（见 `_base.md` 返回格式）。`status` 应映射 verdict：`REPRODUCED` → `completed`，`PARTIAL` → `partial`，`FAILED` → `failed`，`BLOCKED` → `blocked`。`payload` 包含完整的验证报告数据。
-
+返回 JSON，必须包含 `payload.verdict`（`REPRODUCED` / `PARTIAL` / `FAILED` / `BLOCKED`）——这是 workflow 唯一程序消费的字段，用于决定是否进入 Package。完整验证报告写入 `06_validate/report.md` 和 `metrics.json`，不要塞进返回值。

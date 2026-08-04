@@ -1,0 +1,66 @@
+schema_version: "1.0"
+entry_id: bench-005
+level: L3
+input_root: input
+primary_paper: paper-markdown
+resources:
+  - id: paper-markdown
+    role: paper
+    authority: original
+    availability: bundled
+    path: paper.md
+    source: urn:benchmark:bench-005:paper-markdown
+    sha256: 924aff70119dbf37a2bf515029968797a87bd39e5a325dcdfbc5b725194faae8
+    retrieved_at: "2026-07-21T00:00:00Z"
+    media_type: text/markdown
+    license: MIT
+  - id: supplementary-table-s1
+    role: data
+    authority: original
+    availability: bundled
+    path: data/counts.csv
+    source: urn:benchmark:bench-005:supplementary-table-s1
+    sha256: e90486755e83ba83d3c90fe1186815625f9246a9b6159220ea59fc53c0a9f6ce
+    retrieved_at: "2026-07-21T00:00:00Z"
+    media_type: text/csv
+    license: MIT
+  - id: paper-doi
+    role: metadata
+    authority: original
+    availability: unavailable
+    source: https://doi.org/10.1234/bench.005
+    checked_at: "2026-07-21T00:00:00Z"
+    access_notes: The DOI resolver returned HTTP 404 during entry review.
+  - id: geo-deposit
+    role: data
+    authority: original
+    availability: external
+    source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE77777
+  - id: analysis-code
+    role: code
+    authority: original
+    availability: unavailable
+    source: https://github.com/example/pharmacogenomic-response
+    checked_at: "2026-07-21T00:00:00Z"
+    access_notes: The cited repository returned HTTP 404 during entry review.
+  - id: supplementary-table-s2
+    role: supplementary
+    authority: original
+    availability: unavailable
+    source: urn:benchmark:bench-005:supplementary-table-s2
+    checked_at: "2026-07-21T00:00:00Z"
+    access_notes: The paper cites Supplementary Table S2, but it is absent from staged input.
+  - id: figure-1
+    role: supplementary
+    authority: original
+    availability: unavailable
+    source: urn:benchmark:bench-005:figure-1
+    checked_at: "2026-07-21T00:00:00Z"
+    access_notes: The referenced figures/figure1_volcano.png is absent from staged input.
+  - id: figure-2
+    role: supplementary
+    authority: original
+    availability: unavailable
+    source: urn:benchmark:bench-005:figure-2
+    checked_at: "2026-07-21T00:00:00Z"
+    access_notes: The referenced figures/figure2_pca.png is absent from staged input.

@@ -1,0 +1,66 @@
+schema_version: "1.0"
+entry_id: bench-006
+level: L3
+input_root: input
+primary_paper: paper-markdown
+resources:
+  - id: paper-markdown
+    role: paper
+    authority: original
+    availability: bundled
+    path: paper.md
+    source: urn:benchmark:bench-006:paper-markdown
+    sha256: f0f10dae2190a9fa03c29d7d1e0729c191826c6b8774b097651a74a9020c1ebc
+    retrieved_at: "2026-07-21T00:00:00Z"
+    media_type: text/markdown
+    license: MIT
+  - id: supplementary-table-s1
+    role: data
+    authority: original
+    availability: bundled
+    path: data/counts.csv
+    source: urn:benchmark:bench-006:supplementary-table-s1
+    sha256: e90bd8ca53bdc3713fa09a16064998201e3156ed854f056602e77bf31586c6e8
+    retrieved_at: "2026-07-21T00:00:00Z"
+    media_type: text/tab-separated-values
+    license: MIT
+  - id: paper-doi
+    role: metadata
+    authority: original
+    availability: unavailable
+    source: https://doi.org/10.1234/bench.006
+    checked_at: "2026-07-21T00:00:00Z"
+    access_notes: The DOI resolver returned HTTP 404 during entry review.
+  - id: geo-deposit
+    role: data
+    authority: original
+    availability: external
+    source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE66666
+  - id: data-integrity-r
+    role: environment
+    authority: original
+    availability: unavailable
+    source: https://cran.r-project.org/package=DataIntegrityR
+    checked_at: "2026-07-21T00:00:00Z"
+    access_notes: CRAN metadata and R-universe package queries returned HTTP 404.
+  - id: analysis-code
+    role: code
+    authority: original
+    availability: unavailable
+    source: https://github.com/example/data-recovery-pipeline
+    checked_at: "2026-07-21T00:00:00Z"
+    access_notes: The cited repository returned HTTP 404 during entry review.
+  - id: supplementary-table-s2
+    role: supplementary
+    authority: original
+    availability: unavailable
+    source: urn:benchmark:bench-006:supplementary-table-s2
+    checked_at: "2026-07-21T00:00:00Z"
+    access_notes: The paper cites Supplementary Table S2, but it is absent from staged input.
+  - id: figure-1
+    role: supplementary
+    authority: original
+    availability: unavailable
+    source: urn:benchmark:bench-006:figure-1
+    checked_at: "2026-07-21T00:00:00Z"
+    access_notes: The referenced figures/figure1_volcano.png is absent from staged input.

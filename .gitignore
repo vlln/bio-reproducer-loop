@@ -12,6 +12,19 @@ __pycache__/
 
 # Benchmark results
 benchmarks/results/
+evals/results/
+
+# Local development configuration
+.claude/
+.env
+.rex.env
+AGENTS.local.md
+
+# Local research material
+references/
+
+# 内部资料（非公开）
+内部/
 
 # OS
 .DS_Store
@@ -20,3 +33,9 @@ benchmarks/results/
 .nextflow*
 nextflow
 repro-data/
+work/
+
+# Local tooling
+.venv/
+.uv-cache/
+.pytest_cache/

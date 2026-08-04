@@ -2,10 +2,18 @@
 
 | 字段 | 值 |
 |------|-----|
-| **当前阶段** | `RELEASE` |
-| **设计评估** | DESIGN 通过，契约已冻结 |
-| **基建评估** | TEST_INFRA 追溯确认通过（见 0001-benchmark-infra/01-report） |
-| **系统测试** | SYSTEM_TEST 通过（见 0001-benchmark-infra/system-test/01-report） |
+| **当前阶段** | `SYSTEM_TEST`（2026-08-04 收敛 DEVELOP：0013-0018 全部闭环；全量测试层通过：125 单测 + 4 Docker probe + lint/bench-validate 全绿，无阻塞缺陷） |
+| **设计评估** | ADR-0009 accepted；Spec v4、Interface 0001 与 AC-0004 active |
+| **基建评估** | Plan 008 已实现 QEMU/KVM worker、ExecutionEnvelope、release gate 与 pinned worker recipe；`gs` success/timeout smoke 通过；Plan 013 修复 launcher 三处缺陷（skills 挂载、非 root 运行、HOME 权限） |
+| **系统测试** | Plan 013 正式 smoke：`bench-001` 在 QEMU/KVM disposable VM 中全 7 阶段真实跑通，claimed_verdict REPRODUCED、93/100，release-check FORMAL，teardown 完整；合并态 125 个确定性测试与 4 个显式 Docker probe 通过；不建立 tracked baseline（按 Plan 013 约定） |
+
+正式契约要求 Runner/Curator 在可信控制面校验并 stage InputBundle，被测系统在每次
+新建的 QEMU/KVM disposable VM 中读取只读 `/input` 并写入 `/workspace`、`/output`。Guest 可以
+使用 root 与 VM-local Docker，但仓库、oracle、其他 entry、历史结果和 host runtime
+socket 不进入 VM。Worker 使用预构建最小 image 与 fresh qcow2 overlay，实测 cold boot
+约 10-11 秒。Opaque system artifact 现在同时记录构建侧 config ID 和 archive 内部 tag；
+launcher 使用经结构校验的 tag，fresh daemon load/run gate 已通过。完整 MinerU/R 等依赖不
+进入 worker base。
 
 ## 子目录
 

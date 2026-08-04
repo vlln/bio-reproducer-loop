@@ -9,7 +9,6 @@ version = "0.1.0"
 SKILLS_HOME = "${PIXI_PROJECT_ROOT}/.skills"
 SKIT_BINDIR = "${PIXI_PROJECT_ROOT}/.local/bin"
 MIP_BINDIR = "${PIXI_PROJECT_ROOT}/.local/bin"
-MINERU_API_URL = "http://172.16.218.40:8000"  # 填写 MinerU API 服务器地址
 PATH = "${PIXI_PROJECT_ROOT}/.local/bin:${PATH}"
 
 [dependencies]
@@ -27,6 +26,7 @@ install-skill-mineru-api = { cmd = "skit install --dir .skills https://github.co
 install-skill-background-task = { cmd = "skit install --dir .skills https://github.com/vlln/background-task-skill/skills/background-task" }
 install-skill-image-mirror = { cmd = "skit install --dir .skills https://github.com/vlln/mip/skills/image-mirror-skill" }
 install-skill-github-mirror = { cmd = "skit install --dir .skills https://github.com/vlln/mip/skills/github-mirror-skill" }
+install-skill-quay = { cmd = "skit install --dir .skills https://github.com/vlln/quay-skill/skills/quay" }
 install-skill-bioskills = { cmd = "skit install --dir .skills https://github.com/vlln/bio-skills --all" }
 
 install-skills = { cmd = "echo 'All skills installed'", depends-on = [
@@ -35,6 +35,7 @@ install-skills = { cmd = "echo 'All skills installed'", depends-on = [
     "install-skill-background-task",
     "install-skill-image-mirror",
     "install-skill-github-mirror",
+    "install-skill-quay",
     "install-skill-bioskills",
 ] }
 

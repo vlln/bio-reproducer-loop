@@ -1,0 +1,33 @@
+schema_version: "1.0"
+entry_id: bench-003
+level: L3
+input_root: input
+primary_paper: paper-markdown
+resources:
+  - id: paper-markdown
+    role: paper
+    authority: original
+    availability: bundled
+    path: paper.md
+    source: urn:benchmark:bench-003:paper-markdown
+    sha256: 0839d3ea1a78d3c775e30d9cda4701b8829c6a96906fba277d131ddc4eaf76f8
+    retrieved_at: "2026-07-30T00:00:00Z"
+    media_type: text/markdown
+    license: MIT
+  - id: supplementary-counts
+    role: data
+    authority: original
+    availability: bundled
+    path: data/counts.csv
+    source: urn:benchmark:bench-003:supplementary-counts
+    sha256: 3bbf3309fb1d4e099a568780b08b5000b1bc11b5fe056e00d03d3059e402e4c0
+    retrieved_at: "2026-07-30T00:00:00Z"
+    media_type: text/csv
+    license: MIT
+  - id: paper-doi
+    role: metadata
+    authority: original
+    availability: unavailable
+    source: https://doi.org/10.1234/bench.003
+    checked_at: "2026-07-30T00:00:00Z"
+    access_notes: The synthetic DOI is intentionally non-resolving; the bundled paper is authoritative.

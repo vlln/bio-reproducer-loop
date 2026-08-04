@@ -2,7 +2,6 @@
 name: reader
 description: Phase 1 — 论文信息提取和复现计划
 extends: _base
-model: "alibaba-cn/qwen3.7-plus"
 skills:
 - paperutils
 - mineru-api
@@ -15,31 +14,6 @@ input:
     paper_doi:
       type: string
       default: ''
-output:
-  type: object
-  properties:
-    payload:
-      type: object
-      properties:
-        targets:
-          type: array
-          description: Reproduction targets extracted from paper
-          items:
-            type: object
-            properties:
-              target: {type: string, description: "What to reproduce"}
-              priority: {type: string, enum: [critical, primary, secondary]}
-              source: {type: string, description: "Where in paper this target is stated"}
-        resource_count:
-          type: integer
-          description: Total number of resources discovered
-        figure_count:
-          type: integer
-          description: Number of figures in reproduction inventory
-        uncertainties:
-          type: integer
-          description: Number of uncertain items
-      required: [targets]
 ---
 # Phase 1: Reader
 
@@ -47,10 +21,17 @@ output:
 ## 运行上下文
 - 论文路径: {{ paper_path }}
 - 论文 DOI: {{ paper_doi }}
+- 复现范围: {{ scope }}
 ## 目标
 完备、全面、可追溯地收集论文复现信息，形成唯一的
 `01_plan/plan.md`。P1 可以获取轻量研究资源并反复回填发现的信息，
 但不估算、不部署、不下载分析规模数据。
+
+复现范围为空的按全论文处理；非空时按 `_base.md` 的「复现范围」约定执行：
+Paper Understanding 仍需完整阅读全文（范围内目标依赖全文语境），但
+Reproduction Target 表、Expected Results、Analysis Steps 和资源清点
+只覆盖范围内目标；范围外内容在 plan.md 中明确标注 `out-of-scope` 并在
+Decision Record 记录 scope 决策（用户输入原文 + 本 agent 的解读）。
 
 产出语言在此文件中锁定。将启动时的用户决策或保守的 agent 默认值
 （当未询问用户时）记录在文件的 Decision Record 中。
@@ -200,7 +181,9 @@ DOI: [doi or URL]
 [列出论文声称的主要发现、关键图表和关键数值。]
 
 ### Reproduction Target
-[说明复现时最需要重现的 outputs、figures、tables、metrics 或 qualitative findings。]
+[说明复现时最需要重现的 outputs、figures、tables、metrics 或 qualitative findings。每个目标分配稳定 ID（T1、T2、……），以 `id / target / priority / source` 列表形式呈现；Phase 6 的检查项将通过 Target ID 追溯到这些目标。]
+
+复现范围非空时：Target 表只列出范围内的目标（按范围输入筛选 figure/panel/claim，T 编号从 T1 连续重排）；范围外内容不进入 Target 表，在 Decision Record 记录。复现范围为空时：Target 表覆盖全论文关键可复现输出（与现状一致）。
 
 ## Paper Claims
 
@@ -315,5 +298,4 @@ P1 完成前必须在工作区或网页内容中完成一次资源完整性检�
 
 ## 完成
 - 输出 `01_plan/plan.md`
-- 返回 JSON（见 `_base.md` 返回格式）。`payload.targets` 必须包含所有复现目标。
-
+- 返回自然语言简报（见 `_base.md` 返回）：复现目标数量、关键资源获取情况、需要用户注意的缺失。

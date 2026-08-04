@@ -1,0 +1,13 @@
+id: run-single-contrast
+level: L1
+phase: Run
+capabilities: [single_contrast_execution]
+input: {benchmark: bench-001}
+upstream:
+  01_plan/plan.md: phase-states/valid/bench-001/01_plan/plan.md
+  03_provision/provision.md: phase-states/valid/bench-001/03_provision/provision.md
+  04_data/data_manifest.md: phase-states/valid/bench-001/04_data/data_manifest.md
+output: 05_run/run_results.md
+checks:
+  min_chars: 50
+  contains: [DESeq2, Gene_A, Gene_B]

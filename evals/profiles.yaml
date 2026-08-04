@@ -1,0 +1,10 @@
+profiles:
+  smoke:
+    runs: 1
+    purpose: Fast local check that selected cases execute and produce evidence.
+  regression:
+    runs: 3
+    purpose: Routine prompt and phase behavior regression sampling.
+  release:
+    runs: 5
+    purpose: Stability sampling for the small set of release-critical cases.

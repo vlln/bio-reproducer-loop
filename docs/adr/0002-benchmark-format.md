@@ -2,11 +2,14 @@
 title: ADR-0002 — 基准格式：引擎无关的输入/输出协议
 description: L3-L5 黑盒基准采用引擎无关的输入（论文包）和输出（result.json）协议，使基准可被任何复现系统使用。
 type: adr
-status: accepted
+status: superseded
 created: 2026-07-15T00:00:00Z
 ---
 
 # ADR-0002: 基准格式：引擎无关的输入/输出协议
+
+> 2026-07-19: 已由 ADR-0005 supersede。保留本文作为历史决策；新协议将被测
+> 系统的 submission 与 evaluator 生成的 result 分离。
 
 ---
 
