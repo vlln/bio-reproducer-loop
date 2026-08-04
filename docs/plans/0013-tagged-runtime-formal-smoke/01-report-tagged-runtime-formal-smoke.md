@@ -100,9 +100,10 @@ report.md/metrics.json/README.md）逐阶段落盘。
 
 ## 遗留
 
-- 本轮修复的 launcher 缺陷（skills 挂载、非 root、HOME 权限）为系统代码变更，已提交于
-  本分支，待合并 develop（不 push，除非用户要求）
-- `sudo: unable to resolve host bio-reproducer-worker` 为 guest hostname 解析警告（无害），
-  可后续在 worker cloud-init 补 /etc/hosts 条目
-- 远端网络环境限制：Ubuntu cloud images 与 Docker Hub 直连被墙（provision 使用 apt/BiocManager
-  本地源策略绕过），后续正式 run 需继续沿用该策略或配置镜像加速
+- 本轮修复的 launcher 缺陷（skills 挂载、非 root、HOME 权限）已合入 develop（merge
+  `6fd67c9`）并推送；本容器分支已合并后删除
+- `sudo: unable to resolve host bio-reproducer-worker` 警告已修复（build-worker.sh bootcmd
+  追加 /etc/hosts 条目，fix/worker-hosts-entry → `5820bd7`），worker 已重建并探测验证，
+  存储于远端 `/storeData/gs/bio-reproducer-worker/worker.qcow2`（sha256 `e18b50a8…`，BL-007）
+- 远端网络环境限制：Ubuntu cloud images 与 Docker Hub 直连被墙（worker 构建走清华镜像、
+  provision 使用 apt/BiocManager 本地源策略绕过），后续正式 run 需继续沿用该策略或配置镜像加速（BL-008）
