@@ -48,31 +48,31 @@ jobs:
           for f in docs/vision.md docs/spec/*.md docs/ac/*.md docs/adr/*.md; do
             [ -f "$f" ] || continue
             python3 -c "
-import yaml, sys
-with open('$f') as fh:
-  content = fh.read()
-  if not content.startswith('---'):
-    sys.exit(0)
-  parts = content.split('---')
-  if len(parts) < 2:
-    print(f'ERROR: $f invalid frontmatter')
-    sys.exit(1)
-  fm = yaml.safe_load(parts[1])
-  if 'status' not in fm:
-    print(f'ERROR: $f missing status in frontmatter')
-    sys.exit(1)
-  if 'title' not in fm:
-    print(f'ERROR: $f missing title in frontmatter')
-    sys.exit(1)
-" || exit 1
+          import yaml, sys
+          with open('$f') as fh:
+            content = fh.read()
+            if not content.startswith('---'):
+              sys.exit(0)
+            parts = content.split('---')
+            if len(parts) < 2:
+              print(f'ERROR: $f invalid frontmatter')
+              sys.exit(1)
+            fm = yaml.safe_load(parts[1])
+            if 'status' not in fm:
+              print(f'ERROR: $f missing status in frontmatter')
+              sys.exit(1)
+            if 'title' not in fm:
+              print(f'ERROR: $f missing title in frontmatter')
+              sys.exit(1)
+          " || exit 1
           done
 
       - name: Check protocol schema definitions
         run: |
           python3 -c "
-import json, pathlib
-for directory in ('benchmarks/schemas', 'evals/schemas'):
-    for path in pathlib.Path(directory).glob('*.json'):
-        json.load(path.open())
-print('protocol schemas: OK')
-"
+          import json, pathlib
+          for directory in ('benchmarks/schemas', 'evals/schemas'):
+              for path in pathlib.Path(directory).glob('*.json'):
+                  json.load(path.open())
+          print('protocol schemas: OK')
+          "
