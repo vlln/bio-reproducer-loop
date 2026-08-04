@@ -168,6 +168,53 @@ def test_adapter_uses_container_paths_and_never_passes_entry_path(tmp_path):
     assert run_args["consent"] == "auto"
 
 
+def test_adapter_passes_declared_scope_to_loop_args(tmp_path, monkeypatch):
+    captured = None
+
+    class FakeSandbox:
+        def run(self, request):
+            nonlocal captured
+            captured = request
+            return subprocess.CompletedProcess(request.command, 0, "", "")
+
+    metadata = {
+        "id": "bench-001",
+        "protocol_version": "2.0",
+        "input_dir": "input/",
+        "complexity_profile": {"paper": {"paper_type": "constructed"}},
+        "scope": "figures=figure4,figure5,figure6",
+    }
+    monkeypatch.setattr(loopflow, "_read_metadata", lambda entry_dir: metadata)
+
+    loopflow.run(ENTRY, run_dir=tmp_path / "run", sandbox=FakeSandbox())
+
+    run_args = json.loads(captured.command[captured.command.index("--args") + 1])
+    assert run_args["scope"] == "figures=figure4,figure5,figure6"
+
+
+def test_adapter_omits_scope_when_metadata_undeclared(tmp_path, monkeypatch):
+    captured = None
+
+    class FakeSandbox:
+        def run(self, request):
+            nonlocal captured
+            captured = request
+            return subprocess.CompletedProcess(request.command, 0, "", "")
+
+    metadata = {
+        "id": "bench-001",
+        "protocol_version": "2.0",
+        "input_dir": "input/",
+        "complexity_profile": {"paper": {"paper_type": "constructed"}},
+    }
+    monkeypatch.setattr(loopflow, "_read_metadata", lambda entry_dir: metadata)
+
+    loopflow.run(ENTRY, run_dir=tmp_path / "run", sandbox=FakeSandbox())
+
+    run_args = json.loads(captured.command[captured.command.index("--args") + 1])
+    assert "scope" not in run_args
+
+
 def test_adapter_keeps_legacy_docker_validation_image_entrypoint(tmp_path):
     captured = None
 

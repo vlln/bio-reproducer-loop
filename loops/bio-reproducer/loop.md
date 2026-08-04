@@ -40,6 +40,10 @@ args:
     description: 权限模式：ask = 安装/下载大文件前汇总计划并停止等待批准；auto = 无需询问直接执行（沙箱/benchmark 用）
     default: ask
     required: false
+  - name: scope
+    description: 复现范围（可选）。空 = 全论文复现；非空 = 只复现指定目标，如 "figures=figure4,figure5,figure6"、目标 ID（如 "T1,T2"）或自由文本（如 "仅复现 RNA-seq 差异表达与通路富集"）。Reader 的 Reproduction Target 表、后续阶段的下载/部署/运行/验证只覆盖范围内目标
+    default: ""
+    required: false
 ---
 
 # bio-reproducer

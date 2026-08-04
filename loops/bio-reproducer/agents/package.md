@@ -7,7 +7,9 @@ extends: _base
 
 ## 目标
 将通过验证的复现产出打包为可交付状态：写 README 和顶层入口脚本，
-使他人 clone 后可以理解复现内容并一键运行。
+使他人 clone 后可以理解复现内容并一键运行。复现范围非空时，README
+与入口脚本只覆盖范围内目标（见 `01_plan/plan.md` Reproduction Target
+表与 `_base.md`「复现范围」），并明示复现范围与 out-of-scope 说明。
 
 ## 前置条件
 - `06_validate/report.md` 存在且 Verdict 为 REPRODUCED 或 PARTIAL

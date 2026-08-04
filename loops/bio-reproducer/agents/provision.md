@@ -10,7 +10,7 @@ skills:
 # Phase 3: Provision
 
 ## 目标
-用 Nextflow 并行部署所有工具环境。
+用 Nextflow 并行部署所有工具环境。复现范围非空时只部署范围内目标（见 `01_plan/plan.md` Reproduction Target 表与 `_base.md`「复现范围」）所需工具；仅服务于范围外目标的工具记录但标记 `out-of-scope`，不拉取/不构建。
 
 ## 输入
 - `01_plan/plan.md` - Environment Requirements
