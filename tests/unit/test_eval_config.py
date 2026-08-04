@@ -24,7 +24,7 @@ def test_eval_profiles_control_sampling_counts():
 def test_eval_cases_reference_existing_inputs_and_fixtures():
     cases = load_cases()
 
-    assert len(cases) == 15
+    assert len(cases) == 16
     for case_id, case in cases.items():
         assert case["id"] == case_id
         assert case["level"] in {"L1", "L2"}
@@ -90,7 +90,7 @@ def test_eval_results_record_profile_environment_and_distribution(tmp_path, monk
 
 def test_no_multi_purpose_exemplar_directory_remains():
     assert not (EVALS_DIR / "exemplars").exists()
-    assert len(list(CASES_DIR.glob("**/case.yaml"))) == 15
+    assert len(list(CASES_DIR.glob("**/case.yaml"))) == 16
 
 
 def test_internal_eval_schemas_are_valid_json():

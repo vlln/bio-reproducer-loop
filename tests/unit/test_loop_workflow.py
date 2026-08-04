@@ -185,3 +185,13 @@ def test_scope_defaults_to_empty(tmp_path):
     run_workflow(tmp_path, agent, intervene)
     assert len(agent.kwargs) == len(ALL_PHASES)
     assert all(kwargs.get("scope") == "" for kwargs in agent.kwargs)
+
+
+def test_provision_prompt_contains_reuse_and_skill_rules():
+    """provision/_base 必须含镜像复用、技能强制、构建纪律规则（内容无关断言）。"""
+    provision = (WORKFLOW_PATH.parent / "agents" / "provision.md").read_text()
+    for marker in ("镜像复用", "技能强制使用", "镜像构建纪律", "Image & Reuse Decisions"):
+        assert marker in provision, f"provision.md missing: {marker}"
+    base = (WORKFLOW_PATH.parent / "agents" / "_base.md").read_text()
+    for marker in ("工具与技能纪律", "复用优先"):
+        assert marker in base, f"_base.md missing: {marker}"

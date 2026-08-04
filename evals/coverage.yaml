@@ -9,6 +9,8 @@ capabilities:
     cases: [bootstrap-runtime-detection]
   tool_identification:
     cases: [provision-standard-de]
+  image_reuse_decision:
+    cases: [provision-image-reuse]
   local_data_discovery:
     cases: [data-local-counts]
   single_contrast_execution:
