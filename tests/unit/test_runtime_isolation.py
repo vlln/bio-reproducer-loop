@@ -168,7 +168,7 @@ def test_adapter_uses_container_paths_and_never_passes_entry_path(tmp_path):
     assert run_args["consent"] == "auto"
 
 
-def test_adapter_passes_declared_scope_to_loop_args(tmp_path, monkeypatch):
+def test_adapter_passes_declared_scored_scope_to_loop_args(tmp_path, monkeypatch):
     captured = None
 
     class FakeSandbox:
@@ -182,17 +182,17 @@ def test_adapter_passes_declared_scope_to_loop_args(tmp_path, monkeypatch):
         "protocol_version": "2.0",
         "input_dir": "input/",
         "complexity_profile": {"paper": {"paper_type": "constructed"}},
-        "scope": "figures=figure4,figure5,figure6",
+        "scored_scope": "figures 4-6 targets (T1-T6)",
     }
     monkeypatch.setattr(loopflow, "_read_metadata", lambda entry_dir: metadata)
 
     loopflow.run(ENTRY, run_dir=tmp_path / "run", sandbox=FakeSandbox())
 
     run_args = json.loads(captured.command[captured.command.index("--args") + 1])
-    assert run_args["scope"] == "figures=figure4,figure5,figure6"
+    assert run_args["scope"] == "figures 4-6 targets (T1-T6)"
 
 
-def test_adapter_omits_scope_when_metadata_undeclared(tmp_path, monkeypatch):
+def test_adapter_omits_scored_scope_when_metadata_undeclared(tmp_path, monkeypatch):
     captured = None
 
     class FakeSandbox:

@@ -5,9 +5,14 @@ All notable changes to the bio-reproducer benchmark suite will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.1.0] - 2026-08-04
+
+### Added
+- New constructed L3 entry `bench-003` (paired RNA-seq differential expression, Plan 0014).
+- Structured `scored_scope` declaration in entry `metadata.yaml` (ADR-0008: one entry = one scored scope). The engine adapter translates it to the reproduction system's scope argument at the engine boundary; the benchmark protocol itself stays engine-neutral.
 
 ### Changed
+- Renamed the unreleased metadata `scope` field to engine-neutral `scored_scope` (no released benchmark carried `scope`; protocol stays backward compatible).
 - Adopted level-specific InputBundle fidelity and provenance requirements for L3, L4, and L5.
 - Marked all existing entries as internal development inputs pending bundle-lock and cited-resource review.
 - Marked the former bench-003 for L4 reconstruction because its input was a derived summary and subset dataset.
