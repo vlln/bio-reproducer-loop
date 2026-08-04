@@ -36,6 +36,7 @@
       }
     },
     "output": {"type": "string"},
+    "scope": {"type": "string", "description": "部分复现范围（可选）：限定只复现指定 figure/目标"},
     "checks": {"type": "object"}
   }
 }
