@@ -36,7 +36,7 @@ claroai2bench --source <hf|dir> --output <entries-dir> [--start-id 200]
 |------|------|
 | `entries/bench-<id>/` | 标准 entry：metadata.yaml、bundle.yaml、input/paper/、oracle/claims.yaml + rubric.yaml |
 | `<output>/claroai-converter-provenance.json` | 快照 ref、converter 版本、转换时间、每 entry 的 ID 映射（paper_XX → bench-NNN） |
-| `<output>/claroai-unresolved-papers.json` | PDF 抓取失败/受限论文的处置清单（paper_XX、原因、建议） |
+| `<output>/claroai-unresolved-papers.json` | 论文全文抓取失败/受限的处置清单（paper_XX、原因、建议） |
 
 ### 错误码
 
