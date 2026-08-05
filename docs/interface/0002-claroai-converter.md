@@ -16,7 +16,7 @@ created: 2026-08-04T00:00:00Z
 
 ```text
 claroai2bench --source <hf|dir> --output <entries-dir> [--start-id 200]
-              [--fetch-fulltext] [--no-fetch] [--snapshot <ref>] [--dry-run]
+              [--snapshot <ref>] [--dry-run]
 ```
 
 ### 入参
@@ -26,7 +26,6 @@ claroai2bench --source <hf|dir> --output <entries-dir> [--start-id 200]
 | `--source` | 是 | `hf`（拉取 HF `kyleaoconnell22/claroai-bench` 快照）或本地 claroai-bench 目录 |
 | `--output` | 是 | entry 输出根目录（默认 `benchmarks/entries/`） |
 | `--start-id` | 否 | 起始 entry 编号，默认 200；按 paper 序号递增分配 |
-| `--fetch-fulltext` / `--no-fetch` | 否 | 是否执行论文全文抓取（XML 优先、PDF 增强，默认 fetch）；`--no-fetch` 时全部 primary paper 登记进处置清单，不生成可发布 entry |
 | `--snapshot` | 否 | 显式记录 claroai-bench 快照 ref（默认：HF 时取当前 commit/树 hash，dir 时取目录内 `.git` 或指纹） |
 | `--dry-run` | 否 | 只生成 plan 清单，不写文件 |
 
@@ -34,9 +33,8 @@ claroai2bench --source <hf|dir> --output <entries-dir> [--start-id 200]
 
 | 产物 | 说明 |
 |------|------|
-| `entries/bench-<id>/` | 标准 entry：metadata.yaml、bundle.yaml、input/paper/、oracle/claims.yaml + rubric.yaml |
+| `entries/bench-<id>/` | 标准 entry（L5）：metadata.yaml、bundle.yaml、input/paper/locator.md、oracle/claims.yaml + rubric.yaml |
 | `<output>/claroai-converter-provenance.json` | 快照 ref、converter 版本、转换时间、每 entry 的 ID 映射（paper_XX → bench-NNN） |
-| `<output>/claroai-unresolved-papers.json` | 论文全文抓取失败/受限的处置清单（paper_XX、原因、建议） |
 
 ### 错误码
 
@@ -46,7 +44,6 @@ claroai2bench --source <hf|dir> --output <entries-dir> [--start-id 200]
 | `CONVERT_PARTIAL` | 部分论文转换成功（含处置清单），退出码 1 |
 | `CONVERT_INVALID_SOURCE` | 快照目录缺 metadata/extraction/scores 或 JSON 损坏 |
 | `CONVERT_ID_CONFLICT` | 目标 entry ID 与既有 entry 冲突 |
-| `CONVERT_FETCH_FAILED` | 论文全文抓取全部失败（XML 与 PDF 均不可得）且未显式 --no-fetch |
 | `CONVERT_DRIFT` | golden 对比显示同快照转换漂移（仅测试模式触发） |
 
 ## 2. 审计模式 oracle：`claims.yaml` ground truth 结构
@@ -129,5 +126,5 @@ checks:
 - converter 与 oracle 生成属于 trusted control plane，不进入被测系统可见范围。
 - `claims.yaml` 的 `calibration` 段（作者分数）只被评估后处理脚本读取用于校准分析，
   evaluator 的 verdict/score 计算不引用它。
-- 抓取的全文（XML 优先，PDF 增强）是 original primary paper（L4，BR-009），sha256 记录进 bundle；
+- primary paper 为 DOI/PMID locator（L5 external，CC-004），entry 不附带论文全文文件（版权）；
   处置清单中的论文在完成人工处置前不进入 release/baseline。

@@ -63,7 +63,7 @@ Benchmark entry ID 按输入来源分区：`bench-001` 至 `bench-099` 保留给
 | Benchmark Runner | 论文包执行、结果采集、期望对比、报告生成 | `benchmarks/runner/` | P0 |
 | 引擎适配器 | 将引擎无关的论文包映射为 loopflow 调用 | `benchmarks/runner/adapters/` | P0 |
 | VM Control Plane | 创建 fresh worker、attach I/O、执行 deadline、收集产物并 teardown | `benchmarks/runner/` | P0 |
-| ClaroAI Converter | 将 ClaroAI-Bench 任务（paper_XX 的 metadata/extraction/scores）转换为标准 entry；抓取论文全文（XML 优先、PDF 增强）；生成 bundle/claims/rubric 骨架 | `benchmarks/converters/claroai/` | P1 |
+| ClaroAI Converter | 将 ClaroAI-Bench 任务（paper_XX 的 metadata/extraction/scores）转换为标准 entry（含 DOI/PMID locator，不附带论文全文）；生成 bundle/claims/rubric 骨架 | `benchmarks/converters/claroai/` | P1 |
 
 ### 确定性软件测试
 
@@ -176,20 +176,21 @@ ClaroAI-Bench（BL-011）提供 35 篇真实 NIH 论文及作者给出的 D1–D
 数据可获取、代码可用），评分对象是被测系统在数据获取与代码/环境检查阶段产出的
 审计证据，而非完整分析结果。
 
-审计模式的语义：被测系统以论文全文为输入，正常运行 Reader→Data→Provision 阶段，
-其执行过程中对数据引用解析、下载尝试、代码仓库与工具可用性的处理会自然产生审计
-证据；oracle 将这些证据与作者 ground truth 对比，衡量系统**判断论文数据/代码可用性
-的正确性**。被测系统不被告知"这是审计任务"，也不获得作者评分。
+审计模式的语义：被测系统以论文（由 DOI/PMID locator 自行获取）为输入，正常运行
+Reader→Data→Provision 阶段，其执行过程中对论文获取、数据引用解析、下载尝试、代码
+仓库与工具可用性的处理会自然产生审计证据；oracle 将这些证据与作者 ground truth 对比，
+衡量系统**判断论文数据/代码可用性的正确性**。被测系统不被告知"这是审计任务"，也
+不获得作者评分。
 
 审计模式 entry 的约束：
 
 | 约束 | 说明 |
 |------|------|
 | scope 声明 | `metadata.yaml` 的 `scored_scope` 必须显式声明为 `d1_d3_audit`（物化 ADR-0008 的 scored scope，机制见 BL-006/0016；bundle validator 扩展对审计模式 entry 强制该校验，扩展随 converter 一并落地，见 CC-002） |
-| primary paper | 必须是真实发布论文的 original PDF/XML（满足 BR-009） |
+| primary paper | 稳定 DOI/PMID locator，`availability=external`，**不附带论文全文文件**（版权决策，与 claroai-bench 归档一致）；被测系统在运行时自行获取（L5 语义） |
 | oracle 真值 | `claims.yaml` 结构化记录每个数据引用/代码引用的作者 ground truth 状态（来自 claroai-bench `scores.json` 的 evidence），`rubric.yaml` 用 `python_verify` 对比 submission 审计产物 |
 | 校准 | 作者 D1–D3 分数只作事后校准参考（baseline 观测），不写入 bundle lock 与 rubric 的 expected verdict |
-| 环境 | 正式运行仍为 disposable VM；需要真实网络访问外部仓库时使用 `controlled-egress`，否则 `offline` |
+| 环境与网络 | 正式运行仍为 disposable VM；审计模式需要真实网络访问外部仓库与论文全文，`network_policy=controlled-egress`（discovery interaction mode） |
 
 作者 ground truth 的转录以 claroai-bench 归档的 `papers/paper_XX/scores.json` +
 `extraction.json` 为准（HF `kyleaoconnell22/claroai-bench` 快照），转录脚本与校验逻辑
@@ -411,7 +412,7 @@ ClaroAI Converter 的输入是 claroai-bench 归档中的每篇论文目录，�
 | data_references（repo_type/accession/url/is_primary） | `papers/paper_XX/extraction.json` | `bundle.yaml` resources（role=data）+ `claims.yaml` 数据可用性 claims |
 | code_references（repo_type/url/language） | `papers/paper_XX/extraction.json` | `bundle.yaml` resources（role=code）+ `claims.yaml` 代码 claims |
 | D1–D3 分数、justification、evidence、agent_confidence | `papers/paper_XX/scores.json` | `oracle/claims.yaml` ground truth 状态 + 校准参考（不进 rubric expected） |
-| 论文全文 | 从 DOI/PMID 经 EuropePMC REST 抓取（XML 优先、PDF 增强） | `input/paper/`（bundled，sha256 记录） |
+| 论文标识 | DOI/PMID/PMC id（claroai-bench 归档不含全文，版权原因不附带） | `input/paper/locator.md` + bundle primary paper（external，L5） |
 
 转换必须是**确定性、可重放**的：同一 claroai-bench 快照（记录 HF commit/树 hash）在
 任何环境转换出字节一致的 entry。来源快照版本写入 converter 输出目录的 provenance 文件。

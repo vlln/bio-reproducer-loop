@@ -58,34 +58,39 @@ D4/D5（环境重建、结果匹配）不在首轮范围：它们需要逐篇人
 - 转录正确性由 converter 测试保证（fixture = claroai-bench 真实文件），
   不依赖人工转录。
 
-### 4. Entry 命名与 level
+### 4. Entry 命名与 level：L5 + DOI/PMID locator
 
 - Entry ID 从 `bench-200` 起连续分配（35 篇预留 bench-200~234），遵循 Spec 001
   "bench-100~999 保留给真实论文"的约定；命名空间不与现有构造 entry（bench-001~099）
   和 bench-100 冲突。
-- level 按论文定：审计模式 entry 提供真实发布论文 original PDF/XML + 冻结资源
-  descriptor，满足 L4 材料要求（BR-009）；资源缺失/受限的按 L4 的
-  restricted/unavailable record 处理。不引入新 level。
+- **level 固定为 L5，不附带论文全文**：claroai-bench 归档本身不分发论文（只提供
+  DOI/PMID 引用），在 benchmark 内打包论文全文涉及版权，不予附带。primary paper
+  使用稳定 DOI/PMID locator（availability=`external`），符合 Interface 0001 的 L5
+  材料要求（"original paper 或稳定 DOI/PMID/arXiv locator"，允许 external）；
+  被测系统在 `controlled-egress` 网络策略下自行获取论文全文并记录实际解析结果
+  （L5 语义，Spec 001）。获取失败由系统记录为 `external` blocked（BR-004 不计入失败）。
 - `metadata.yaml` 的 `paper_origin: real_published`、`reproduction_target:
   reproducibility_audit`（taxonomy 取值扩展，见 ADR-0008 正交维度表）；
   同时必须声明 `complexity_profile.paper.paper_type: real_published`
   （bundle validator 对 bench-100+ 的硬性要求，缺失即 INVALID_BUNDLE；
   `paper_type` 是 validator 强制字段，`paper_origin` 是 ADR-0008 正交分类维度，二者并存）。
 
-### 5. 论文全文获取：EuropePMC REST，XML 优先，bundled
+### 5. 不附带论文全文（版权决策）
 
-34/35 篇未在 claroai-bench 归档中打包全文。converter 提供全文抓取步骤：
-优先 EuropePMC fullTextXML（稳定可用，JATS XML 可作 L4 original primary paper，
-spike 验证通过），PDF 作为增强（成功则 bundled）；两者都失败时将该论文登记进
-处置清单，在获取 original 全文前**不生成可发布 entry**（L4 primary paper 必须
-bundled，BR-009；spike 验证：EuropePMC fullTextPDF 对 paper_01 返回空、PMC OA
-tgz 的 https 路径 404、PMC 网页 PDF 需浏览器）。抓取结果以 sha256 记录进 bundle。
+claroai-bench 归档不含论文全文；本 benchmark 亦不打包。converter 不执行全文抓取、
+不产生 bundled paper 文件。entry 的 `input/` 仅包含论文 locator 描述
+（`input/paper/locator.md`，记录 DOI/PMID/PMC id 与获取指引），primary paper
+resource 的 `source` 为 DOI/PMID，`availability=external`。
+
+被测系统自行获取论文全文的能力是本模式的前提（claroai-bench 的 agent 即如此运行）；
+获取失败按 `external` blocked 记录，不计入系统失败。D1 的 ground truth（作者判断的
+accession/链接可解析性）与系统实际解析结果的对比仍由 oracle 完成。
 
 ## 候选方案与 trade-off
 
 | 方案 | 优点 | 缺点 | 结论 |
 |------|------|------|------|
-| Converter → 标准 entry | 复用全部现有协议与 evaluator；可发布；引擎无关 | 需实现转换器与全文抓取；D4/D5 claims 仍待人工补 | **采纳** |
+| Converter → 标准 entry | 复用全部现有协议与 evaluator；可发布；引擎无关；不附带论文全文（版权） | 需实现转换器；D4/D5 claims 仍待人工补；依赖被测系统运行时获取论文 | **采纳** |
 | 独立 claroai adapter | 原型快，直接消费 JSONL | 绕过 bundle gate 与独立 oracle；双运行时路径；不可发布 | 拒绝 |
 | 首轮直接 D5 全链路 | 一步到位测复现 | 35 篇数值 claims 人工补全 + 真实复现运行，周期最长 | 拒绝（列为后续迭代） |
 | 作者分数直接作 oracle | 实现简单 | 多模型主观评分违背独立确定性评分原则 | 拒绝（只作校准） |
@@ -94,7 +99,7 @@ tgz 的 https 路径 404、PMC 网页 PDF 需浏览器）。抓取结果以 sha2
 
 ### 正面
 
-- 35 篇真实论文任务批量接入，补齐 L4 覆盖（0002-l4-l5 的入口问题）。
+- 35 篇真实论文任务批量接入，补齐真实论文覆盖（0002-l4-l5 的入口问题），且不附带论文全文、无版权分发负担。
 - 审计模式与现有 pipeline 兼容：不要求被测系统新增"审计"能力，评分其正常执行过程
   产生的审计证据。
 - 作者分数成为校准资源：可量化"确定性独立评分 vs 多模型主观评分"的差异
@@ -103,7 +108,7 @@ tgz 的 https 路径 404、PMC 网页 PDF 需浏览器）。抓取结果以 sha2
 ### 负面
 
 - 审计模式不直接测"复现能力"（D5），第一轮无法与作者 60.6% D5 复现率直接对比。
-- 论文全文抓取依赖外部服务的开放度与网络；部分论文可能需要人工处置。
+- 被测系统运行时获取论文全文依赖外部服务的开放度与网络；获取失败的论文结果按 external blocked 记录，系统能力之外存在外部依赖噪声。
 - 35 个 entry 的 oracle/claims 由转换生成，首次发布前需要逐篇 fidelity review。
 
 ## 约束规则
@@ -113,7 +118,7 @@ tgz 的 https 路径 404、PMC 网页 PDF 需浏览器）。抓取结果以 sha2
 | CC-001 | converter 输出必须确定性可重放（同快照 → 字节一致 entry） | converter 测试（golden 对比） |
 | CC-002 | 审计模式 entry 的 metadata scored_scope 必须为 `d1_d3_audit` | bundle validator（扩展：审计模式 entry 缺失或非该值 → INVALID_BUNDLE） |
 | CC-003 | rubric 不得包含作者真值派生键（精确名单：顶层 `author_score`/`author_scores`/`calibration`/`ground_truth` 及顶层 `d1`/`d2`/`d3` 分数键）；协议合法键（`checks`、`expected_verdict`、`verdict_match_threshold`、`verdict_thresholds` 等）不受影响；bundle 沿用 FORBIDDEN_KEYS | bundle validator 扩展以该精确名单扫描 `oracle/rubric.yaml`（仅审计模式 entry）；release gate 复核 |
-| CC-004 | primary paper 必须为真实发布 original PDF/XML，bundled 且记录 sha256 | bundle validator + fidelity review |
+| CC-004 | primary paper 为真实发布论文的稳定 DOI/PMID locator，`availability=external`，entry 不附带论文全文文件（版权） | bundle validator + fidelity review |
 | CC-005 | claroai-bench 快照版本（HF commit/树 hash）必须记录进 converter provenance | converter 输出检查 |
 | CC-006 | entry ID 使用 bench-200+，不与既有 entry 冲突 | validator + README 一致性检查 |
 
@@ -125,11 +130,11 @@ tgz 的 https 路径 404、PMC 网页 PDF 需浏览器）。抓取结果以 sha2
 
 | 验证项 | 复现步骤 | 预期结论 | 实际结论 |
 |--------|----------|----------|----------|
-| 最小转换可行 | `python3 benchmarks/converters/claroai/spike_convert.py ~/Project/claroai-bench/papers/paper_01 /tmp/claroai-spike/entries/bench-200 bench-200 <paper_01.xml>` 后 `validate_entry('…/bench-200')` | entry 通过 bundle gate | **通过**：`VALID: bench-200 L4` |
-| 全文抓取可行 | `curl https://www.ebi.ac.uk/europepmc/webservices/rest/PMC12874334/fullTextXML` | 获得 original 全文 | **通过（XML 优先）**：JATS XML 173 KB 稳定可用，可作 L4 original primary paper；`fullTextPDF` 对 paper_01 返回空、PMC OA tgz 的 https 路径 404、PMC 网页 PDF 需浏览器 → converter 抓取策略定为 XML 优先、PDF 增强 |
+| 最小转换可行 | `python3 benchmarks/converters/claroai/spike_convert.py ~/Project/claroai-bench/papers/paper_01 /tmp/claroai-spike/entries/bench-200 bench-200 <paper_01.xml>` 后 `validate_entry('…/bench-200')` | entry 通过 bundle gate | **通过**：`VALID: bench-200 L4`（bundled XML 版验证了转换链路）；版权决策后另验证 **L5 locator 版**：primary paper 改 external DOI locator + `paper/locator.md` 声明为 bundled metadata resource → `VALID: bench-200 L5`，确认 L5 方案通过既有 bundle gate |
+| 全文获取路径可行 | `curl https://www.ebi.ac.uk/europepmc/webservices/rest/PMC12874334/fullTextXML` | 获得 original 全文 | **通过**：EuropePMC fullTextXML 稳定可用（JATS XML 173 KB）——验证了被测系统经 DOI/PMC id 自行获取论文全文的路径可行；`fullTextPDF` 对 paper_01 返回空、PMC OA tgz 的 https 路径 404、PMC 网页 PDF 需浏览器 → 系统获取策略定为 XML 优先、PDF 增强。entry 不打包全文（版权），此验证仅证明运行时获取路径 |
 | 转录正确性 | 对比生成的 `oracle/claims.yaml` 与 `scores.json` evidence | 无漂移 | **通过（含精度发现）**：D1=2/D2=0/D3=1 → 全部 accession `valid`+`downloadable=false`、code `hollow` 与维度分一致；**发现 per-reference 精度问题**：D3=1 时把全部 code_references 标 `hollow`，但作者 justification 只针对主仓库，正式 converter 须从 evidence 文本解析逐引用状态（AC-0009-N-5 覆盖） |
 | 审计评分闭环 | `evaluate_submission('…/bench-200', '…/submission.json')`，mock 证据与 ground truth 一致；再改坏一个判断重跑 | 一致→REPRODUCED；错判→失败 | **通过**：一致 → `verdict=REPRODUCED, score=100`；把 GSE308855 误判为可下载 → `verdict=PARTIAL, score=50`，check 附原因 |
 
-结论：converter 路线可行；审计模式 entry（L4，scored_scope=d1_d3_audit，data/code 引用
-unavailable+核查记录，primary paper bundled XML）通过既有 bundle gate 与 evaluator，
-无需新增运行时路径。
+结论：converter 路线可行；审计模式 entry（scored_scope=d1_d3_audit，data/code 引用
+unavailable+核查记录）通过既有 bundle gate 与 evaluator，无需新增运行时路径。版权决策后
+primary paper 为 L5 external DOI/PMID locator（CC-004），不附带论文全文。
