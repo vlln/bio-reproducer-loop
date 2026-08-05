@@ -172,9 +172,9 @@ Markdown、抽取图像、格式转换或裁剪数据只能作为派生材料；
 
 ClaroAI-Bench（BL-011）提供 35 篇真实 NIH 论文及作者给出的 D1–D5 可复现性评分
 （数据可定位/可获取/代码可用/环境可重建/结果可匹配）。第一轮接入采用**审计模式**：
-每个论文任务生成一个标准 entry，其 `scope` 限定为 D1–D3（数据可定位、数据可获取、
-代码可用），评分对象是被测系统在数据获取与代码/环境检查阶段产出的审计证据，而非
-完整分析结果。
+每个论文任务生成一个标准 entry，其 `scored_scope` 限定为 D1–D3（数据可定位、
+数据可获取、代码可用），评分对象是被测系统在数据获取与代码/环境检查阶段产出的
+审计证据，而非完整分析结果。
 
 审计模式的语义：被测系统以论文全文为输入，正常运行 Reader→Data→Provision 阶段，
 其执行过程中对数据引用解析、下载尝试、代码仓库与工具可用性的处理会自然产生审计
@@ -185,7 +185,7 @@ ClaroAI-Bench（BL-011）提供 35 篇真实 NIH 论文及作者给出的 D1–D
 
 | 约束 | 说明 |
 |------|------|
-| scope 声明 | `metadata.yaml` 的 `scope` 必须显式声明 `d1_d3_audit`（物化 ADR-0008 的 scored scope，机制见 BL-006） |
+| scope 声明 | `metadata.yaml` 的 `scored_scope` 必须显式声明为 `d1_d3_audit`（物化 ADR-0008 的 scored scope，机制见 BL-006/0016；bundle validator 对审计模式 entry 强制该校验） |
 | primary paper | 必须是真实发布论文的 original PDF/XML（满足 BR-009） |
 | oracle 真值 | `claims.yaml` 结构化记录每个数据引用/代码引用的作者 ground truth 状态（来自 claroai-bench `scores.json` 的 evidence），`rubric.yaml` 用 `python_verify` 对比 submission 审计产物 |
 | 校准 | 作者 D1–D3 分数只作事后校准参考（baseline 观测），不写入 bundle lock 与 rubric 的 expected verdict |
@@ -224,6 +224,8 @@ bio-reproducer/
 │   ├── CHANGELOG.md
 │   ├── entries/                  # runner-only bundle.yaml + input/ + private oracle/ + metadata.yaml
 │   ├── baselines/                # 仅在 benchmark 冻结后记录发布级历史观测
+│   ├── converters/               # 外部 benchmark 任务 → 标准 entry 转换器
+│   │   └── claroai/               # ClaroAI-Bench converter（BL-011）
 │   ├── runner/                   # benchmark 执行器
 │   │   ├── cli.py
 │   │   ├── runner.py
@@ -490,7 +492,7 @@ workflow 不进入 ExecutionEnvelope 的 runtime enum。
 | BR-015 | Worker teardown 是结果有效性的组成部分 | 所有 run 结束时 | teardown 未完成的 run 不得发布或进入 baseline |
 | BR-016 | 系统打包方式不属于 benchmark runtime taxonomy | adapter 集成时 | Pixi/OCI/source 等只记录 artifact/adapter identity |
 | BR-017 | Validation backend 结果与 formal result 分开 | Docker sandbox 或 mock 执行时 | purpose=validation-only，release gate 必须拒绝 |
-| BR-018 | 审计模式 entry 的 scope 必须声明为 `d1_d3_audit` 且 oracle 不得包含作者分数 | 生成/校验 claroai 派生 entry 时 | metadata scope 缺失或 rubric 含 author score/expected verdict → INVALID_BUNDLE |
+| BR-018 | 审计模式 entry 的 scored_scope 必须为 `d1_d3_audit`，且 rubric/bundle lock 不得包含作者分数或 expected verdict（作者分数只存于 claims.yaml 的 calibration 段作校准） | 生成/校验 claroai 派生 entry 时 | metadata scored_scope 缺失/非该值，或 rubric/bundle 含 author score/expected verdict → INVALID_BUNDLE |
 
 ### blocked_reason 分类
 
@@ -547,5 +549,6 @@ workflow 不进入 ExecutionEnvelope 的 runtime enum。
 | 评估协议 | evaluator 使用私有 oracle 检查 submission 并生成 result 的规则 |
 | 引擎适配器 | 将引擎无关的论文包映射为特定引擎调用的桥接模块 |
 | 审计模式 | scored scope 限定为 D1–D3（数据可定位/可获取/代码可用）的 entry 形态；评分对象是系统执行过程中的审计证据，而非完整复现结果 |
+| scored_scope | `metadata.yaml` 中声明 entry 评分范围的字段（如 `d1_d3_audit`）；与 claims.yaml 内的 `audit_scope`（oracle 侧声明，供 verify.py 自检）语义一致、分属两侧 |
 | Converter | 把外部 benchmark 任务（如 ClaroAI-Bench paper_XX）确定性转换为标准 entry 的脚本模块 |
 | Ground truth calibration | 以作者/外部评分作事后对照的校准观测，不参与 oracle 判定 |

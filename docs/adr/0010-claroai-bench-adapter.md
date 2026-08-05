@@ -63,18 +63,23 @@ D4/D5（环境重建、结果匹配）不在首轮范围：它们需要逐篇人
 - Entry ID 从 `bench-200` 起连续分配（35 篇预留 bench-200~234），遵循 Spec 001
   "bench-100~999 保留给真实论文"的约定；命名空间不与现有构造 entry（bench-001~099）
   和 bench-100 冲突。
-- level 按论文定：审计模式 entry 提供真实发布论文 original PDF + 冻结资源
+- level 按论文定：审计模式 entry 提供真实发布论文 original PDF/XML + 冻结资源
   descriptor，满足 L4 材料要求（BR-009）；资源缺失/受限的按 L4 的
   restricted/unavailable record 处理。不引入新 level。
 - `metadata.yaml` 的 `paper_origin: real_published`、`reproduction_target:
-  reproducibility_audit`（taxonomy 取值扩展，见 ADR-0008 正交维度表）。
+  reproducibility_audit`（taxonomy 取值扩展，见 ADR-0008 正交维度表）；
+  同时必须声明 `complexity_profile.paper.paper_type: real_published`
+  （bundle validator 对 bench-100+ 的硬性要求，缺失即 INVALID_BUNDLE；
+  `paper_type` 是 validator 强制字段，`paper_origin` 是 ADR-0008 正交分类维度，二者并存）。
 
-### 5. 论文全文获取：EuropePMC/PMC REST，bundled
+### 5. 论文全文获取：EuropePMC REST，XML 优先，bundled
 
-34/35 篇未在 claroai-bench 归档中打包全文。converter 提供 PDF 抓取步骤：
-优先 EuropePMC fullTextXML/PDF（PMC 开放论文），失败回退 PMC 直链，再失败标记为
-`unavailable` 并在 entry review 中人工处置。抓取结果以 sha256 记录进 bundle，
-PDF 是 L4 primary paper 的 original（满足 BR-009）。
+34/35 篇未在 claroai-bench 归档中打包全文。converter 提供全文抓取步骤：
+优先 EuropePMC fullTextXML（稳定可用，JATS XML 可作 L4 original primary paper，
+spike 验证通过），PDF 作为增强（成功则 bundled）；两者都失败时将该论文登记进
+处置清单，在获取 original 全文前**不生成可发布 entry**（L4 primary paper 必须
+bundled，BR-009；spike 验证：EuropePMC fullTextPDF 对 paper_01 返回空、PMC OA
+tgz 的 https 路径 404、PMC 网页 PDF 需浏览器）。抓取结果以 sha256 记录进 bundle。
 
 ## 候选方案与 trade-off
 
@@ -106,19 +111,25 @@ PDF 是 L4 primary paper 的 original（满足 BR-009）。
 | 规则编号 | 规则 | 检出方式 |
 |----------|------|----------|
 | CC-001 | converter 输出必须确定性可重放（同快照 → 字节一致 entry） | converter 测试（golden 对比） |
-| CC-002 | 审计模式 entry 的 metadata scope 必须为 `d1_d3_audit` | bundle validator |
-| CC-003 | rubric/bundle 不得包含作者分数或 expected verdict | bundle validator forbidden-field 检查 |
+| CC-002 | 审计模式 entry 的 metadata scored_scope 必须为 `d1_d3_audit` | bundle validator（扩展：审计模式 entry 缺失或非该值 → INVALID_BUNDLE） |
+| CC-003 | rubric/bundle 不得包含作者分数或 expected verdict | bundle validator 扩展扫描 `oracle/rubric.yaml` 的 forbidden keys（与 bundle 同规则）；release gate 复核 |
 | CC-004 | primary paper 必须为真实发布 original PDF/XML，bundled 且记录 sha256 | bundle validator + fidelity review |
 | CC-005 | claroai-bench 快照版本（HF commit/树 hash）必须记录进 converter provenance | converter 输出检查 |
 | CC-006 | entry ID 使用 bench-200+，不与既有 entry 冲突 | validator + README 一致性检查 |
 
 ## 验证
 
-| 验证项 | 复现步骤 | 预期结论 |
-|--------|----------|----------|
-| 最小转换可行 | 用 claroai-bench 真实 paper_01 文件生成一个审计模式 entry（metadata/bundle/claims/rubric 骨架），跑 `bench-run validate-entry` | entry 通过 bundle gate |
-| PDF 抓取可行 | 对 paper_01（PMC 开放论文）执行 EuropePMC REST 抓取 | 获得 original PDF，sha256 记录 |
-| 转录正确性 | converter 对 paper_01 生成的 claims 与 scores.json evidence 逐项对照 | 无漂移（测试断言） |
-| 审计评分闭环 | 构造 mock submission（审计证据）跑 evaluator | rubric checks 按 ground truth 判定通过/失败 |
+验证执行于 `spike/0010-claroai-converter` 分支（保留不合并）。验证代码：
+`benchmarks/converters/claroai/spike_convert.py`；真实输入 `~/Project/claroai-bench/papers/paper_01/`
+（claroai-bench 归档）；输出与 mock 位于 `/tmp/claroai-spike/`。Python 3.13，依赖 pyyaml。
 
-验证执行于 `spike/0010-claroai-converter` 分支，完成后本段回填实际命令、依赖版本与结论。
+| 验证项 | 复现步骤 | 预期结论 | 实际结论 |
+|--------|----------|----------|----------|
+| 最小转换可行 | `python3 benchmarks/converters/claroai/spike_convert.py ~/Project/claroai-bench/papers/paper_01 /tmp/claroai-spike/entries/bench-200 bench-200 <paper_01.xml>` 后 `validate_entry('…/bench-200')` | entry 通过 bundle gate | **通过**：`VALID: bench-200 L4` |
+| 全文抓取可行 | `curl https://www.ebi.ac.uk/europepmc/webservices/rest/PMC12874334/fullTextXML` | 获得 original 全文 | **通过（XML 优先）**：JATS XML 173 KB 稳定可用，可作 L4 original primary paper；`fullTextPDF` 对 paper_01 返回空、PMC OA tgz 的 https 路径 404、PMC 网页 PDF 需浏览器 → converter 抓取策略定为 XML 优先、PDF 增强 |
+| 转录正确性 | 对比生成的 `oracle/claims.yaml` 与 `scores.json` evidence | 无漂移 | **通过（含精度发现）**：D1=2/D2=0/D3=1 → 全部 accession `valid`+`downloadable=false`、code `hollow` 与维度分一致；**发现 per-reference 精度问题**：D3=1 时把全部 code_references 标 `hollow`，但作者 justification 只针对主仓库，正式 converter 须从 evidence 文本解析逐引用状态（AC-0009-N-5 覆盖） |
+| 审计评分闭环 | `evaluate_submission('…/bench-200', '…/submission.json')`，mock 证据与 ground truth 一致；再改坏一个判断重跑 | 一致→REPRODUCED；错判→失败 | **通过**：一致 → `verdict=REPRODUCED, score=100`；把 GSE308855 误判为可下载 → `verdict=PARTIAL, score=50`，check 附原因 |
+
+结论：converter 路线可行；审计模式 entry（L4，scored_scope=d1_d3_audit，data/code 引用
+unavailable+核查记录，primary paper bundled XML）通过既有 bundle gate 与 evaluator，
+无需新增运行时路径。

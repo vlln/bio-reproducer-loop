@@ -101,7 +101,7 @@ checks:
       comparator: python_verify
       module: verify.py
       function: check_data_reference   # verify.py 内命名函数
-      args: {accession: GSE308855}
+      config: {accession: GSE308855}   # evaluator 签名: function(artifact_path, config) -> {"passed": bool, "actual": ..., "note": str}
     weight: 20
 ```
 
