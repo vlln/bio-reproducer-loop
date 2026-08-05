@@ -43,6 +43,16 @@ data_manifest.md 显示系统对 paper_01 的 D1/D2 审计判断：
 - watcher 已部署（`/tmp/bl012/watch.sh`，完成时标记 run-done.txt）
 - 运行完成后续：评估（evaluate_submission）+ 校准对照表 + 抽样 bench-201~205
 
+## 初步校准对照（bench-200，基于已产出审计产物）
+
+| 维度 | 作者 ground truth（claims.yaml calibration） | 系统审计判断（data_manifest/provision.md） | 一致性 |
+|------|------|------|------|
+| D1 数据可定位 | score=2（全部引用 valid） | 定位 GSE308855/GSE317298/PRJNA1402948 + 补充材料 | ✅ 一致 |
+| D2 数据可获取 | score=0（4 数据集全部无法下载） | GSE308855 实际下载成功（COMPLETED）；SRA 样例下载成功（PARTIAL）；**Figure 源数据 NOT_AVAILABLE**（论文核心声明未公开） | ⚠️ 部分分歧：系统证明 GEO/SRA 可获取，但论文关键 figure 源数据不可得——作者 D2=0 更接近"完整复现所需数据不可得" |
+| D3 代码可用 | score=1（主仓库空壳） | GitHub 仓库仅含 RNAseq/Methylation 文件，**无 Figure 1/3 源数据** | ✅ 一致 |
+
+校准价值：D1/D3 判断与作者一致；D2 暴露"数据可下载 vs 复现所需数据可得"的语义差异——正是确定性独立评分 vs 作者多模型主观评分的对照观测（ADR-0010 预期价值）。
+
 ## 环境发现（已解决或记录）
 
 1. qemu 未装 + 无 KVM 权限 → docker 模拟 VM 边界（容器隔离 + controlled 网络，与 VM launcher 同构）
