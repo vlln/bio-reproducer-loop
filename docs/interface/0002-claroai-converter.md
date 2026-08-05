@@ -41,7 +41,7 @@ claroai2bench --source <hf|dir> --output <entries-dir> [--start-id 200]
 | code | 含义 |
 |------|------|
 | `CONVERT_OK` | 全部论文转换成功 |
-| `CONVERT_PARTIAL` | 部分论文转换成功（含处置清单），退出码 1 |
+| `CONVERT_PARTIAL` | 部分论文转换成功（含转换失败/待人工复核论文清单，见 E-1 语义），退出码 1 |
 | `CONVERT_INVALID_SOURCE` | 快照目录缺 metadata/extraction/scores 或 JSON 损坏 |
 | `CONVERT_ID_CONFLICT` | 目标 entry ID 与既有 entry 冲突 |
 | `CONVERT_DRIFT` | golden 对比显示同快照转换漂移（仅测试模式触发） |
@@ -127,4 +127,4 @@ checks:
 - `claims.yaml` 的 `calibration` 段（作者分数）只被评估后处理脚本读取用于校准分析，
   evaluator 的 verdict/score 计算不引用它。
 - primary paper 为 DOI/PMID locator（L5 external，CC-004），entry 不附带论文全文文件（版权）；
-  处置清单中的论文在完成人工处置前不进入 release/baseline。
+  转换失败/待人工复核的论文（处置清单）在完成复核前不进入 release/baseline。

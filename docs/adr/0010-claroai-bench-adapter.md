@@ -86,6 +86,11 @@ resource 的 `source` 为 DOI/PMID，`availability=external`。
 获取失败按 `external` blocked 记录，不计入系统失败。D1 的 ground truth（作者判断的
 accession/链接可解析性）与系统实际解析结果的对比仍由 oracle 完成。
 
+L5 材料语义（稳定标识符最小可信起点 + 运行时发现）可服务本 curated 集合（35 篇固定
+论文），与 Spec 的 L5 随机采样/长期观测用途不冲突：材料语义相同，操作面不同。运行
+次数沿用 BR-001 的 L3/L4 约定精神，审计模式 entry 建议 N≥1（推荐 2-3 次），与 L4 一致，
+不作 CI gate、结果进入观测。
+
 ## 候选方案与 trade-off
 
 | 方案 | 优点 | 缺点 | 结论 |
@@ -118,7 +123,7 @@ accession/链接可解析性）与系统实际解析结果的对比仍由 oracle
 | CC-001 | converter 输出必须确定性可重放（同快照 → 字节一致 entry） | converter 测试（golden 对比） |
 | CC-002 | 审计模式 entry 的 metadata scored_scope 必须为 `d1_d3_audit` | bundle validator（扩展：审计模式 entry 缺失或非该值 → INVALID_BUNDLE） |
 | CC-003 | rubric 不得包含作者真值派生键（精确名单：顶层 `author_score`/`author_scores`/`calibration`/`ground_truth` 及顶层 `d1`/`d2`/`d3` 分数键）；协议合法键（`checks`、`expected_verdict`、`verdict_match_threshold`、`verdict_thresholds` 等）不受影响；bundle 沿用 FORBIDDEN_KEYS | bundle validator 扩展以该精确名单扫描 `oracle/rubric.yaml`（仅审计模式 entry）；release gate 复核 |
-| CC-004 | primary paper 为真实发布论文的稳定 DOI/PMID locator，`availability=external`，entry 不附带论文全文文件（版权） | bundle validator + fidelity review |
+| CC-004 | primary paper 为真实发布论文的稳定 DOI/PMID locator，`availability=external`，entry 不附带论文全文文件（版权）；拒绝审计模式 entry 以 bundled 形式声明 primary paper 属 validator 扩展（与 CC-002 同批落地） | bundle validator（扩展）+ fidelity review |
 | CC-005 | claroai-bench 快照版本（HF commit/树 hash）必须记录进 converter provenance | converter 输出检查 |
 | CC-006 | entry ID 使用 bench-200+，不与既有 entry 冲突 | validator + README 一致性检查 |
 
