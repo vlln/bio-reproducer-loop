@@ -343,13 +343,36 @@ import yaml
 CLAIMS = yaml.safe_load((Path(__file__).parent / "claims.yaml").read_text())
 
 
+_COMPLETED = {"COMPLETED", "PARTIAL", "IN_PROGRESS", "AVAILABLE", "就绪", "已下载"}
+
+
 def _parse_data_manifest(path):
     text = Path(path).read_text()
     state = {}
-    # accession 可含空格（如 "NHANES 1999-2014"）：惰性匹配到括号前
+    # 格式 1（行式）：- ACCESSION (REPO): downloadable=true/false
     for m in re.finditer(r"-\\s*(.+?)\\s*\\([^)]*\\):\\s*downloadable=(\\w+)", text):
         state[m.group(1).strip()] = m.group(2) == "true"
+    # 格式 2（Markdown 表格）：| Source | ... | Status | Notes |  —— 提取 accession + 状态
+    for line in text.splitlines():
+        if not line.strip().startswith("|"):
+            continue
+        cols = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cols) < 6 or cols[0].lower() in ("source", "srr 编号", "property"):
+            continue
+        source, status = cols[0], cols[-2]
+        acc = _first_accession(source)
+        if acc is None:
+            continue
+        if status in _COMPLETED:
+            state[acc] = True
+        elif status in ("NOT_AVAILABLE", "BLOCKED", "OUT_OF_SCOPE", "MISSING", "未公开", "无法访问"):
+            state[acc] = False
     return state
+
+
+def _first_accession(text):
+    m = re.search(r"(GSE\\d+|PRJNA\\d+|SRR\\d+|GSM\\d+|SRA:\\S+)", text)
+    return m.group(1) if m else None
 
 
 def _parse_provision_report(path):
@@ -357,12 +380,33 @@ def _parse_provision_report(path):
     state = {}
     for m in re.finditer(r"-\\s*(\\S+)\\s*:\\s*(available|hollow|missing)", text):
         state[m.group(1)] = m.group(2)
+    # GitHub 仓库在 data_manifest 的表格中：| GitHub 代码仓库 | ... | COMPLETED | ... 仅含...无...源数据 |
+    manifest = Path(path).parent / "data_manifest.md"
+    if manifest.is_file():
+        for line in manifest.read_text().splitlines():
+            if "GitHub" in line and line.strip().startswith("|"):
+                cols = [c.strip() for c in line.strip().strip("|").split("|")]
+                url = _first_url(" ".join(cols))
+                if url:
+                    notes = " ".join(cols)
+                    if any(k in notes for k in ("无", "仅含", "没有", "empty", "no source")):
+                        state[url] = "hollow"
+                    elif "COMPLETED" in notes:
+                        state[url] = "available"
+                    else:
+                        state[url] = "missing"
     return state
+
+
+def _first_url(text):
+    m = re.search(r"https?://\\S+", text)
+    return m.group(0).rstrip("|,.;") if m else None
 
 
 def check_data_references(artifact, config):
     claims = [c for c in CLAIMS["data_references"]
-              if c.get("accession") and c.get("ground_truth") != "unknown"]
+              if c.get("accession") and len(str(c["accession"])) >= 6
+              and c.get("ground_truth") != "unknown"]
     system = _parse_data_manifest(artifact)
     mismatches = []
     for c in claims:
@@ -380,6 +424,17 @@ def check_data_references(artifact, config):
 def check_code_references(artifact, config):
     claims = [c for c in CLAIMS["code_references"] if c["ground_truth"] != "unknown"]
     system = _parse_provision_report(artifact)
+    # data_manifest 的 "GitHub 代码仓库" 行：无 figure 源数据 → 主仓库 hollow
+    manifest = Path(artifact).parent / "data_manifest.md"
+    if manifest.is_file() and not system:
+        for line in manifest.read_text().splitlines():
+            if "GitHub" in line and line.strip().startswith("|"):
+                notes = " ".join(c.strip() for c in line.strip().strip("|").split("|"))
+                if any(k in notes for k in ("无", "仅含", "没有", "no source", "empty")):
+                    for c in claims:
+                        if c["url"] and (c["url"].split("/")[-1] in notes or "GitHub" in notes):
+                            system[c["url"]] = "hollow"
+                break
     mismatches = []
     for c in claims:
         url = c["url"]

@@ -1,7 +1,7 @@
 {
   "converter": "claroai2bench@0.1.0",
   "snapshot_ref": "hf:kyleaoconnell22/claroai-bench@2026-05-06+local-clone",
-  "converted_at": "2026-08-05T06:28:08Z",
+  "converted_at": "2026-08-05T10:09:06Z",
   "mapping": {
     "paper_01": "bench-200",
     "paper_02": "bench-201",
