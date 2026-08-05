@@ -53,6 +53,18 @@ data_manifest.md 显示系统对 paper_01 的 D1/D2 审计判断：
 
 校准价值：D1/D3 判断与作者一致；D2 暴露"数据可下载 vs 复现所需数据可得"的语义差异——正是确定性独立评分 vs 作者多模型主观评分的对照观测（ADR-0010 预期价值）。
 
+## 正式校准评估（evaluate_submission，基于 agent 实际审计产物）
+
+| 项 | 结果 |
+|----|------|
+| verdict / score | **PARTIAL / 50.0** |
+| D3 代码判断 check | **PASS**（系统对主仓库 hollow 判断与作者 D3=1 一致） |
+| D2 数据判断 check | **FAIL**：GSE308855/PRJNA1402948 系统判可下载（真实下载成功），作者 expected=False |
+
+**校准发现（首个实证对照）**：作者 D2=0 的 justification 是"Could not download any of 4 datasets"（其工具链限制：GEO 无文件、SRA 无下载器）；真实系统用自身方法**实际下载成功**（GSE308855 1MB + SRA 样例 100MB），证明数据可获取；同时系统发现更深的复现障碍——**Figure 源数据 NOT_AVAILABLE**（论文核心声明的 IVIS/肺重/肿瘤数据未公开）。即：数据可下载 ≠ 复现所需数据可得。这是 ADR-0010 预期的"确定性独立评分 vs 作者多模型主观评分"对照的实证结果。
+
+**verify.py 适配**（校准运行暴露）：真实系统产物为 Markdown 表格（非行式），verify 模板已增强（表格解析、假引用跳过、GitHub 行 hollow 判断），35 entry 重新生成，测试 137 passed。
+
 ## 环境发现（已解决或记录）
 
 1. qemu 未装 + 无 KVM 权限 → docker 模拟 VM 边界（容器隔离 + controlled 网络，与 VM launcher 同构）
