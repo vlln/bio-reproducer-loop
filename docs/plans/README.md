@@ -20,6 +20,8 @@
 | [0017-eval-scope-baseline](0017-eval-scope-baseline/) | `test/0017-eval-scope-baseline` | done |
 | [0018-provision-image-reuse](0018-provision-image-reuse/) | `feat/0018-provision-image-reuse` | done |
 | [0019-scored-scope-decouple](0019-scored-scope-decouple/) | `fix/0019-scored-scope-decouple` | done |
+| [0020-claroai-converter-infra](0020-claroai-converter-infra/) | — | done |
+| [0021-claroai-converter](0021-claroai-converter/) | `feat/0021-claroai-converter`（已合并） | done |
 
 当前阶段：DESIGN（v0.2.0 发布，新一轮迭代）。Plan 006 在保留的 `spike/0006-vm-isolation` 分支验证了 KVM/QEMU、
 VM-local Docker、I/O boundary、oracle 隔离和完整 teardown；Plan 007 已将结论冻结到
