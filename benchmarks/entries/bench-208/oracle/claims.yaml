@@ -1,0 +1,22 @@
+id: bench-208
+paper_title: Three mammalian VDAC isoforms distinctly regulate mitochondrial function
+  and proteome to maintain cell metabolism
+paper_doi: 10.1016/j.jbc.2025.111009
+pmid: '41354339'
+audit_scope: d1_d3_audit
+data_references:
+- accession: MSV000097150
+  repository: MassIVE
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+code_references: []
+calibration:
+  d1: 2
+  d2: 1
+  d3: 2
+  confidence:
+    d1: 0.85
+    d2: 0.9
+    d3: 0.8

@@ -1,0 +1,31 @@
+schema_version: '1.0'
+entry_id: bench-210
+level: L5
+input_root: input
+primary_paper: paper-main
+resources:
+- id: paper-main
+  role: paper
+  authority: original
+  availability: external
+  source: https://doi.org/10.1186/s13059-026-04061-7
+  access_notes: paper fulltext not bundled (copyright); system must fetch at runtime
+    (L5)
+- id: paper-locator
+  role: metadata
+  authority: original
+  availability: bundled
+  path: paper/locator.md
+  source: urn:benchmark:bench-210:paper-locator
+  retrieved_at: '2026-08-04T00:00:00Z'
+  sha256: 987da157270ea1e9bbef6de4bb7c60f6ad5220af89dca68bb2dc3aa9b5a26e6e
+  media_type: text/markdown
+  license: CC-BY-4.0
+- id: data-ref-1
+  role: data
+  authority: original
+  availability: unavailable
+  source: https://multiomic-human-heart.cells.ucsc.edu
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=other, primary=True; not bundled (audit-mode entry, system
+    must probe from paper)

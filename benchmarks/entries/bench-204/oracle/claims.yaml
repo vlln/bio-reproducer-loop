@@ -1,0 +1,40 @@
+id: bench-204
+paper_title: Body Composition and Fat Deposition in Children with Cushing Disease
+  and Associations with Cardiometabolic Risk Factors
+paper_doi: 10.1016/j.jpeds.2025.114933
+pmid: '41349930'
+audit_scope: d1_d3_audit
+data_references:
+- accession: NCT00001595
+  repository: ClinicalTrials.gov
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: NCT00001522
+  repository: ClinicalTrials.gov
+  is_primary: false
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: NCT00001723
+  repository: ClinicalTrials.gov
+  is_primary: false
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: null
+  repository: Figshare
+  is_primary: false
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+code_references: []
+calibration:
+  d1: 2
+  d2: 1
+  d3: 0
+  confidence:
+    d1: 0.95
+    d2: 0.95
+    d3: 0.8

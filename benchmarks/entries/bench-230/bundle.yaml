@@ -1,0 +1,39 @@
+schema_version: '1.0'
+entry_id: bench-230
+level: L5
+input_root: input
+primary_paper: paper-main
+resources:
+- id: paper-main
+  role: paper
+  authority: original
+  availability: external
+  source: https://doi.org/10.1038/s41586-023-06139-9
+  access_notes: paper fulltext not bundled (copyright); system must fetch at runtime
+    (L5)
+- id: paper-locator
+  role: metadata
+  authority: original
+  availability: bundled
+  path: paper/locator.md
+  source: urn:benchmark:bench-230:paper-locator
+  retrieved_at: '2026-08-04T00:00:00Z'
+  sha256: 5fa187ee33299084884844249d65ed2ac246efb09027dafa7ac199a2fb132edb
+  media_type: text/markdown
+  license: CC-BY-4.0
+- id: data-ref-1
+  role: data
+  authority: original
+  availability: unavailable
+  source: https://huggingface.co/datasets/ctheodoris/Genecorpus-30M
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=HuggingFace, primary=True; not bundled (audit-mode entry,
+    system must probe from paper)
+- id: code-ref-1
+  role: code
+  authority: original
+  availability: unavailable
+  source: https://huggingface.co/ctheodoris/Geneformer
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: language=Python; not bundled (audit-mode entry, system must probe
+    from paper)

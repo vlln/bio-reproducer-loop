@@ -1,0 +1,15 @@
+id: bench-222
+paper_title: 'TorchXRayVision: A library of chest X-ray datasets and models'
+paper_doi: null
+pmid: null
+audit_scope: d1_d3_audit
+data_references: []
+code_references: []
+calibration:
+  d1: 2
+  d2: 2
+  d3: 2
+  confidence:
+    d1: 0.95
+    d2: 0.95
+    d3: 0.95

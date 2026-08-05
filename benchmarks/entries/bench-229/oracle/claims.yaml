@@ -1,0 +1,84 @@
+id: bench-229
+paper_title: Mosaic loss of Y chromosome is associated with aging and epithelial injury
+  in chronic kidney disease
+paper_doi: 10.1186/s13059-024-03173-2
+pmid: '38287344'
+audit_scope: d1_d3_audit
+data_references:
+- accession: GSE232222
+  repository: GEO
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: GSE232431
+  repository: GEO
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: GSE220289
+  repository: GEO
+  is_primary: false
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: GSE151302
+  repository: GEO
+  is_primary: false
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: GSE195460
+  repository: GEO
+  is_primary: false
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: GSE172008
+  repository: GEO
+  is_primary: false
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: GSE200547
+  repository: GEO
+  is_primary: false
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: GSE181064
+  repository: GEO
+  is_primary: false
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: c798e11b-bbde-45dd-bd91-487f27c93f8f
+  repository: KPMP
+  is_primary: false
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: 10.5281/zenodo.10463470
+  repository: Zenodo
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+code_references:
+- url: https://github.com/p4rkerw/Wilson_GBio_2024
+  language: R
+  ground_truth: unknown
+  notes: transcribed from scores.json evidence
+- url: https://hub.docker.com/r/p4rkerw/sctools
+  language: R
+  ground_truth: unknown
+  notes: transcribed from scores.json evidence
+calibration:
+  d1: 2
+  d2: 2
+  d3: 2
+  confidence:
+    d1: 0.98
+    d2: 0.95
+    d3: 0.95

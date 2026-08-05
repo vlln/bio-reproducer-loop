@@ -1,0 +1,28 @@
+id: bench-218
+paper_title: National Estimates of Pediatric Sepsis in US Hospitals Using Clinical
+  Data
+paper_doi: 10.1001/jama.2026.3100
+pmid: '41865411'
+audit_scope: d1_d3_audit
+data_references:
+- accession: null
+  repository: other
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+- accession: null
+  repository: other
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+code_references: []
+calibration:
+  d1: 1
+  d2: 0
+  d3: 0
+  confidence:
+    d1: 0.85
+    d2: 0.8
+    d3: 0.8

@@ -1,0 +1,38 @@
+id: bench-214
+paper_title: 'Graph-spa: A Spatiotemporal Graph Neural Network based framework for
+  ARDS prediction'
+paper_doi: 10.1016/j.jbi.2025.104969
+pmid: '41386531'
+audit_scope: d1_d3_audit
+data_references:
+- accession: null
+  repository: other
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: null
+  repository: other
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: null
+  repository: other
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+code_references:
+- url: https://github.com/vsubbian/Graph-spa
+  language: null
+  ground_truth: available
+  notes: transcribed from scores.json evidence
+calibration:
+  d1: 2
+  d2: 1
+  d3: 2
+  confidence:
+    d1: 0.85
+    d2: 0.8
+    d3: 0.8

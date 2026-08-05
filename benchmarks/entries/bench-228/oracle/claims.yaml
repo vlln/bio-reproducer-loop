@@ -1,0 +1,36 @@
+id: bench-228
+paper_title: 'MntJULiP and Jutils: differential splicing analysis of RNA-seq data
+  with covariates'
+paper_doi: 10.1093/nargab/lqaf140
+pmid: '41189648'
+audit_scope: d1_d3_audit
+data_references:
+- accession: null
+  repository: SRA
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: null
+  repository: Zenodo
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+code_references:
+- url: https://github.com/splicebox/MntJulip
+  language: Python
+  ground_truth: hollow
+  notes: transcribed from scores.json evidence
+- url: https://github.com/splicebox/Jutils
+  language: Python
+  ground_truth: unknown
+  notes: transcribed from scores.json evidence
+calibration:
+  d1: 2
+  d2: 1
+  d3: 1
+  confidence:
+    d1: 0.85
+    d2: 0.8
+    d3: 0.8

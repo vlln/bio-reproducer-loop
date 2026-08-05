@@ -1,0 +1,34 @@
+id: bench-211
+paper_title: 'Unraveling the genetic architecture of non-Huntington chorea: a biobank-scale
+  study'
+paper_doi: 10.1038/s41525-026-00567-y
+pmid: '41957010'
+audit_scope: d1_d3_audit
+data_references:
+- accession: null
+  repository: other
+  is_primary: true
+  ground_truth: invalid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+- accession: null
+  repository: other
+  is_primary: true
+  ground_truth: invalid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+- accession: null
+  repository: other
+  is_primary: true
+  ground_truth: invalid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+code_references: []
+calibration:
+  d1: 0
+  d2: 0
+  d3: 0
+  confidence:
+    d1: 0.85
+    d2: 0.8
+    d3: 0.8

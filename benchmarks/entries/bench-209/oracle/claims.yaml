@@ -1,0 +1,38 @@
+id: bench-209
+paper_title: Nuclear Histone 3 Post-Translational Modification Profiling in Whole
+  Cells using Spectral Flow Cytometry (EpiFlow)
+paper_doi: 10.1101/2024.10.03.616268
+pmid: '41676480'
+audit_scope: d1_d3_audit
+data_references:
+- accession: RRID:CVCL_C1W7
+  repository: other
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: RRID:CVCL_Y803
+  repository: other
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: FlowRepository
+  repository: other
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+code_references:
+- url: https://github.com/SerranoLab/Golden_etal_2024
+  language: R
+  ground_truth: available
+  notes: transcribed from scores.json evidence
+calibration:
+  d1: 2
+  d2: 2
+  d3: 2
+  confidence:
+    d1: 0.85
+    d2: 0.95
+    d3: 0.95

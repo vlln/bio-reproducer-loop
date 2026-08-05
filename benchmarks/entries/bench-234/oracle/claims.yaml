@@ -1,0 +1,26 @@
+id: bench-234
+paper_title: Single-cell dissection of chronic lung allograft dysfunction reveals
+  convergent fibrotic mechanisms
+paper_doi: 10.1172/jci.insight.197579
+pmid: '41122970'
+audit_scope: d1_d3_audit
+data_references:
+- accession: GSE289881
+  repository: GEO
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+code_references:
+- url: ''
+  language: Python
+  ground_truth: unknown
+  notes: transcribed from scores.json evidence
+calibration:
+  d1: 2
+  d2: 0
+  d3: 1
+  confidence:
+    d1: 0.85
+    d2: 0.8
+    d3: 0.8

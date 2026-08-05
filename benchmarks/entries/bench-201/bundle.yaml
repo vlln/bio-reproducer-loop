@@ -1,0 +1,63 @@
+schema_version: '1.0'
+entry_id: bench-201
+level: L5
+input_root: input
+primary_paper: paper-main
+resources:
+- id: paper-main
+  role: paper
+  authority: original
+  availability: external
+  source: https://doi.org/10.1002/sim.70534
+  access_notes: paper fulltext not bundled (copyright); system must fetch at runtime
+    (L5)
+- id: paper-locator
+  role: metadata
+  authority: original
+  availability: bundled
+  path: paper/locator.md
+  source: urn:benchmark:bench-201:paper-locator
+  retrieved_at: '2026-08-04T00:00:00Z'
+  sha256: ca598de43b7deeb5ebfef6578f6767d64adb2f06ab1504235b77bc22da71cf5e
+  media_type: text/markdown
+  license: CC-BY-4.0
+- id: data-ref-1
+  role: data
+  authority: original
+  availability: unavailable
+  source: GEO:GSE174188
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=GEO, primary=True; not bundled (audit-mode entry, system
+    must probe from paper)
+- id: data-ref-2
+  role: data
+  authority: original
+  availability: unavailable
+  source: https://www.mg-rast.org/index.html
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=other, primary=True; not bundled (audit-mode entry, system
+    must probe from paper)
+- id: data-ref-3
+  role: data
+  authority: original
+  availability: unavailable
+  source: https://zenodo.org/records/13911623
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=Zenodo, primary=False; not bundled (audit-mode entry, system
+    must probe from paper)
+- id: code-ref-1
+  role: code
+  authority: original
+  availability: unavailable
+  source: https://github.com/bio-datascience/cosmoDA
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: language=Python; not bundled (audit-mode entry, system must probe
+    from paper)
+- id: code-ref-2
+  role: code
+  authority: original
+  availability: unavailable
+  source: https://github.com/FrederickHuangLin/ANCOM-BC
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: language=None; not bundled (audit-mode entry, system must probe from
+    paper)

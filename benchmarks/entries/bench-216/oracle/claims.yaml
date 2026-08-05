@@ -1,0 +1,40 @@
+id: bench-216
+paper_title: Country-specific estimates of misclassification rates of computer-coded
+  verbal autopsy
+paper_doi: 10.1136/bmjgh-2025-021747
+pmid: '41802821'
+audit_scope: d1_d3_audit
+data_references:
+- accession: null
+  repository: other
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+- accession: null
+  repository: other
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+code_references:
+- url: ''
+  language: R
+  ground_truth: unknown
+  notes: transcribed from scores.json evidence
+- url: ''
+  language: R
+  ground_truth: unknown
+  notes: transcribed from scores.json evidence
+- url: ''
+  language: R
+  ground_truth: unknown
+  notes: transcribed from scores.json evidence
+calibration:
+  d1: 1
+  d2: 0
+  d3: 2
+  confidence:
+    d1: 0.85
+    d2: 0.8
+    d3: 0.8

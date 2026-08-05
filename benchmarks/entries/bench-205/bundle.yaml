@@ -1,0 +1,31 @@
+schema_version: '1.0'
+entry_id: bench-205
+level: L5
+input_root: input
+primary_paper: paper-main
+resources:
+- id: paper-main
+  role: paper
+  authority: original
+  availability: external
+  source: https://doi.org/10.1007/s11606-026-10356-z
+  access_notes: paper fulltext not bundled (copyright); system must fetch at runtime
+    (L5)
+- id: paper-locator
+  role: metadata
+  authority: original
+  availability: bundled
+  path: paper/locator.md
+  source: urn:benchmark:bench-205:paper-locator
+  retrieved_at: '2026-08-04T00:00:00Z'
+  sha256: 198eefe5ccb4873cb837e5e28f37bebf6b4ccdb16e6a90619d182abc20abdc40
+  media_type: text/markdown
+  license: CC-BY-4.0
+- id: data-ref-1
+  role: data
+  authority: original
+  availability: unavailable
+  source: ClinicalTrials.gov:NCT06119308
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=ClinicalTrials.gov, primary=True; not bundled (audit-mode
+    entry, system must probe from paper)

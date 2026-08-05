@@ -146,6 +146,7 @@ def validate_entry(entry_dir: str | Path) -> dict[str, Any]:
     _validate_graph(by_id)
     _validate_primary_paper(bundle, by_id)
     _validate_metadata(entry, bundle)
+    _validate_audit_mode(entry, bundle)
     _validate_level(level, by_id)
 
     actual_paths = set()
@@ -264,6 +265,60 @@ def _validate_metadata(entry: Path, bundle: dict[str, Any]) -> None:
             paper_type == "real_published",
             f"{bundle['level']} metadata paper_type must be real_published",
         )
+
+
+# Audit-mode (ClaroAI-Bench derived, bench-200+) validation rules CC-002/003/004.
+AUDIT_MODE_MIN_ENTRY = 200
+AUDIT_MODE_SCOPED_SCOPE = "d1_d3_audit"
+RUBRIC_FORBIDDEN_AUTHOR_KEYS = {
+    "author_score", "author_scores", "calibration", "ground_truth", "d1", "d2", "d3",
+}
+
+
+def _is_audit_mode_entry(entry_id: str) -> bool:
+    return re.fullmatch(r"bench-[0-9]{3}", entry_id) is not None and int(
+        entry_id.removeprefix("bench-")
+    ) >= AUDIT_MODE_MIN_ENTRY
+
+
+def _validate_audit_mode(entry: Path, bundle: dict[str, Any]) -> None:
+    """CC-002/003/004: audit-mode entries (bench-200+) must declare scored_scope,
+    external primary locator, and an author-truth-free rubric."""
+    entry_id = bundle["entry_id"]
+    if not _is_audit_mode_entry(entry_id):
+        return
+
+    metadata_path = entry / "metadata.yaml"
+    _require(metadata_path.is_file(), "Missing metadata for audit-mode entry")
+    metadata = yaml.safe_load(metadata_path.read_text())
+    _require(
+        isinstance(metadata, dict) and metadata.get("scored_scope") == AUDIT_MODE_SCOPED_SCOPE,
+        f"Audit-mode entry {entry_id} requires metadata.scored_scope == "
+        f"'{AUDIT_MODE_SCOPED_SCOPE}' (CC-002)",
+    )
+
+    primary_id = bundle["primary_paper"]
+    resources = {r["id"]: r for r in bundle["resources"]}
+    primary = resources[primary_id]
+    _require(
+        primary.get("availability") == "external",
+        f"Audit-mode entry {entry_id} primary_paper must be an external DOI/PMID locator; "
+        "paper fulltext is not bundled (CC-004)",
+    )
+
+    rubric_path = entry / "oracle" / "rubric.yaml"
+    if rubric_path.is_file():
+        try:
+            rubric = yaml.safe_load(rubric_path.read_text())
+        except yaml.YAMLError as exc:
+            raise BundleValidationError(f"Invalid oracle rubric YAML: {exc}") from exc
+        if isinstance(rubric, dict):
+            forbidden = sorted(set(rubric.keys()) & RUBRIC_FORBIDDEN_AUTHOR_KEYS)
+            _require(
+                not forbidden,
+                f"Audit-mode entry {entry_id} rubric contains forbidden author-truth "
+                f"keys {forbidden} (CC-003)",
+            )
 
 
 def _reject_forbidden_keys(value: Any, location: str = "bundle") -> None:

@@ -1,0 +1,95 @@
+schema_version: '1.0'
+entry_id: bench-200
+level: L5
+input_root: input
+primary_paper: paper-main
+resources:
+- id: paper-main
+  role: paper
+  authority: original
+  availability: external
+  source: https://doi.org/10.1016/j.neo.2026.101275
+  access_notes: paper fulltext not bundled (copyright); system must fetch at runtime
+    (L5)
+- id: paper-locator
+  role: metadata
+  authority: original
+  availability: bundled
+  path: paper/locator.md
+  source: urn:benchmark:bench-200:paper-locator
+  retrieved_at: '2026-08-04T00:00:00Z'
+  sha256: 20057ab32946b5c5d49c7a18067b88183b111116c900b95544b136494bb0b003
+  media_type: text/markdown
+  license: CC-BY-4.0
+- id: data-ref-1
+  role: data
+  authority: original
+  availability: unavailable
+  source: GEO:GSE308855
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=GEO, primary=True; not bundled (audit-mode entry, system
+    must probe from paper)
+- id: data-ref-2
+  role: data
+  authority: original
+  availability: unavailable
+  source: GEO:GSE317298
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=GEO, primary=True; not bundled (audit-mode entry, system
+    must probe from paper)
+- id: data-ref-3
+  role: data
+  authority: original
+  availability: unavailable
+  source: SRA:PRJNA1402948
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=SRA, primary=True; not bundled (audit-mode entry, system
+    must probe from paper)
+- id: data-ref-4
+  role: data
+  authority: original
+  availability: unavailable
+  source: https://www.ncbi.nlm.nih.gov/sra/PRJNA
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=sra, primary=False; not bundled (audit-mode entry, system
+    must probe from paper)
+- id: code-ref-1
+  role: code
+  authority: original
+  availability: unavailable
+  source: https://github.com/shamsalazzam/code_Multi-omics-profiling
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: language=R; not bundled (audit-mode entry, system must probe from
+    paper)
+- id: code-ref-2
+  role: code
+  authority: original
+  availability: unavailable
+  source: https://github.com/cit-bioinfo/mMCP-counter
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: language=R; not bundled (audit-mode entry, system must probe from
+    paper)
+- id: code-ref-3
+  role: code
+  authority: original
+  availability: unavailable
+  source: https://github.com/AlexandrovLab/DupCaller
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: language=None; not bundled (audit-mode entry, system must probe from
+    paper)
+- id: code-ref-4
+  role: code
+  authority: original
+  availability: unavailable
+  source: https://github.com/AlexandrovLab/EnsembleVariantCallingPipeline
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: language=None; not bundled (audit-mode entry, system must probe from
+    paper)
+- id: code-ref-5
+  role: code
+  authority: original
+  availability: unavailable
+  source: https://github.com/AlexandrovLab/SigProfilerMatrixGenerator
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: language=None; not bundled (audit-mode entry, system must probe from
+    paper)

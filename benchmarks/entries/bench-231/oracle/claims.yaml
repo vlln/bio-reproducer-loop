@@ -1,0 +1,31 @@
+id: bench-231
+paper_title: Towards a general-purpose foundation model for computational pathology
+paper_doi: 10.1038/s41591-024-02857-3
+pmid: '38504018'
+audit_scope: d1_d3_audit
+data_references:
+- accession: MahmoodLab/UNI
+  repository: HuggingFace
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: null
+  repository: TCGA
+  is_primary: false
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+code_references:
+- url: https://github.com/mahmoodlab/UNI
+  language: Python
+  ground_truth: hollow
+  notes: transcribed from scores.json evidence
+calibration:
+  d1: 1
+  d2: 1
+  d3: 1
+  confidence:
+    d1: 0.85
+    d2: 0.8
+    d3: 0.8

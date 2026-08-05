@@ -1,0 +1,22 @@
+id: bench-207
+paper_title: The global phylogeography of rapidly expanding multidrug resistant Ural
+  lineage 4.2 Mycobacterium tuberculosis
+paper_doi: 10.1038/s41467-026-71193-6
+pmid: '41917024'
+audit_scope: d1_d3_audit
+data_references:
+- accession: null
+  repository: other
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+code_references: []
+calibration:
+  d1: 2
+  d2: 2
+  d3: 1
+  confidence:
+    d1: 0.95
+    d2: 0.95
+    d3: 0.95

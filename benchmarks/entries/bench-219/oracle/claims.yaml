@@ -1,0 +1,64 @@
+id: bench-219
+paper_title: Silencer variants are key drivers of gene up-regulation in Alzheimer's
+  disease
+paper_doi: 10.1126/sciadv.adz3323
+pmid: '41671378'
+audit_scope: d1_d3_audit
+data_references:
+- accession: ROSMAP
+  repository: other
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+- accession: GTEx
+  repository: other
+  is_primary: false
+  ground_truth: valid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+- accession: ENCODE
+  repository: other
+  is_primary: false
+  ground_truth: valid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+- accession: dbSNP
+  repository: other
+  is_primary: false
+  ground_truth: valid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+- accession: ssREDA
+  repository: other
+  is_primary: false
+  ground_truth: valid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+- accession: DICE
+  repository: other
+  is_primary: false
+  ground_truth: valid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+- accession: L1000
+  repository: other
+  is_primary: false
+  ground_truth: valid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+- accession: MPRAbase
+  repository: other
+  is_primary: false
+  ground_truth: valid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+code_references: []
+calibration:
+  d1: 2
+  d2: 0
+  d3: 0
+  confidence:
+    d1: 0.85
+    d2: 0.8
+    d3: 0.8

@@ -1,0 +1,119 @@
+schema_version: '1.0'
+entry_id: bench-229
+level: L5
+input_root: input
+primary_paper: paper-main
+resources:
+- id: paper-main
+  role: paper
+  authority: original
+  availability: external
+  source: https://doi.org/10.1186/s13059-024-03173-2
+  access_notes: paper fulltext not bundled (copyright); system must fetch at runtime
+    (L5)
+- id: paper-locator
+  role: metadata
+  authority: original
+  availability: bundled
+  path: paper/locator.md
+  source: urn:benchmark:bench-229:paper-locator
+  retrieved_at: '2026-08-04T00:00:00Z'
+  sha256: 29be528a7f62fd6675c2710c8170380fd1871cb85ab7f23940ea7a39e247255c
+  media_type: text/markdown
+  license: CC-BY-4.0
+- id: data-ref-1
+  role: data
+  authority: original
+  availability: unavailable
+  source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE232222
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=GEO, primary=True; not bundled (audit-mode entry, system
+    must probe from paper)
+- id: data-ref-2
+  role: data
+  authority: original
+  availability: unavailable
+  source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE232431
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=GEO, primary=True; not bundled (audit-mode entry, system
+    must probe from paper)
+- id: data-ref-3
+  role: data
+  authority: original
+  availability: unavailable
+  source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE220289
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=GEO, primary=False; not bundled (audit-mode entry, system
+    must probe from paper)
+- id: data-ref-4
+  role: data
+  authority: original
+  availability: unavailable
+  source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE151302
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=GEO, primary=False; not bundled (audit-mode entry, system
+    must probe from paper)
+- id: data-ref-5
+  role: data
+  authority: original
+  availability: unavailable
+  source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE195460
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=GEO, primary=False; not bundled (audit-mode entry, system
+    must probe from paper)
+- id: data-ref-6
+  role: data
+  authority: original
+  availability: unavailable
+  source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE172008
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=GEO, primary=False; not bundled (audit-mode entry, system
+    must probe from paper)
+- id: data-ref-7
+  role: data
+  authority: original
+  availability: unavailable
+  source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE200547
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=GEO, primary=False; not bundled (audit-mode entry, system
+    must probe from paper)
+- id: data-ref-8
+  role: data
+  authority: original
+  availability: unavailable
+  source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE181064
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=GEO, primary=False; not bundled (audit-mode entry, system
+    must probe from paper)
+- id: data-ref-9
+  role: data
+  authority: original
+  availability: unavailable
+  source: https://atlas.kpmp.org
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=KPMP, primary=False; not bundled (audit-mode entry, system
+    must probe from paper)
+- id: data-ref-10
+  role: data
+  authority: original
+  availability: unavailable
+  source: https://zenodo.org/records/10463439
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=Zenodo, primary=True; not bundled (audit-mode entry, system
+    must probe from paper)
+- id: code-ref-1
+  role: code
+  authority: original
+  availability: unavailable
+  source: https://github.com/p4rkerw/Wilson_GBio_2024
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: language=R; not bundled (audit-mode entry, system must probe from
+    paper)
+- id: code-ref-2
+  role: code
+  authority: original
+  availability: unavailable
+  source: https://hub.docker.com/r/p4rkerw/sctools
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: language=R; not bundled (audit-mode entry, system must probe from
+    paper)

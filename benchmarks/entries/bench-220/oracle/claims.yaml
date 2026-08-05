@@ -1,0 +1,31 @@
+id: bench-220
+paper_title: Do We Underestimate Risk of Cardiovascular Mortality due to Lead Exposure?
+paper_doi: 10.1016/j.scitotenv.2024.171511
+pmid: '38453073'
+audit_scope: d1_d3_audit
+data_references:
+- accession: null
+  repository: GitHub
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: NHANES III
+  repository: NHANES
+  is_primary: false
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+code_references:
+- url: https://github.com/um-mpeg/Bone-lead-mortality
+  language: R
+  ground_truth: unknown
+  notes: transcribed from scores.json evidence
+calibration:
+  d1: 2
+  d2: 2
+  d3: 2
+  confidence:
+    d1: 0.98
+    d2: 0.99
+    d3: 0.92

@@ -1,0 +1,44 @@
+id: bench-221
+paper_title: 'Dietary patterns among U.S. food insecure cancer survivors and the risk
+  of mortality: NHANES 1999-2018'
+paper_doi: 10.1007/s10552-024-01868-2
+pmid: '38532045'
+audit_scope: d1_d3_audit
+data_references:
+- accession: NHANES 1999-2018
+  repository: NHANES
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: NCHS Mortality Linkage 2019
+  repository: CDC/NCHS
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: cmainov/NHANES-Diet-Penalized-Regression
+  repository: GitHub
+  is_primary: false
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: cmainov/nhanes-fi-ca-mortality-mirror
+  repository: GitHub
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+code_references:
+- url: https://github.com/cmainov/nhanes-fi-ca-mortality-mirror
+  language: R
+  ground_truth: unknown
+  notes: transcribed from scores.json evidence
+calibration:
+  d1: 2
+  d2: 2
+  d3: 2
+  confidence:
+    d1: 0.98
+    d2: 0.98
+    d3: 0.98

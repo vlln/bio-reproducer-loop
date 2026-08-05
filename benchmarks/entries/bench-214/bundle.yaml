@@ -1,0 +1,55 @@
+schema_version: '1.0'
+entry_id: bench-214
+level: L5
+input_root: input
+primary_paper: paper-main
+resources:
+- id: paper-main
+  role: paper
+  authority: original
+  availability: external
+  source: https://doi.org/10.1016/j.jbi.2025.104969
+  access_notes: paper fulltext not bundled (copyright); system must fetch at runtime
+    (L5)
+- id: paper-locator
+  role: metadata
+  authority: original
+  availability: bundled
+  path: paper/locator.md
+  source: urn:benchmark:bench-214:paper-locator
+  retrieved_at: '2026-08-04T00:00:00Z'
+  sha256: 965fbfa61d5dca40f3ac055b1e23b602b194f095f143df683fcafcbd29b5d553
+  media_type: text/markdown
+  license: CC-BY-4.0
+- id: data-ref-1
+  role: data
+  authority: original
+  availability: unavailable
+  source: other:None
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=other, primary=True; not bundled (audit-mode entry, system
+    must probe from paper)
+- id: data-ref-2
+  role: data
+  authority: original
+  availability: unavailable
+  source: other:None
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=other, primary=True; not bundled (audit-mode entry, system
+    must probe from paper)
+- id: data-ref-3
+  role: data
+  authority: original
+  availability: unavailable
+  source: other:None
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=other, primary=True; not bundled (audit-mode entry, system
+    must probe from paper)
+- id: code-ref-1
+  role: code
+  authority: original
+  availability: unavailable
+  source: https://github.com/vsubbian/Graph-spa
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: language=None; not bundled (audit-mode entry, system must probe from
+    paper)

@@ -32,7 +32,11 @@ FORBIDDEN_CLAIM_KEYS = {
 
 
 def test_protocol_v2_entry_layout_is_minimal():
-    for entry_id in ENTRY_IDS:
+    entry_ids = sorted(
+        e.name for e in ENTRIES.iterdir() if (e / "bundle.yaml").is_file()
+    )
+    assert len(entry_ids) == len(set(entry_ids))
+    for entry_id in entry_ids:
         entry = ENTRIES / entry_id
         names = {path.name for path in entry.iterdir()}
         assert names >= {
@@ -41,14 +45,11 @@ def test_protocol_v2_entry_layout_is_minimal():
             "oracle",
         }
         assert names <= {"bundle.yaml", "input", "metadata.yaml", "oracle"}
-        assert {path.name for path in (entry / "oracle").iterdir()} == {
-            "claims.yaml",
-            "rubric.yaml",
-        }
-
-    assert {
-        entry.name for entry in ENTRIES.iterdir() if (entry / "bundle.yaml").is_file()
-    } == set(ENTRY_IDS)
+        # Interface 0001 OracleBundle allows optional verify.py alongside the two
+        # required oracle files (used by the python_verify comparator).
+        oracle_names = {path.name for path in (entry / "oracle").iterdir()}
+        assert oracle_names >= {"claims.yaml", "rubric.yaml"}
+        assert oracle_names <= {"claims.yaml", "rubric.yaml", "verify.py"}
 
 
 def test_all_entries_declare_protocol_v2():

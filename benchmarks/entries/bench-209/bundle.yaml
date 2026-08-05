@@ -1,0 +1,55 @@
+schema_version: '1.0'
+entry_id: bench-209
+level: L5
+input_root: input
+primary_paper: paper-main
+resources:
+- id: paper-main
+  role: paper
+  authority: original
+  availability: external
+  source: https://doi.org/10.1101/2024.10.03.616268
+  access_notes: paper fulltext not bundled (copyright); system must fetch at runtime
+    (L5)
+- id: paper-locator
+  role: metadata
+  authority: original
+  availability: bundled
+  path: paper/locator.md
+  source: urn:benchmark:bench-209:paper-locator
+  retrieved_at: '2026-08-04T00:00:00Z'
+  sha256: 0133417318fe08373af8274de2a024687bf5d95369cc16e6566b27b756813eaf
+  media_type: text/markdown
+  license: CC-BY-4.0
+- id: data-ref-1
+  role: data
+  authority: original
+  availability: unavailable
+  source: other:RRID:CVCL_C1W7
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=other, primary=True; not bundled (audit-mode entry, system
+    must probe from paper)
+- id: data-ref-2
+  role: data
+  authority: original
+  availability: unavailable
+  source: other:RRID:CVCL_Y803
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=other, primary=True; not bundled (audit-mode entry, system
+    must probe from paper)
+- id: data-ref-3
+  role: data
+  authority: original
+  availability: unavailable
+  source: other:FlowRepository
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=other, primary=True; not bundled (audit-mode entry, system
+    must probe from paper)
+- id: code-ref-1
+  role: code
+  authority: original
+  availability: unavailable
+  source: https://github.com/SerranoLab/Golden_etal_2024
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: language=R; not bundled (audit-mode entry, system must probe from
+    paper)

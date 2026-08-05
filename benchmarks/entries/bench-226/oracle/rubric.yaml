@@ -1,0 +1,31 @@
+id: bench-226
+benchmark_version: 2.0.0
+oracle_version: 1.0.0
+expected_verdict: REPRODUCED
+verdict_match_threshold: 0.6
+verdict_thresholds:
+  reproduced: 60
+  partial: 30
+checks:
+- id: A1
+  description: "\u6570\u636E\u5F15\u7528\u5B9A\u4F4D/\u53EF\u83B7\u53D6\u5224\u65AD\
+    \u4E0E ground truth \u4E00\u81F4"
+  evidence:
+    artifact_role: data_manifest
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_data_references
+    config: {}
+  weight: 50
+- id: A2
+  description: "\u4EE3\u7801\u5F15\u7528\u53EF\u7528\u6027\u5224\u65AD\u4E0E ground\
+    \ truth \u4E00\u81F4"
+  evidence:
+    artifact_role: provision_report
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_code_references
+    config: {}
+  weight: 50

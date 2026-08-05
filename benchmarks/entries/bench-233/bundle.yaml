@@ -1,0 +1,39 @@
+schema_version: '1.0'
+entry_id: bench-233
+level: L5
+input_root: input
+primary_paper: paper-main
+resources:
+- id: paper-main
+  role: paper
+  authority: original
+  availability: external
+  source: https://doi.org/10.1038/s44318-025-00601-2
+  access_notes: paper fulltext not bundled (copyright); system must fetch at runtime
+    (L5)
+- id: paper-locator
+  role: metadata
+  authority: original
+  availability: bundled
+  path: paper/locator.md
+  source: urn:benchmark:bench-233:paper-locator
+  retrieved_at: '2026-08-04T00:00:00Z'
+  sha256: f9a4e5803f1c5ba3974e8bf8709845b4ae7ca06fd3410e012cfadd126d5fe310
+  media_type: text/markdown
+  license: CC-BY-4.0
+- id: data-ref-1
+  role: data
+  authority: original
+  availability: unavailable
+  source: https://www.ncbi.nlm.nih.gov/geo/
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=GEO, primary=True; not bundled (audit-mode entry, system
+    must probe from paper)
+- id: data-ref-2
+  role: data
+  authority: original
+  availability: unavailable
+  source: https://www.ebi.ac.uk/biostudies/studies/S-SCDT-10_1038-S44318-025-00601-2
+  checked_at: '2026-08-04T00:00:00Z'
+  access_notes: repository=BioStudies, primary=False; not bundled (audit-mode entry,
+    system must probe from paper)

@@ -1,0 +1,32 @@
+id: bench-226
+paper_title: Exposome-wide association study of cognition among older adults in the
+  NHANES
+paper_doi: 10.1093/exposome/osaf002
+pmid: '39926246'
+audit_scope: d1_d3_audit
+data_references:
+- accession: NHANES 1999-2014
+  repository: NHANES
+  is_primary: true
+  ground_truth: invalid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+- accession: null
+  repository: GitHub
+  is_primary: false
+  ground_truth: invalid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+code_references:
+- url: https://github.com/bakulskilab/Cognition_SVI_ExWIS
+  language: R
+  ground_truth: hollow
+  notes: transcribed from scores.json evidence
+calibration:
+  d1: 0
+  d2: 0
+  d3: 1
+  confidence:
+    d1: 0.85
+    d2: 0.8
+    d3: 0.8

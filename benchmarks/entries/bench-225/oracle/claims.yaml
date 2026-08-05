@@ -1,0 +1,21 @@
+id: bench-225
+paper_title: Modeling health risks using neural network ensembles
+paper_doi: 10.1371/journal.pone.0308922
+pmid: '39383158'
+audit_scope: d1_d3_audit
+data_references:
+- accession: NHANES
+  repository: other
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+code_references: []
+calibration:
+  d1: 2
+  d2: 0
+  d3: 0
+  confidence:
+    d1: 0.85
+    d2: 0.8
+    d3: 0.8

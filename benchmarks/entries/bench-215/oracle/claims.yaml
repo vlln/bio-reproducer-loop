@@ -1,0 +1,26 @@
+id: bench-215
+paper_title: 'Type 1 Diabetes and Incident Dementia: An Analysis in the All of Us
+  Cohort'
+paper_doi: 10.1212/WNL.0000000000214805
+pmid: '41849727'
+audit_scope: d1_d3_audit
+data_references:
+- accession: null
+  repository: other
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+code_references:
+- url: ''
+  language: null
+  ground_truth: unknown
+  notes: transcribed from scores.json evidence
+calibration:
+  d1: 1
+  d2: 0
+  d3: 1
+  confidence:
+    d1: 0.85
+    d2: 0.8
+    d3: 0.8

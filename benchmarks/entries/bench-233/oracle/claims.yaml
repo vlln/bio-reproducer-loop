@@ -1,0 +1,32 @@
+id: bench-233
+paper_title: Distinct senotypes in p16- and p21-positive cells across human and mouse
+  aging tissues
+paper_doi: 10.1038/s44318-025-00601-2
+pmid: '41162753'
+audit_scope: d1_d3_audit
+data_references:
+- accession: multiple
+  repository: GEO
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+- accession: S-SCDT-10_1038-S44318-025-00601-2
+  repository: BioStudies
+  is_primary: false
+  ground_truth: valid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+code_references:
+- url: ''
+  language: R
+  ground_truth: unknown
+  notes: transcribed from scores.json evidence
+calibration:
+  d1: 2
+  d2: 0
+  d3: 1
+  confidence:
+    d1: 0.85
+    d2: 0.8
+    d3: 0.8

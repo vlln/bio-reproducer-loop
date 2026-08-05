@@ -1,0 +1,68 @@
+id: bench-223
+paper_title: Interpretable and integrative analysis of single-cell multiomics with
+  scMKL
+paper_doi: 10.1038/s42003-025-08533-7
+pmid: '40770488'
+audit_scope: d1_d3_audit
+data_references:
+- accession: GSE154873
+  repository: GEO
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: GSE171559
+  repository: GEO
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: GSE176031
+  repository: GEO
+  is_primary: false
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: GSE136246
+  repository: GEO
+  is_primary: false
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: GSE127465
+  repository: GEO
+  is_primary: false
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: 10.5281/zenodo.15397923
+  repository: Zenodo
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: ohsu-cedar-comp-hub/scMKL
+  repository: GitHub
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+- accession: scmkl
+  repository: PyPI
+  is_primary: false
+  ground_truth: valid
+  downloadable: 'true'
+  notes: transcribed from scores.json evidence
+code_references:
+- url: ''
+  language: Python
+  ground_truth: unknown
+  notes: transcribed from scores.json evidence
+calibration:
+  d1: 2
+  d2: 2
+  d3: 2
+  confidence:
+    d1: 0.98
+    d2: 0.97
+    d3: 0.97

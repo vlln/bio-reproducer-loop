@@ -1,0 +1,60 @@
+id: bench-200
+paper_title: Multi-omics profiling reveals microenvironmental remodeling as a key
+  driver of house dust mite-induced lung cancer progression
+paper_doi: 10.1016/j.neo.2026.101275
+pmid: '41610471'
+audit_scope: d1_d3_audit
+data_references:
+- accession: GSE308855
+  repository: GEO
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+- accession: GSE317298
+  repository: GEO
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+- accession: PRJNA1402948
+  repository: SRA
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+- accession: PRJNA
+  repository: sra
+  is_primary: false
+  ground_truth: valid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+code_references:
+- url: https://github.com/shamsalazzam/code_Multi-omics-profiling
+  language: R
+  ground_truth: hollow
+  notes: transcribed from scores.json evidence
+- url: https://github.com/cit-bioinfo/mMCP-counter
+  language: R
+  ground_truth: unknown
+  notes: transcribed from scores.json evidence
+- url: https://github.com/AlexandrovLab/DupCaller
+  language: null
+  ground_truth: unknown
+  notes: transcribed from scores.json evidence
+- url: https://github.com/AlexandrovLab/EnsembleVariantCallingPipeline
+  language: null
+  ground_truth: unknown
+  notes: transcribed from scores.json evidence
+- url: https://github.com/AlexandrovLab/SigProfilerMatrixGenerator
+  language: null
+  ground_truth: unknown
+  notes: transcribed from scores.json evidence
+calibration:
+  d1: 2
+  d2: 0
+  d3: 1
+  confidence:
+    d1: 0.85
+    d2: 0.8
+    d3: 0.95

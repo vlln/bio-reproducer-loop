@@ -1,0 +1,23 @@
+schema_version: '1.0'
+entry_id: bench-213
+level: L5
+input_root: input
+primary_paper: paper-main
+resources:
+- id: paper-main
+  role: paper
+  authority: original
+  availability: external
+  source: https://doi.org/10.1038/s41598-025-34410-8
+  access_notes: paper fulltext not bundled (copyright); system must fetch at runtime
+    (L5)
+- id: paper-locator
+  role: metadata
+  authority: original
+  availability: bundled
+  path: paper/locator.md
+  source: urn:benchmark:bench-213:paper-locator
+  retrieved_at: '2026-08-04T00:00:00Z'
+  sha256: 4d7c3eb3b1b1b4caefb2c85eb0fcf5318147c5dfd7b52743beacd2557a3e2d62
+  media_type: text/markdown
+  license: CC-BY-4.0

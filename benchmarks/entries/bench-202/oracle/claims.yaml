@@ -1,0 +1,34 @@
+id: bench-202
+paper_title: Regional growth rates of white matter hyperintensities are associated
+  with beta-amyloid burden
+paper_doi: 10.1016/j.neurobiolaging.2025.12.006
+pmid: '41483724'
+audit_scope: d1_d3_audit
+data_references:
+- accession: ADNI
+  repository: other
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+- accession: AIBL
+  repository: other
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+- accession: OASIS3
+  repository: other
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+code_references: []
+calibration:
+  d1: 1
+  d2: 0
+  d3: 0
+  confidence:
+    d1: 0.95
+    d2: 0.8
+    d3: 0.8

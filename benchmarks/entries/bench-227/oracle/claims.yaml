@@ -1,0 +1,22 @@
+id: bench-227
+paper_title: Quantifying the time-varying association between objectively measured
+  physical activity and mortality in US older adults
+paper_doi: 10.1136/bmjebm-2023-112303
+pmid: '38471753'
+audit_scope: d1_d3_audit
+data_references:
+- accession: NHANES 2003-2006
+  repository: other
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+code_references: []
+calibration:
+  d1: 2
+  d2: 0
+  d3: 0
+  confidence:
+    d1: 0.85
+    d2: 0.8
+    d3: 0.8

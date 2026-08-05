@@ -1,0 +1,25 @@
+id: bench-230
+paper_title: Transfer learning enables predictions in network biology
+paper_doi: 10.1038/s41586-023-06139-9
+pmid: '37258680'
+audit_scope: d1_d3_audit
+data_references:
+- accession: ctheodoris/Genecorpus-30M
+  repository: HuggingFace
+  is_primary: true
+  ground_truth: valid
+  downloadable: 'false'
+  notes: transcribed from scores.json evidence
+code_references:
+- url: https://huggingface.co/ctheodoris/Geneformer
+  language: Python
+  ground_truth: unknown
+  notes: transcribed from scores.json evidence
+calibration:
+  d1: 2
+  d2: 0
+  d3: 1
+  confidence:
+    d1: 0.85
+    d2: 0.8
+    d3: 0.8

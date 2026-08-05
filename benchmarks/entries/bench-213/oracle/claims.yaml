@@ -1,0 +1,16 @@
+id: bench-213
+paper_title: Children's state anxiety before MRI scanning and resting state functional
+  connectivity
+paper_doi: 10.1038/s41598-025-34410-8
+pmid: '41545431'
+audit_scope: d1_d3_audit
+data_references: []
+code_references: []
+calibration:
+  d1: 2
+  d2: 1
+  d3: 1
+  confidence:
+    d1: 0.85
+    d2: 0.8
+    d3: 0.8
