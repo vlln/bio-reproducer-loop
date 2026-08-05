@@ -492,7 +492,7 @@ workflow 不进入 ExecutionEnvelope 的 runtime enum。
 | BR-015 | Worker teardown 是结果有效性的组成部分 | 所有 run 结束时 | teardown 未完成的 run 不得发布或进入 baseline |
 | BR-016 | 系统打包方式不属于 benchmark runtime taxonomy | adapter 集成时 | Pixi/OCI/source 等只记录 artifact/adapter identity |
 | BR-017 | Validation backend 结果与 formal result 分开 | Docker sandbox 或 mock 执行时 | purpose=validation-only，release gate 必须拒绝 |
-| BR-018 | 审计模式 entry 的 scored_scope 必须为 `d1_d3_audit`，且 rubric/bundle lock 不得包含作者分数或 expected verdict（作者分数只存于 claims.yaml 的 calibration 段作校准） | 生成/校验 claroai 派生 entry 时 | metadata scored_scope 缺失/非该值，或 rubric/bundle 含 author score/expected verdict → INVALID_BUNDLE |
+| BR-018 | 审计模式 entry 的 scored_scope 必须为 `d1_d3_audit`，且 rubric 不得包含作者真值派生键（精确名单见 CC-003；作者分数只存于 claims.yaml 的 calibration 段作校准）；bundle lock 沿用 FORBIDDEN_KEYS | 生成/校验 claroai 派生 entry 时 | metadata scored_scope 缺失/非该值，或 rubric 含作者真值派生键 → INVALID_BUNDLE |
 
 ### blocked_reason 分类
 

@@ -112,7 +112,7 @@ tgz 的 https 路径 404、PMC 网页 PDF 需浏览器）。抓取结果以 sha2
 |----------|------|----------|
 | CC-001 | converter 输出必须确定性可重放（同快照 → 字节一致 entry） | converter 测试（golden 对比） |
 | CC-002 | 审计模式 entry 的 metadata scored_scope 必须为 `d1_d3_audit` | bundle validator（扩展：审计模式 entry 缺失或非该值 → INVALID_BUNDLE） |
-| CC-003 | rubric 不得包含作者分数、expected verdict 等评分真值；bundle 沿用 FORBIDDEN_KEYS | bundle validator 扩展以 rubric 专用键集（author score/calibration 外的 `expected*`/`score`/`verdict` 等，排除结构性键 `checks`）扫描 `oracle/rubric.yaml`；release gate 复核 |
+| CC-003 | rubric 不得包含作者真值派生键（精确名单：顶层 `author_score`/`author_scores`/`calibration`/`ground_truth` 及顶层 `d1`/`d2`/`d3` 分数键）；协议合法键（`checks`、`expected_verdict`、`verdict_match_threshold`、`verdict_thresholds` 等）不受影响；bundle 沿用 FORBIDDEN_KEYS | bundle validator 扩展以该精确名单扫描 `oracle/rubric.yaml`（仅审计模式 entry）；release gate 复核 |
 | CC-004 | primary paper 必须为真实发布 original PDF/XML，bundled 且记录 sha256 | bundle validator + fidelity review |
 | CC-005 | claroai-bench 快照版本（HF commit/树 hash）必须记录进 converter provenance | converter 输出检查 |
 | CC-006 | entry ID 使用 bench-200+，不与既有 entry 冲突 | validator + README 一致性检查 |

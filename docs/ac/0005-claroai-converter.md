@@ -35,14 +35,14 @@ created: 2026-08-04T00:00:00Z
 | 编号 | 前置条件 | 操作步骤 | 预期结果 | 验证方式 |
 |------|---------|---------|---------|---------|
 | AC-0009-E-1 | 快照文件缺失或 JSON 格式损坏 | 运行 converter | 报错并列出受影响论文清单，不静默跳过、不产出半成品 entry | 自动化 |
-| AC-0009-E-2 | 抓取 PDF 的 sha256 与重抓不一致 | bundle 校验 | 拒绝该 bundle，提示重抓，不进入 entry | 自动化 |
+| AC-0009-E-2 | 抓取全文（XML/PDF）的 sha256 与重抓不一致 | bundle 校验 | 拒绝该 bundle，提示重抓，不进入 entry | 自动化 |
 | AC-0009-E-3 | converter 输出缺 provenance（快照版本） | 校验输出目录 | provenance 检查失败，明确提示快照 hash | 自动化 |
 
 ## 失败场景
 
 | 编号 | 前置条件 | 操作步骤 | 预期结果 | 验证方式 |
 |------|---------|---------|---------|---------|
-| AC-0009-F-1 | rubric/bundle 含作者分数或 expected verdict | 执行 bundle validator（扩展：校验 bundle 的同时扫描 `oracle/rubric.yaml` 的 forbidden keys） | 返回 INVALID_BUNDLE（BR-018 / CC-003 forbidden-field；作者分数仅允许存于 claims.yaml calibration 段） | 自动化 |
+| AC-0009-F-1 | rubric 含作者真值派生键（如顶层 `calibration`、`author_score`），或 bundle 含 FORBIDDEN_KEYS 字段 | 执行 bundle validator（扩展：校验 bundle 的同时按 CC-003 精确名单扫描 `oracle/rubric.yaml`） | 返回 INVALID_BUNDLE（BR-018 / CC-003；作者分数仅允许存于 claims.yaml calibration 段，协议合法键 `expected_verdict`/`verdict_*`/`checks` 不受影响） | 自动化 |
 | AC-0009-F-2 | entry 声明 L4 但 primary paper 非 original PDF/XML | 执行 fidelity gate | 拒绝进入 L4（BR-009），不建立 baseline | 自动化 + 人工审查 |
 | AC-0009-F-3 | 同一快照两次转换输出漂移 | 运行 golden 对比测试 | 测试失败，converter 不得发布 | 自动化 |
 | AC-0009-F-4 | 审计模式 entry 的 metadata scored_scope 缺失或非 `d1_d3_audit` | 执行 bundle validator | 返回 INVALID_BUNDLE（CC-002） | 自动化 |

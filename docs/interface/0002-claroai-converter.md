@@ -16,7 +16,7 @@ created: 2026-08-04T00:00:00Z
 
 ```text
 claroai2bench --source <hf|dir> --output <entries-dir> [--start-id 200]
-              [--fetch-pdf] [--no-fetch] [--snapshot <ref>] [--dry-run]
+              [--fetch-fulltext] [--no-fetch] [--snapshot <ref>] [--dry-run]
 ```
 
 ### 入参
@@ -26,7 +26,7 @@ claroai2bench --source <hf|dir> --output <entries-dir> [--start-id 200]
 | `--source` | 是 | `hf`（拉取 HF `kyleaoconnell22/claroai-bench` 快照）或本地 claroai-bench 目录 |
 | `--output` | 是 | entry 输出根目录（默认 `benchmarks/entries/`） |
 | `--start-id` | 否 | 起始 entry 编号，默认 200；按 paper 序号递增分配 |
-| `--fetch-pdf` / `--no-fetch` | 否 | 是否执行论文全文抓取（XML 优先、PDF 增强，默认 fetch）；`--no-fetch` 时全部 primary paper 登记进处置清单，不生成可发布 entry |
+| `--fetch-fulltext` / `--no-fetch` | 否 | 是否执行论文全文抓取（XML 优先、PDF 增强，默认 fetch）；`--no-fetch` 时全部 primary paper 登记进处置清单，不生成可发布 entry |
 | `--snapshot` | 否 | 显式记录 claroai-bench 快照 ref（默认：HF 时取当前 commit/树 hash，dir 时取目录内 `.git` 或指纹） |
 | `--dry-run` | 否 | 只生成 plan 清单，不写文件 |
 
