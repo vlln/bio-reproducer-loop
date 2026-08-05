@@ -22,6 +22,7 @@
 | [0019-scored-scope-decouple](0019-scored-scope-decouple/) | `fix/0019-scored-scope-decouple` | done |
 | [0020-claroai-converter-infra](0020-claroai-converter-infra/) | — | done |
 | [0021-claroai-converter](0021-claroai-converter/) | `feat/0021-claroai-converter`（已合并） | done |
+| [0022-claroai-system-test](0022-claroai-system-test/) | — | done |
 
 当前阶段：DESIGN（v0.2.0 发布，新一轮迭代）。Plan 006 在保留的 `spike/0006-vm-isolation` 分支验证了 KVM/QEMU、
 VM-local Docker、I/O boundary、oracle 隔离和完整 teardown；Plan 007 已将结论冻结到
