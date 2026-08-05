@@ -2,7 +2,7 @@
 title: Interface 002 — ClaroAI Converter 与审计评分协议
 description: 定义 claroai2bench CLI 契约、审计模式 oracle 的 ground truth 结构、rubric check 模式与 submission 审计证据约定（BL-011 / ADR-0010）。
 type: interface
-status: proposed
+status: active
 created: 2026-08-04T00:00:00Z
 ---
 

@@ -2,7 +2,7 @@
 title: Spec 001 — 测试、评测与基准体系
 description: bio-reproducer 的确定性测试、内部 LLM 评测，以及采用 disposable VM、分层 InputBundle 和独立评分的公开黑盒 benchmark；含 ClaroAI-Bench 真实论文任务接入（BL-011）。
 type: spec
-status: proposed
+status: active
 version: 5
 created: 2026-07-15T00:00:00Z
 ---

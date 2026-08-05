@@ -2,7 +2,7 @@
 title: ADR-0010 — ClaroAI-Bench 接入形态
 description: 决定以 converter 将 ClaroAI-Bench 任务确定性转换为标准 entry，首轮 scored scope 为 D1–D3 审计模式，作者 ground truth 只作校准参考。
 type: adr
-status: proposed
+status: accepted
 created: 2026-08-04T00:00:00Z
 ---
 
