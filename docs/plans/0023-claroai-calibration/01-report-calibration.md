@@ -65,6 +65,31 @@ data_manifest.md 显示系统对 paper_01 的 D1/D2 审计判断：
 
 **verify.py 适配**（校准运行暴露）：真实系统产物为 Markdown 表格（非行式），verify 模板已增强（表格解析、假引用跳过、GitHub 行 hollow 判断），35 entry 重新生成，测试 137 passed。
 
+## 最终校准结果（运行完成，verdict=BLOCKED）
+
+loopflow 全 7 阶段执行完毕（Reader/Bootstrap/Provision/Data/Run/Validate；Package 因
+BLOCKED 跳过），产出 `06_validate/metrics.json` + `report.md`：
+
+| 项 | 值 |
+|----|-----|
+| verdict | **BLOCKED**（scoring_blocked=true，20 检查 3 scored / 17 N/A） |
+| blocking_reason | T1 源数据（IVIS/肺重/肿瘤）为实验室记录未公开；T2 WGS ~1.6TB 超存储（224GB）+ 突变调用未公开 |
+| 作者绘图代码 | 未找到（仓库仅 RNA-seq/甲基化文件） |
+| 基础设施验证 | 参考基因组（770MB/61 序列）+ FASTQ 格式 PASS |
+
+**完整校准对照（bench-200）**：
+
+| 维度 | 作者 ground truth | 系统判断（完整运行） | 一致性 |
+|------|------|------|------|
+| D1 数据可定位 | score=2 | 全部 accession 定位 + 基础设施验证 PASS | ✅ |
+| D2 数据可获取 | score=0 | 数据可下载（GSE/SRA 样例成功）但**复现所需源数据不可得** → BLOCKED | ✅ 结论一致（复现数据不可得），路径不同（作者工具限制 vs 系统实际验证） |
+| D3 代码可用 | score=1（空壳） | 作者仓库无 Figure 1/3 绘图代码 | ✅ |
+
+**校准结论**：确定性独立评分（系统 verdict BLOCKED）与作者多模型审计（D2=0/D3=1）
+在结论层面一致——bench-200 论文复现所需数据与代码均不可得。差异仅在 D2 的论证路径：
+作者 D2=0 归因于工具无法下载；系统证明数据可下载但暴露更深的障碍（处理数据未公开）。
+这是 ADR-0010 预期的"确定性独立评分 vs 作者主观评分"实证校准的完整闭环。
+
 ## 环境发现（已解决或记录）
 
 1. qemu 未装 + 无 KVM 权限 → docker 模拟 VM 边界（容器隔离 + controlled 网络，与 VM launcher 同构）
