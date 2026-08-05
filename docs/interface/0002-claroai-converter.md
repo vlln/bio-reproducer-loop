@@ -26,7 +26,7 @@ claroai2bench --source <hf|dir> --output <entries-dir> [--start-id 200]
 | `--source` | 是 | `hf`（拉取 HF `kyleaoconnell22/claroai-bench` 快照）或本地 claroai-bench 目录 |
 | `--output` | 是 | entry 输出根目录（默认 `benchmarks/entries/`） |
 | `--start-id` | 否 | 起始 entry 编号，默认 200；按 paper 序号递增分配 |
-| `--fetch-pdf` / `--no-fetch` | 否 | 是否执行论文 PDF 抓取（默认 fetch）；`--no-fetch` 时全部 primary paper 标 `unavailable` 并进处置清单 |
+| `--fetch-pdf` / `--no-fetch` | 否 | 是否执行论文全文抓取（XML 优先、PDF 增强，默认 fetch）；`--no-fetch` 时全部 primary paper 登记进处置清单，不生成可发布 entry |
 | `--snapshot` | 否 | 显式记录 claroai-bench 快照 ref（默认：HF 时取当前 commit/树 hash，dir 时取目录内 `.git` 或指纹） |
 | `--dry-run` | 否 | 只生成 plan 清单，不写文件 |
 
@@ -46,7 +46,7 @@ claroai2bench --source <hf|dir> --output <entries-dir> [--start-id 200]
 | `CONVERT_PARTIAL` | 部分论文转换成功（含处置清单），退出码 1 |
 | `CONVERT_INVALID_SOURCE` | 快照目录缺 metadata/extraction/scores 或 JSON 损坏 |
 | `CONVERT_ID_CONFLICT` | 目标 entry ID 与既有 entry 冲突 |
-| `CONVERT_FETCH_FAILED` | PDF 抓取全部失败且未显式 --no-fetch |
+| `CONVERT_FETCH_FAILED` | 论文全文抓取全部失败（XML 与 PDF 均不可得）且未显式 --no-fetch |
 | `CONVERT_DRIFT` | golden 对比显示同快照转换漂移（仅测试模式触发） |
 
 ## 2. 审计模式 oracle：`claims.yaml` ground truth 结构
@@ -105,10 +105,11 @@ checks:
     weight: 20
 ```
 
-`verify.py` 的职责：解析 evidence artifact（`data_manifest.md`/`provision_report.md`
-或可选的 `audit.json`）提取系统对每个引用的判断，与 `claims.yaml` ground truth 对比；
-系统判断缺失或无法解析时该 check 判定失败并附原因（不做无依据的 NA 放行，除非
-`claims.yaml` 该引用为 `unknown`）。
+`verify.py` 的职责：校验 `claims.yaml` 的 `audit_scope` 与 `metadata.yaml` 的
+`scored_scope` 一致（不一致视为 oracle 自检失败）；解析 evidence artifact
+（`data_manifest.md`/`provision_report.md` 或可选的 `audit.json`）提取系统对每个
+引用的判断，与 `claims.yaml` ground truth 对比；系统判断缺失或无法解析时该 check
+判定失败并附原因（不做无依据的 NA 放行，除非 `claims.yaml` 该引用为 `unknown`）。
 
 ## 4. Submission 审计证据约定
 
@@ -128,5 +129,5 @@ checks:
 - converter 与 oracle 生成属于 trusted control plane，不进入被测系统可见范围。
 - `claims.yaml` 的 `calibration` 段（作者分数）只被评估后处理脚本读取用于校准分析，
   evaluator 的 verdict/score 计算不引用它。
-- 抓取的 PDF 是 original primary paper（L4，BR-009），sha256 记录进 bundle；
+- 抓取的全文（XML 优先，PDF 增强）是 original primary paper（L4，BR-009），sha256 记录进 bundle；
   处置清单中的论文在完成人工处置前不进入 release/baseline。
