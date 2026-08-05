@@ -11,3 +11,4 @@
 | 0007 | [分层 InputBundle 与材料真实性](0007-input-bundle-fidelity.md) | accepted |
 | 0008 | [Entry 分类与共享资源复用](0008-entry-taxonomy-resource-reuse.md) | accepted |
 | 0009 | [Disposable VM 正式运行边界](0009-disposable-vm-runtime.md) | accepted |
+| 0010 | [ClaroAI-Bench 接入形态](0010-claroai-bench-adapter.md) | proposed |

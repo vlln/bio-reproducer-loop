@@ -1,9 +1,9 @@
 ---
 title: Spec 001 — 测试、评测与基准体系
-description: bio-reproducer 的确定性测试、内部 LLM 评测，以及采用 disposable VM、分层 InputBundle 和独立评分的公开黑盒 benchmark。
+description: bio-reproducer 的确定性测试、内部 LLM 评测，以及采用 disposable VM、分层 InputBundle 和独立评分的公开黑盒 benchmark；含 ClaroAI-Bench 真实论文任务接入（BL-011）。
 type: spec
-status: active
-version: 4
+status: proposed
+version: 5
 created: 2026-07-15T00:00:00Z
 ---
 
@@ -45,6 +45,7 @@ Benchmark entry ID 按输入来源分区：`bench-001` 至 `bench-099` 保留给
 | US-004 | 系统评测者 | 用真实论文（冻结环境）测试工程能力 | 标准化可比较的复现率测评 | P1 |
 | US-005 | 系统评测者 | 监控真实环境下的复现表现 | 发现外部依赖问题和长期趋势 | P2 |
 | US-006 | 基准发布者 | 独立发布 L3-L5 基准，供其他复现系统使用 | 建立公开的论文复现 benchmark 标准 | P2 |
+| US-007 | 基准发布者 | 将 ClaroAI-Bench 的 35 篇真实 NIH 论文任务批量接入本基准 | 快速扩充真实论文 entry 覆盖，复用作者 ground truth 作校准 | P1 |
 
 ---
 
@@ -62,6 +63,7 @@ Benchmark entry ID 按输入来源分区：`bench-001` 至 `bench-099` 保留给
 | Benchmark Runner | 论文包执行、结果采集、期望对比、报告生成 | `benchmarks/runner/` | P0 |
 | 引擎适配器 | 将引擎无关的论文包映射为 loopflow 调用 | `benchmarks/runner/adapters/` | P0 |
 | VM Control Plane | 创建 fresh worker、attach I/O、执行 deadline、收集产物并 teardown | `benchmarks/runner/` | P0 |
+| ClaroAI Converter | 将 ClaroAI-Bench 任务（paper_XX 的 metadata/extraction/scores）转换为标准 entry；抓取论文 PDF；生成 bundle/claims/rubric 骨架 | `benchmarks/converters/claroai/` | P1 |
 
 ### 确定性软件测试
 
@@ -165,6 +167,33 @@ L4 的 `expected_verdict: PARTIAL` 的合理原因：
 冻结内容通过 InputBundle 或受控注入进入 guest，不复用上一 run 的可写 overlay。解析生成的
 Markdown、抽取图像、格式转换或裁剪数据只能作为派生材料；必须记录原始资源、checksum、
 转换工具、参数和脚本，不能静默替代原始论文或完整数据。
+
+### 审计模式 scored scope（ClaroAI-Bench 接入）
+
+ClaroAI-Bench（BL-011）提供 35 篇真实 NIH 论文及作者给出的 D1–D5 可复现性评分
+（数据可定位/可获取/代码可用/环境可重建/结果可匹配）。第一轮接入采用**审计模式**：
+每个论文任务生成一个标准 entry，其 `scope` 限定为 D1–D3（数据可定位、数据可获取、
+代码可用），评分对象是被测系统在数据获取与代码/环境检查阶段产出的审计证据，而非
+完整分析结果。
+
+审计模式的语义：被测系统以论文全文为输入，正常运行 Reader→Data→Provision 阶段，
+其执行过程中对数据引用解析、下载尝试、代码仓库与工具可用性的处理会自然产生审计
+证据；oracle 将这些证据与作者 ground truth 对比，衡量系统**判断论文数据/代码可用性
+的正确性**。被测系统不被告知"这是审计任务"，也不获得作者评分。
+
+审计模式 entry 的约束：
+
+| 约束 | 说明 |
+|------|------|
+| scope 声明 | `metadata.yaml` 的 `scope` 必须显式声明 `d1_d3_audit`（物化 ADR-0008 的 scored scope，机制见 BL-006） |
+| primary paper | 必须是真实发布论文的 original PDF/XML（满足 BR-009） |
+| oracle 真值 | `claims.yaml` 结构化记录每个数据引用/代码引用的作者 ground truth 状态（来自 claroai-bench `scores.json` 的 evidence），`rubric.yaml` 用 `python_verify` 对比 submission 审计产物 |
+| 校准 | 作者 D1–D3 分数只作事后校准参考（baseline 观测），不写入 bundle lock 与 rubric 的 expected verdict |
+| 环境 | 正式运行仍为 disposable VM；需要真实网络访问外部仓库时使用 `controlled-egress`，否则 `offline` |
+
+作者 ground truth 的转录以 claroai-bench 归档的 `papers/paper_XX/scores.json` +
+`extraction.json` 为准（HF `kyleaoconnell22/claroai-bench` 快照），转录脚本与校验逻辑
+随 converter 冻结，避免人工转录漂移。
 
 ### L5 详细说明
 
@@ -369,6 +398,22 @@ entry 不得标记为 L4。Runner 只能 stage `input_root`，不得暴露 bundl
 | 用途 | 筛选匹配能力的 entry | 筛选测试特定故障注入的 entry |
 | 查询示例 | "tool_count ≤ 3 的 entry" | "repo_gone=true 的 entry" |
 
+### ClaroAIBenchSource（converter 输入）
+
+ClaroAI Converter 的输入是 claroai-bench 归档中的每篇论文目录，不是新 entry 实体；
+输出直接复用上文 `BenchmarkEntry`/`EntryBundle`/OracleBundle 契约。输入源结构：
+
+| 字段 | 来源文件 | 转换去向 |
+|------|---------|---------|
+| pmid / doi / title / journal / modality / funding_type / is_computational | `papers/paper_XX/metadata.json` | `metadata.yaml`（含 complexity_profile 初始值） |
+| data_references（repo_type/accession/url/is_primary） | `papers/paper_XX/extraction.json` | `bundle.yaml` resources（role=data）+ `claims.yaml` 数据可用性 claims |
+| code_references（repo_type/url/language） | `papers/paper_XX/extraction.json` | `bundle.yaml` resources（role=code）+ `claims.yaml` 代码 claims |
+| D1–D3 分数、justification、evidence、agent_confidence | `papers/paper_XX/scores.json` | `oracle/claims.yaml` ground truth 状态 + 校准参考（不进 rubric expected） |
+| 论文全文 | 从 DOI/PMID 经 EuropePMC/PMC REST 抓取 | `input/paper/`（bundled，sha256 记录） |
+
+转换必须是**确定性、可重放**的：同一 claroai-bench 快照（记录 HF commit/树 hash）在
+任何环境转换出字节一致的 entry。来源快照版本写入 converter 输出目录的 provenance 文件。
+
 ### ExecutionEnvelope
 
 ExecutionEnvelope 是 formal run 的控制面记录，不向被测系统暴露 private 值。
@@ -445,6 +490,7 @@ workflow 不进入 ExecutionEnvelope 的 runtime enum。
 | BR-015 | Worker teardown 是结果有效性的组成部分 | 所有 run 结束时 | teardown 未完成的 run 不得发布或进入 baseline |
 | BR-016 | 系统打包方式不属于 benchmark runtime taxonomy | adapter 集成时 | Pixi/OCI/source 等只记录 artifact/adapter identity |
 | BR-017 | Validation backend 结果与 formal result 分开 | Docker sandbox 或 mock 执行时 | purpose=validation-only，release gate 必须拒绝 |
+| BR-018 | 审计模式 entry 的 scope 必须声明为 `d1_d3_audit` 且 oracle 不得包含作者分数 | 生成/校验 claroai 派生 entry 时 | metadata scope 缺失或 rubric 含 author score/expected verdict → INVALID_BUNDLE |
 
 ### blocked_reason 分类
 
@@ -500,3 +546,6 @@ workflow 不进入 ExecutionEnvelope 的 runtime enum。
 | Validation backend | 只用于开发/CI 的非正式执行路径，其结果不得进入 release baseline |
 | 评估协议 | evaluator 使用私有 oracle 检查 submission 并生成 result 的规则 |
 | 引擎适配器 | 将引擎无关的论文包映射为特定引擎调用的桥接模块 |
+| 审计模式 | scored scope 限定为 D1–D3（数据可定位/可获取/代码可用）的 entry 形态；评分对象是系统执行过程中的审计证据，而非完整复现结果 |
+| Converter | 把外部 benchmark 任务（如 ClaroAI-Bench paper_XX）确定性转换为标准 entry 的脚本模块 |
+| Ground truth calibration | 以作者/外部评分作事后对照的校准观测，不参与 oracle 判定 |
