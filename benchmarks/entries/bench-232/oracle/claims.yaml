@@ -8,7 +8,7 @@ data_references:
 - accession: null
   repository: other
   is_primary: true
-  ground_truth: valid
+  ground_truth: unknown
   downloadable: 'true'
   notes: transcribed from scores.json evidence
 code_references:

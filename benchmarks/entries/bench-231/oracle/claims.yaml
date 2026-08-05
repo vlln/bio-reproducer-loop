@@ -13,7 +13,7 @@ data_references:
 - accession: null
   repository: TCGA
   is_primary: false
-  ground_truth: valid
+  ground_truth: unknown
   downloadable: 'true'
   notes: transcribed from scores.json evidence
 code_references:

@@ -14,7 +14,7 @@ data_references:
 - accession: null
   repository: GitHub
   is_primary: false
-  ground_truth: invalid
+  ground_truth: unknown
   downloadable: 'false'
   notes: transcribed from scores.json evidence
 code_references:

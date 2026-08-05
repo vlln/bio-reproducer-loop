@@ -8,19 +8,19 @@ data_references:
 - accession: null
   repository: other
   is_primary: true
-  ground_truth: invalid
+  ground_truth: unknown
   downloadable: 'false'
   notes: transcribed from scores.json evidence
 - accession: null
   repository: other
   is_primary: true
-  ground_truth: invalid
+  ground_truth: unknown
   downloadable: 'false'
   notes: transcribed from scores.json evidence
 - accession: null
   repository: other
   is_primary: true
-  ground_truth: invalid
+  ground_truth: unknown
   downloadable: 'false'
   notes: transcribed from scores.json evidence
 code_references: []

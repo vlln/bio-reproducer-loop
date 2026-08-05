@@ -160,11 +160,13 @@ def _build_claims(entry_id: str, md: dict, ex: dict, scores: dict) -> dict:
                   ("D1_data_findable", "D2_data_accessible", "D3_code_methods_available"))
     data_claims = []
     for dr in ex.get("data_references", []):
+        has_acc = bool(dr.get("accession_id"))
         data_claims.append({
             "accession": dr.get("accession_id"),
             "repository": dr.get("repo_type"),
             "is_primary": dr.get("is_primary"),
-            "ground_truth": DATA_GROUND_TRUTH.get(d1["score"], "unknown"),
+            # no accession → not locatable → unknown (verify skips, AC-0009-B-3)
+            "ground_truth": DATA_GROUND_TRUTH.get(d1["score"], "unknown") if has_acc else "unknown",
             "downloadable": "true" if d2["score"] >= 1 else "false",
             "notes": "transcribed from scores.json evidence",
         })
@@ -344,8 +346,9 @@ CLAIMS = yaml.safe_load((Path(__file__).parent / "claims.yaml").read_text())
 def _parse_data_manifest(path):
     text = Path(path).read_text()
     state = {}
-    for m in re.finditer(r"-\\s*(\\S+)\\s*\\([^)]*\\):\\s*downloadable=(\\w+)", text):
-        state[m.group(1)] = m.group(2) == "true"
+    # accession 可含空格（如 "NHANES 1999-2014"）：惰性匹配到括号前
+    for m in re.finditer(r"-\\s*(.+?)\\s*\\([^)]*\\):\\s*downloadable=(\\w+)", text):
+        state[m.group(1).strip()] = m.group(2) == "true"
     return state
 
 
@@ -358,7 +361,8 @@ def _parse_provision_report(path):
 
 
 def check_data_references(artifact, config):
-    claims = CLAIMS["data_references"]
+    claims = [c for c in CLAIMS["data_references"]
+              if c.get("accession") and c.get("ground_truth") != "unknown"]
     system = _parse_data_manifest(artifact)
     mismatches = []
     for c in claims:

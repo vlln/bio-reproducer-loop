@@ -13,8 +13,9 @@ CLAIMS = yaml.safe_load((Path(__file__).parent / "claims.yaml").read_text())
 def _parse_data_manifest(path):
     text = Path(path).read_text()
     state = {}
-    for m in re.finditer(r"-\s*(\S+)\s*\([^)]*\):\s*downloadable=(\w+)", text):
-        state[m.group(1)] = m.group(2) == "true"
+    # accession 可含空格（如 "NHANES 1999-2014"）：惰性匹配到括号前
+    for m in re.finditer(r"-\s*(.+?)\s*\([^)]*\):\s*downloadable=(\w+)", text):
+        state[m.group(1).strip()] = m.group(2) == "true"
     return state
 
 
@@ -27,7 +28,8 @@ def _parse_provision_report(path):
 
 
 def check_data_references(artifact, config):
-    claims = CLAIMS["data_references"]
+    claims = [c for c in CLAIMS["data_references"]
+              if c.get("accession") and c.get("ground_truth") != "unknown"]
     system = _parse_data_manifest(artifact)
     mismatches = []
     for c in claims:
