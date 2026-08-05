@@ -1,0 +1,115 @@
+{
+  "data_references": [
+    {
+      "repo_type": "other",
+      "accession_id": "RRID:CVCL_C1W7",
+      "url": null,
+      "description": "SCTi003-A hiPSC cell line",
+      "is_primary": true
+    },
+    {
+      "repo_type": "other",
+      "accession_id": "RRID:CVCL_Y803",
+      "url": null,
+      "description": "WTC11 (UCSFi001-A) control hiPSC cell line",
+      "is_primary": true
+    },
+    {
+      "repo_type": "other",
+      "accession_id": "FlowRepository",
+      "url": null,
+      "description": "Raw flow cytometry and unmixed spectral flow cytometry data will be made available",
+      "is_primary": true
+    }
+  ],
+  "code_references": [
+    {
+      "repo_type": "GitHub",
+      "url": "https://github.com/SerranoLab/Golden_etal_2024",
+      "language": "R",
+      "version": null,
+      "description": "Open-access GitHub repository containing detailed protocols and analysis workflows for EpiFlow spectral flow cytometry method"
+    }
+  ],
+  "key_results": [
+    {
+      "result_id": "Fig1",
+      "type": "figure",
+      "description": "Manual gating strategies to select high quality events and identify neuronal progenitor cells with histone H3-PTM fluorescence values",
+      "value": null,
+      "is_primary": true
+    },
+    {
+      "result_id": "Fig2",
+      "type": "figure",
+      "description": "Visualization of manual gating and unsupervised clustering in opt-SNE two-dimensional space showing 11 FlowSOM elbow metaclusters consolidated into 10 clusters",
+      "value": "10 clusters",
+      "is_primary": true
+    },
+    {
+      "result_id": "Fig3",
+      "type": "figure",
+      "description": "High-dimensional exploration of H3-PTM profiles across clusters showing distinct chromatin modification profiles in NPC Clusters 08, 09, and 10",
+      "value": null,
+      "is_primary": true
+    },
+    {
+      "result_id": "validation_TSA_SAHA",
+      "type": "statistic",
+      "description": "Dose-dependent changes in H3K27ac, H3K4ac, and H3K9ac marks with TSA and SAHA treatment",
+      "value": "significant dose-dependent increase",
+      "is_primary": false
+    },
+    {
+      "result_id": "validation_A485",
+      "type": "statistic",
+      "description": "Dose-dependent changes in histone acetylation with A-485 treatment",
+      "value": "significant dose-dependent decrease",
+      "is_primary": false
+    },
+    {
+      "result_id": "H3K4me1_changes",
+      "type": "statistic",
+      "description": "H3K4me1 fluorescence intensity changes across cell cycle phases with drug treatments",
+      "value": "G0/G1 \u03c7\u00b2(6) = 4380.63, p <0.0001; G2 \u03c7\u00b2(6) = 817.47, p <0.0001; Mitosis \u03c7\u00b2(6) = 236.45, p <0.0001",
+      "is_primary": false
+    }
+  ],
+  "methods_summary": {
+    "study_design": "in vitro experimental study using human induced pluripotent stem cells and neural progenitor cell derivatives",
+    "sample_size": "n=3 biological triplicates for all experiments",
+    "analysis_pipeline": "1) Cell culture and neural induction of hiPSCs to NPCs, 2) Drug treatments with histone modifying compounds, 3) Sample preparation with fixation and permeabilization, 4) Spectral flow cytometry staining with multiparameter antibody panel, 5) Data acquisition on Cytek Aurora analyzer, 6) Data unmixing with SpectroFlo, 7) Manual gating for quality control and cell population identification, 8) Unsupervised clustering using FlowSOM algorithm, 9) Dimensionality reduction with opt-SNE, 10) Statistical analysis and visualization in R",
+    "statistical_methods": [
+      "Kruskal-Wallis test",
+      "Dunn pairwise test",
+      "Pearson correlation",
+      "FlowSOM clustering",
+      "opt-SNE dimensionality reduction"
+    ],
+    "software_tools": [
+      "SpectroFlo v2",
+      "OMIQ analysis platform",
+      "R with renv package v1.0.7",
+      "FlowSOM",
+      "opt-SNE"
+    ]
+  },
+  "environment_specs": {
+    "operating_system": null,
+    "programming_languages": [
+      "R"
+    ],
+    "key_packages": [
+      "renv==1.0.7",
+      "FlowSOM",
+      "opt-SNE"
+    ],
+    "containerization": "none mentioned",
+    "workflow_manager": "none mentioned"
+  },
+  "data_availability_statement": "Data analysis code and details of R packages used are available at [https://github.com/SerranoLab/Golden_etal_2024]. Raw flow cytometry and unmixed spectral flow cytometry data will be made available in FlowRepository.",
+  "code_availability_statement": "A comprehensive analysis and data visualization code, including input data, data processing steps, and visualization rationale, is available at [https://github.com/SerranoLab/Golden_etal_2024]. The data analysis workflow for gating and dimensionality reduction was built using the cloud-based OMIQ analysis platform. The data exploration and visualization workflow was built in R using the renv package (Renv v1.0.7), which creates reproducible R environments and ensures data analysis reproducibility.",
+  "text_source": "pmc_fulltext",
+  "text_length": 73354,
+  "raw_text_available": true
+}

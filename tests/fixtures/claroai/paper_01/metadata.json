@@ -1,0 +1,12 @@
+{
+  "pmid": "41610471",
+  "doi": "10.1016/j.neo.2026.101275",
+  "pmc_id": "PMC12874334",
+  "title": "Multi-omics profiling reveals microenvironmental remodeling as a key driver of house dust mite-induced lung cancer progression",
+  "journal": "Neoplasia",
+  "funding_type": "intramural",
+  "modality": "genomics_omics",
+  "modality_label": "Genomics/Omics",
+  "is_computational": true,
+  "selection_reason": "WGS + RNA-seq + DNA methylation profiling. NIH intramural (UCSD/NIH). PMC available. Multi-omics computational pipeline."
+}

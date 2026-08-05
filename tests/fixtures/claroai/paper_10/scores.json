@@ -1,0 +1,67 @@
+{
+  "pmid": "41676480",
+  "doi": "10.1101/2024.10.03.616268",
+  "modality": "wet_lab",
+  "funding_type": "extramural",
+  "is_computational": false,
+  "dimensions": {
+    "D1_data_findable": {
+      "score": 2,
+      "max_score": 2,
+      "applicable": true,
+      "justification": "All 3 data references valid and accessible",
+      "evidence": [
+        "ACCESSION: RRID:CVCL_C1W7 (other)",
+        "ACCESSION: RRID:CVCL_Y803 (other)",
+        "ACCESSION: FlowRepository (other)"
+      ],
+      "agent_confidence": 0.85
+    },
+    "D2_data_accessible": {
+      "score": 2,
+      "max_score": 2,
+      "applicable": true,
+      "justification": "All input data (13 CSV files, 1.45M total rows) included directly in GitHub repo. Raw .fcs files promised to FlowRepository but NOT YET DEPOSITED.",
+      "evidence": [
+        "GitHub: all processed CSV data included",
+        "FlowRepository: NOT deposited (paper says 'will be made available')"
+      ],
+      "agent_confidence": 0.95
+    },
+    "D3_code_methods_available": {
+      "score": 2,
+      "max_score": 2,
+      "applicable": true,
+      "justification": "Complete analysis in PTM_analysis.qmd (3,402 lines). renv.lock with 284 pinned R packages (renv==1.0.7). Pre-rendered HTML output included for comparison. GitHub: https://github.com/SerranoLab/Golden_etal_2024",
+      "evidence": [
+        "renv.lock: 284 packages pinned",
+        "PTM_analysis.qmd: complete pipeline",
+        "Pre-rendered output: index.html (87 MB)"
+      ],
+      "agent_confidence": 0.95
+    },
+    "D4_environment_reconstructable": {
+      "score": null,
+      "max_score": 2,
+      "applicable": false,
+      "justification": "N/A for wet-lab papers",
+      "evidence": [],
+      "agent_confidence": null
+    },
+    "D5_results_match": {
+      "score": null,
+      "max_score": 2,
+      "applicable": false,
+      "justification": "N/A for wet-lab papers",
+      "evidence": [],
+      "agent_confidence": null
+    }
+  },
+  "total_score": 6,
+  "max_possible_score": 6,
+  "reproducibility_percentage": 100.0,
+  "audit_timestamp": "2026-04-09T14:01:20.987946+00:00",
+  "audit_duration_minutes": 0.5,
+  "human_override": true,
+  "notes": "Agent reproduction achieved 100% match on all 189+ testable numerical findings (z-statistics exact to 7 decimal places). Despite D4/D5 being N/A for wet-lab scoring, this paper's computational analysis is the most reproducible in the sample. See reproduction_report.md."
+}

@@ -1,0 +1,158 @@
+{
+  "data_references": [
+    {
+      "repo_type": "GEO",
+      "accession_id": "GSE308855",
+      "url": null,
+      "description": "RNA-seq data from mouse normal lung tissues and tumors",
+      "is_primary": true
+    },
+    {
+      "repo_type": "GEO",
+      "accession_id": "GSE317298",
+      "url": null,
+      "description": "DNA methylation profiling data from mouse normal lung tissues and tumors",
+      "is_primary": true
+    },
+    {
+      "repo_type": "SRA",
+      "accession_id": "PRJNA1402948",
+      "url": null,
+      "description": "Whole genome sequencing data from human BEAS-2B and mouse LLC cells, and mouse normal lung tissues and tumors",
+      "is_primary": true
+    },
+    {
+      "repo_type": "sra",
+      "accession_id": "PRJNA",
+      "url": "https://www.ncbi.nlm.nih.gov/sra/PRJNA",
+      "description": "Detected by regex (sra)",
+      "is_primary": false,
+      "source": "regex"
+    }
+  ],
+  "code_references": [
+    {
+      "repo_type": "GitHub",
+      "url": "https://github.com/shamsalazzam/code_Multi-omics-profiling",
+      "language": "R",
+      "version": null,
+      "description": "Analysis code for multi-omics profiling of HDM-induced lung cancer progression"
+    },
+    {
+      "repo_type": "GitHub",
+      "url": "https://github.com/cit-bioinfo/mMCP-counter",
+      "language": "R",
+      "version": null,
+      "description": "Murine Microenvironment Cell Populations-counter for immune deconvolution"
+    },
+    {
+      "repo_type": "GitHub",
+      "url": "https://github.com/AlexandrovLab/DupCaller",
+      "language": null,
+      "version": null,
+      "description": "Tool for duplex sequencing variant calling"
+    },
+    {
+      "repo_type": "GitHub",
+      "url": "https://github.com/AlexandrovLab/EnsembleVariantCallingPipeline",
+      "language": null,
+      "version": null,
+      "description": "Ensemble variant calling pipeline"
+    },
+    {
+      "repo_type": "GitHub",
+      "url": "https://github.com/AlexandrovLab/SigProfilerMatrixGenerator",
+      "language": null,
+      "version": null,
+      "description": "Tool for generating mutational signature matrices"
+    }
+  ],
+  "key_results": [
+    {
+      "result_id": "Fig1C",
+      "type": "figure",
+      "description": "HDM-treated mice showed significantly higher tumor bioluminescence signals between 3 and 4 weeks after LLC cell implantation",
+      "value": "p < 0.05",
+      "is_primary": true
+    },
+    {
+      "result_id": "Fig1E",
+      "type": "figure",
+      "description": "HDM-treated mice showed significantly increased lung weight",
+      "value": "p < 0.01",
+      "is_primary": true
+    },
+    {
+      "result_id": "Fig2C",
+      "type": "figure",
+      "description": "HDM did not increase mutational burden in BEAS-2B or LLC cells in vitro",
+      "value": "no significant difference",
+      "is_primary": true
+    },
+    {
+      "result_id": "Fig3B",
+      "type": "figure",
+      "description": "HDM exposure did not significantly increase mutational burden in normal lung tissues or tumors in vivo",
+      "value": "p = 0.31 for both tissues",
+      "is_primary": true
+    },
+    {
+      "result_id": "Fig4A",
+      "type": "figure",
+      "description": "HDM-treated normal lung tissue exhibited 1,390 differentially expressed genes; tumor tissue showed 599 DEGs",
+      "value": "FDR < 0.05, |log2 fold change| \u2265 1",
+      "is_primary": true
+    },
+    {
+      "result_id": "Fig7",
+      "type": "figure",
+      "description": "HDM-driven tumor promotion was abolished in Il17a\u2212/\u2212 but not Il1b\u2212/\u2212 mice",
+      "value": "p < 0.01",
+      "is_primary": true
+    }
+  ],
+  "methods_summary": {
+    "study_design": "in vitro cell culture experiments and in vivo orthotopic lung cancer mouse model",
+    "sample_size": "n = 9 mice/group for main experiments, n = 3 mice/group for sequencing experiments",
+    "analysis_pipeline": "1) HDM exposure in vitro (BEAS-2B and LLC cells) and in vivo (C57BL/6J mice), 2) Orthotopic lung tumor implantation with LLC-GLF cells, 3) Whole-genome duplex sequencing for mutation analysis, 4) RNA-seq for transcriptomic analysis, 5) DNA methylation profiling using Illumina arrays, 6) Integrated multi-omics analysis, 7) Immune deconvolution using mMCP-counter, 8) Functional validation in Il1b\u2212/\u2212 and Il17a\u2212/\u2212 mice",
+    "statistical_methods": [
+      "Mann-Whitney test",
+      "two-sided Welch's t-test",
+      "two-way ANOVA with Bonferroni post hoc",
+      "DESeq2 for differential expression",
+      "Benjamini-Hochberg FDR correction"
+    ],
+    "software_tools": [
+      "QuPath v0.5.1",
+      "GraphPad Prism v10.6.0",
+      "R v4.5.1",
+      "STAR aligner v2.3.5a",
+      "DESeq2",
+      "BWA-MEM v0.7.17",
+      "RnBeads",
+      "ConsensusPathDB",
+      "mMCP-counter"
+    ]
+  },
+  "environment_specs": {
+    "operating_system": null,
+    "programming_languages": [
+      "R==4.5.1"
+    ],
+    "key_packages": [
+      "DESeq2",
+      "RnBeads",
+      "ggplot2",
+      "mMCP-counter",
+      "STAR==2.3.5a",
+      "BWA-MEM==0.7.17"
+    ],
+    "containerization": "none mentioned",
+    "workflow_manager": "none mentioned"
+  },
+  "data_availability_statement": "The raw FASTQ files and processed datasets generated in this study have been deposited in GEO (RNA-seq: GSE308855; DNA methylation: GSE317298) and SRA (WGS: PRJNA1402948). All analysis code is available at https://github.com/shamsalazzam/code_Multi-omics-profiling, and all data and code are publicly available without restriction.",
+  "code_availability_statement": "All analysis code is available at https://github.com/shamsalazzam/code_Multi-omics-profiling, and all data and code are publicly available without restriction.",
+  "text_source": "pmc_fulltext",
+  "text_length": 80012,
+  "raw_text_available": true
+}

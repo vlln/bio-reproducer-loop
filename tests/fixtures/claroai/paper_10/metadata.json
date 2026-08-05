@@ -1,0 +1,12 @@
+{
+  "pmid": "41676480",
+  "doi": "10.1101/2024.10.03.616268",
+  "pmc_id": "PMC12889455",
+  "title": "Nuclear Histone 3 Post-Translational Modification Profiling in Whole Cells using Spectral Flow Cytometry (EpiFlow)",
+  "journal": "bioRxiv",
+  "funding_type": "extramural",
+  "modality": "wet_lab",
+  "modality_label": "Wet-Lab/Assay",
+  "is_computational": false,
+  "selection_reason": "Explicit open-access GitHub repository with protocols and analysis workflows. Flow cytometry method. Strong reproducibility commitment in abstract."
+}

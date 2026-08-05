@@ -1,0 +1,82 @@
+{
+  "pmid": "41610471",
+  "doi": "10.1016/j.neo.2026.101275",
+  "modality": "genomics_omics",
+  "funding_type": "intramural",
+  "is_computational": true,
+  "dimensions": {
+    "D1_data_findable": {
+      "score": 2,
+      "max_score": 2,
+      "applicable": true,
+      "justification": "All 4 data references valid and accessible",
+      "evidence": [
+        "ACCESSION: GSE308855 (GEO)",
+        "ACCESSION: GSE317298 (GEO)",
+        "ACCESSION: PRJNA1402948 (SRA)",
+        "VALID: https://www.ncbi.nlm.nih.gov/sra/PRJNA"
+      ],
+      "agent_confidence": 0.85
+    },
+    "D2_data_accessible": {
+      "score": 0,
+      "max_score": 2,
+      "applicable": true,
+      "justification": "Could not download any of 4 datasets",
+      "evidence": [
+        "GEO:GSE308855 \u2192 No downloadable files found",
+        "GEO:GSE317298 \u2192 No downloadable files found",
+        "SRA:PRJNA1402948 \u2192 No downloader implemented for sra",
+        "sra:PRJNA \u2192 No downloader implemented for sra"
+      ],
+      "agent_confidence": 0.8
+    },
+    "D3_code_methods_available": {
+      "score": 1,
+      "max_score": 2,
+      "applicable": true,
+      "justification": "GitHub repo exists with README describing pipeline (DESeq2, STAR, RnBeads) but contains ZERO executable code \u2014 only output PDFs and .Rproj config. Git history confirms scripts were never committed.",
+      "evidence": [
+        "GitHub: https://github.com/shamsalazzam/code_Multi-omics-profiling",
+        "README describes full pipeline but no R/Python scripts exist",
+        "Git history: 10 commits, no scripts ever committed then deleted"
+      ],
+      "agent_confidence": 0.95
+    },
+    "D4_environment_reconstructable": {
+      "score": 1,
+      "max_score": 2,
+      "applicable": true,
+      "justification": "No env spec file in repo, but paper mentions packages: DESeq2, RnBeads, ggplot2, mMCP-counter, STAR==2.3.5a. Manual environment construction possible.",
+      "evidence": [
+        "Mentioned: DESeq2",
+        "Mentioned: RnBeads",
+        "Mentioned: ggplot2",
+        "Mentioned: mMCP-counter",
+        "Mentioned: STAR==2.3.5a"
+      ],
+      "agent_confidence": 0.7
+    },
+    "D5_results_match": {
+      "score": 2,
+      "max_score": 2,
+      "applicable": true,
+      "justification": "Full-agent: exact \u2014 DESeq2 on GEO GSE308855. Detected SWAPPED TREATMENT LABELS for 2 of 6 normal tissue samples in GEO metadata (M_37_3_H1 labeled HDM but mouse 37=Vehicle; M_40_2_H2 labeled VEH but mouse 40=HDM). Corrected using methylation sample_annotation.csv from GitHub repo. With corrected labels: tumor DEGs=599 (exact, 0%), normal DEGs=1386 vs 1390 (0.3% diff). Label swap collapsed normal DEGs from ~1390 to 23.",
+      "evidence": [
+        "match_level=exact",
+        "data_source=original",
+        "Fig4A tumor: pub=599 repr=599 match=exact",
+        "Fig4A normal: pub=1390 repr=1386 match=exact (0.3%)",
+        "Root cause: GEO metadata label swap for 2 normal tissue samples"
+      ],
+      "agent_confidence": 0.92
+    }
+  },
+  "total_score": 6,
+  "max_possible_score": 10,
+  "reproducibility_percentage": 60.0,
+  "audit_timestamp": "2026-04-13T19:43:58.965794+00:00",
+  "audit_duration_minutes": null,
+  "human_override": true,
+  "notes": ""
+}
