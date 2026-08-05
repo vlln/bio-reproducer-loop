@@ -60,13 +60,20 @@ def run(entry_path: str, run_dir: Optional[str] = None, sandbox=None) -> dict:
     paper_path = _resolve_primary_paper(input_dir, bundle)
 
     # 4. Launch loopflow with the runner-owned sandbox deadline
-    paper_relative = paper_path.relative_to(input_dir).as_posix()
     args = {
-        "paper_path": f"/input/{paper_relative}",
         "language": metadata.get("language", "en"),
         "confirm_plan": False,
         "consent": "auto",
     }
+    if paper_path is not None:
+        paper_relative = paper_path.relative_to(input_dir).as_posix()
+        args["paper_path"] = f"/input/{paper_relative}"
+    else:
+        # L5 external primary locator (audit-mode entries): no bundled paper.
+        # loopflow fetches the paper at runtime via the stable identifier.
+        primary = next(r for r in bundle["resources"]
+                       if r["id"] == bundle["primary_paper"])
+        args["paper_doi"] = _paper_identifier(primary)
     # Entry 声明引擎无关的 scored_scope（ADR-0008：一个 entry = 一个 scored scope）；
     # 本适配器（唯一引擎耦合层）在边界将其翻译为 loop 的 scope 参数，
     # 使 Reader/Data/Run/Validate 只覆盖范围内目标。
@@ -150,13 +157,33 @@ def _stage_input(entry_dir: Path, run_root: Path) -> Path:
     return staged.resolve()
 
 
-def _resolve_primary_paper(input_dir: Path, bundle: dict) -> Path:
+def _resolve_primary_paper(input_dir: Path, bundle: dict) -> Path | None:
+    """Resolve the bundled primary paper path, or None for an L5 external locator.
+
+    L5 audit-mode entries declare an external DOI/PMID/arXiv locator without a
+    bundled paper file (copyright); the system fetches the paper at runtime.
+    """
     primary_id = bundle["primary_paper"]
     resource = next(item for item in bundle["resources"] if item["id"] == primary_id)
-    paper = input_dir / resource["path"]
+    path = resource.get("path")
+    if path is None:
+        return None
+    paper = input_dir / path
     if not paper.is_file():
         raise FileNotFoundError(f"Primary paper not found in InputBundle: {paper}")
     return paper
+
+
+def _paper_identifier(resource: dict) -> str:
+    """Extract a stable paper identifier from an external primary locator source."""
+    source = resource.get("source", "")
+    if "doi.org/" in source:
+        return source.split("doi.org/", 1)[1]
+    if "arxiv.org/abs/" in source:
+        return f"arXiv:{source.split('arxiv.org/abs/', 1)[1]}"
+    if "pubmed.ncbi.nlm.nih.gov/" in source:
+        return f"PMID:{source.split('pubmed.ncbi.nlm.nih.gov/', 1)[1].strip('/')}"
+    return source
 
 
 def _read_metadata(entry_dir: Path) -> dict:

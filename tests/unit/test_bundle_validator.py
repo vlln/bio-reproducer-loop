@@ -227,3 +227,16 @@ def test_runner_validates_before_invoking_adapter(tmp_path, monkeypatch):
 
     assert not invoked
     assert not (tmp_path / "results").exists()
+
+
+def test_l5_external_primary_resolves_to_none_and_identifier():
+    """Audit-mode L5 entries (external primary locator) must not raise KeyError."""
+    from benchmarks.runner.adapters.loopflow import _paper_identifier, _resolve_primary_paper
+    entry_dir = Path("benchmarks/entries/bench-200")
+    bundle = yaml.safe_load((entry_dir / "bundle.yaml").read_text())
+    primary = next(r for r in bundle["resources"] if r["id"] == bundle["primary_paper"])
+    assert primary["availability"] == "external"
+    assert _paper_identifier(primary) == "10.1016/j.neo.2026.101275"
+    assert _paper_identifier({"source": "https://arxiv.org/abs/2111.00595"}) == "arXiv:2111.00595"
+    assert _paper_identifier({"source": "https://pubmed.ncbi.nlm.nih.gov/41610471/"}) == "PMID:41610471"
+    assert _resolve_primary_paper(entry_dir / "input", bundle) is None
