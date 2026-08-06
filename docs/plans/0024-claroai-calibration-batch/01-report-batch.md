@@ -49,7 +49,9 @@ created: 2026-08-05T00:00:00Z
 | bench-223 | Comm Biol genomics | **BLOCKED**（scMKL `alpha=1.0` 代码错误；agent 建议 rollback Phase 5 排查 + 等 Zenodo 下载） | — | — | 论文代码 bug 是真实校准发现 |
 | bench-229 | Genome Biol single-cell | 运行中（Seurat 版本根因已修：RSPM 2022-09-01 快照） | — | — | Provision 构建中 |
 
-**累计完成 4/6**（bench-220/222/203/221 全部 REPRODUCED 100 与作者一致）；bench-223 BLOCKED（论文代码 bug）；bench-229 运行中
+**累计完成 5/6 有结果**（bench-220/222/203/221 全部 REPRODUCED 100 与作者一致；bench-223 BLOCKED）；bench-229 运行中
+
+**bench-223 BLOCKED 校准发现**：作者 D3=2（代码可用）高评，但系统实际运行发现 scMKL 代码 `alpha=1.0` 参数错误（论文代码 bug）——"作者审计认为代码可用 vs 实际运行有 bug"的实证对照（D3 评分与真实可运行性差异）。决定不重启（论文代码 bug 非审计范围可修）。
 
 ## 剩余
 
