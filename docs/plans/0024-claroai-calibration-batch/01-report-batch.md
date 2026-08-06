@@ -40,6 +40,17 @@ created: 2026-08-05T00:00:00Z
 2. verify 解析暴露并修复两个鲁棒性问题：a) 无 Status 列表格（bench-220 5 列格式）→ 表格解析泛化；b) accession 命名变体（NHANES III vs NHANES-III）→ 规范化模糊匹配
 3. mip 被正确使用（mirrors/probe 正常，docker pull 是 mip 镜像源执行）；瓶颈是带宽非源选择
 
+## 第二批结果与状态
+
+| entry | 论文 | 结果 | evaluator | 作者 cal | 备注 |
+|-------|------|------|-----------|----------|------|
+| bench-203 | MRI diffusion | **REPRODUCED 100**（~6h） | **REPRODUCED 100** | D1=2/D2=2/D3=2 | ✅ 4 个 target 全部可获取 |
+| bench-221 | Cancer Control | ⚠️ 首次 run 失败（Run 阶段前置产物 run_results.md 缺失，agent 响应异常短）→ **已重启** | — | — | loopflow 提示 recover 会 replay 缓存再失败，需新 run |
+| bench-223 | Comm Biol genomics | 运行中 | — | — | 已启动 |
+| bench-229 | Genome Biol single-cell | 运行中 | — | — | 已启动 |
+
+**累计完成 3/6**（bench-220/222/203 全部 REPRODUCED 100 与作者一致）
+
 ## 剩余
 
 - 第一批其余 4 篇（bench-203/221/223/229）待批 1 完成后错峰启动
