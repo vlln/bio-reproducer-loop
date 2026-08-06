@@ -346,9 +346,34 @@ CLAIMS = yaml.safe_load((Path(__file__).parent / "claims.yaml").read_text())
 _COMPLETED = {"COMPLETED", "PARTIAL", "IN_PROGRESS", "AVAILABLE", "就绪", "已下载"}
 
 
+_SUFFIXES = ("原始数据", "数据", "文件", "files", "data", "mirror", "仓库", "repository", "原始", "官方")
+
+
 def _normalize(name):
-    """Normalize an accession/source name for fuzzy matching (e.g. NHANES III == NHANES-III)."""
-    return re.sub(r"[^0-9a-z]+", "", str(name).lower())
+    """Normalize for fuzzy matching: unify dashes, drop generic suffix words."""
+    s = str(name).lower().replace("\u2013", "-").replace("\u2014", "-")
+    s = re.sub(r"[^0-9a-z]+", "", s)
+    for suf in _SUFFIXES:
+        if s.endswith(suf) and len(s) > len(suf) + 2:
+            s = s[: -len(suf)]
+    return s
+
+
+def _keys_match(claim_acc, manifest_keys):
+    """Match a claim accession against manifest keys (exact → token-overlap on original words)."""
+    norm = _normalize(claim_acc)
+    if norm in manifest_keys:
+        return True, norm
+    # 基于原始名称分词（空格/连字符/斜杠分隔），再检查每个词是否出现在规范化 key 的子串中
+    claim_tokens = [t.lower() for t in re.split(r"[^a-z0-9]+", str(claim_acc), flags=re.I)
+                    if len(t) >= 3]
+    if not claim_tokens:
+        return False, None
+    for key in manifest_keys:
+        hits = sum(1 for t in claim_tokens if t in key)
+        if hits >= max(2, len(claim_tokens) // 2):
+            return True, key
+    return False, None
 
 
 def _parse_data_manifest(path):
@@ -363,7 +388,12 @@ def _parse_data_manifest(path):
         if not line.strip().startswith("|"):
             continue
         cols = [c.strip() for c in line.strip().strip("|").split("|")]
-        if len(cols) < 4 or cols[0].lower() in ("source", "srr 编号", "property", "sample id"):
+        # URL 行（数据来源/属性-值表）也纳入匹配：key=repo owner/name（视为数据可用）
+        for col in cols:
+            m = re.search(r"github\.com/([\\w.-]+/[\\w.-]+)", col, re.I)
+            if m:
+                state.setdefault(_normalize(m.group(1)), True)
+        if len(cols) < 4 or cols[0].lower() in ("source", "srr 编号", "property", "sample id", "属性"):
             continue
         source = cols[0]
         rest = " ".join(cols[1:])
@@ -420,8 +450,8 @@ def check_data_references(artifact, config):
     mismatches = []
     for c in claims:
         acc = c["accession"]
-        key = _normalize(acc) if acc not in system else acc
-        if key not in system:
+        matched, key = _keys_match(acc, set(system))
+        if not matched:
             mismatches.append(f"{acc}: no system judgment")
             continue
         expected = c["downloadable"] == "true"
