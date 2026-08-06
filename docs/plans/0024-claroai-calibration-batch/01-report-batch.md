@@ -28,6 +28,18 @@ created: 2026-08-05T00:00:00Z
 - 校准对照：系统 verdict/审计判断 vs 作者 D1–D3 ground truth（claims.yaml calibration 段）
 - 记录每篇 verdict、blocked 原因、时长
 
+## 第一批校准结果（完成）
+
+| entry | 论文 | 时长 | verdict（系统） | evaluator | 作者 calibration | 一致性 |
+|-------|------|------|----------------|-----------|------------------|--------|
+| bench-220 | SciTotalEnv epi | ~20h | REPRODUCED 100 | **REPRODUCED 100** | D1=2/D2=2/D3=2 | ✅ 数据/代码判断全一致 |
+| bench-222 | TorchXRayVision | ~16h | REPRODUCED 100 | **REPRODUCED 100** | D1=2/D2=2/D3=2 | ✅ 数据/代码判断全一致 |
+
+**校准发现**：
+1. 第一批选 D2=2&D3=2 论文（数据+代码公开）→ 系统成功复现（与 bench-200 BLOCKED 对照，验证了"元数据分预测 D5"的 claroai-bench 结论）
+2. verify 解析暴露并修复两个鲁棒性问题：a) 无 Status 列表格（bench-220 5 列格式）→ 表格解析泛化；b) accession 命名变体（NHANES III vs NHANES-III）→ 规范化模糊匹配
+3. mip 被正确使用（mirrors/probe 正常，docker pull 是 mip 镜像源执行）；瓶颈是带宽非源选择
+
 ## 剩余
 
 - 第一批其余 4 篇（bench-203/221/223/229）待批 1 完成后错峰启动
