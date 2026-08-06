@@ -45,11 +45,11 @@ created: 2026-08-05T00:00:00Z
 | entry | 论文 | 结果 | evaluator | 作者 cal | 备注 |
 |-------|------|------|-----------|----------|------|
 | bench-203 | MRI diffusion | **REPRODUCED 100**（~6h） | **REPRODUCED 100** | D1=2/D2=2/D3=2 | ✅ 4 个 target 全部可获取 |
-| bench-221 | Cancer Control | ⚠️ 首次 run 失败（Run 阶段前置产物 run_results.md 缺失，agent 响应异常短）→ **已重启** | — | — | loopflow 提示 recover 会 replay 缓存再失败，需新 run |
-| bench-223 | Comm Biol genomics | 运行中 | — | — | 已启动 |
-| bench-229 | Genome Biol single-cell | 运行中 | — | — | 已启动 |
+| bench-221 | Cancer Control | 首次 run 失败（run_results.md 缺失）→ 重启 → **REPRODUCED 100** | **REPRODUCED 100** | D1=2/D2=2/D3=2 | ✅ 镜像复用 bench-220 的 R 4.3.3 |
+| bench-223 | Comm Biol genomics | **BLOCKED**（scMKL `alpha=1.0` 代码错误；agent 建议 rollback Phase 5 排查 + 等 Zenodo 下载） | — | — | 论文代码 bug 是真实校准发现 |
+| bench-229 | Genome Biol single-cell | 运行中（Seurat 版本根因已修：RSPM 2022-09-01 快照） | — | — | Provision 构建中 |
 
-**累计完成 3/6**（bench-220/222/203 全部 REPRODUCED 100 与作者一致）
+**累计完成 4/6**（bench-220/222/203/221 全部 REPRODUCED 100 与作者一致）；bench-223 BLOCKED（论文代码 bug）；bench-229 运行中
 
 ## 剩余
 
