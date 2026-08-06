@@ -346,26 +346,35 @@ CLAIMS = yaml.safe_load((Path(__file__).parent / "claims.yaml").read_text())
 _COMPLETED = {"COMPLETED", "PARTIAL", "IN_PROGRESS", "AVAILABLE", "就绪", "已下载"}
 
 
+def _normalize(name):
+    """Normalize an accession/source name for fuzzy matching (e.g. NHANES III == NHANES-III)."""
+    return re.sub(r"[^0-9a-z]+", "", str(name).lower())
+
+
 def _parse_data_manifest(path):
     text = Path(path).read_text()
     state = {}
     # 格式 1（行式）：- ACCESSION (REPO): downloadable=true/false
     for m in re.finditer(r"-\\s*(.+?)\\s*\\([^)]*\\):\\s*downloadable=(\\w+)", text):
-        state[m.group(1).strip()] = m.group(2) == "true"
-    # 格式 2（Markdown 表格）：| Source | ... | Status | Notes |  —— 提取 accession + 状态
+        state[_normalize(m.group(1))] = m.group(2) == "true"
+    # 格式 2（Markdown 表格）：| Source | ... | Status/Obtained/Notes |  —— 提取 source 名 + 状态
+    # 兼容有 Status 列（bench-200 格式）与无 Status 列（bench-220 格式，状态在 Obtained/Notes）
     for line in text.splitlines():
         if not line.strip().startswith("|"):
             continue
         cols = [c.strip() for c in line.strip().strip("|").split("|")]
-        if len(cols) < 6 or cols[0].lower() in ("source", "srr 编号", "property"):
+        if len(cols) < 4 or cols[0].lower() in ("source", "srr 编号", "property", "sample id"):
             continue
-        source, status = cols[0], cols[-2]
-        acc = _first_accession(source)
-        if acc is None:
+        source = cols[0]
+        rest = " ".join(cols[1:])
+        acc = _first_accession(source) or _normalize(source.split("(")[0].strip())
+        if acc is None or len(str(acc)) < 3:
             continue
-        if status in _COMPLETED:
+        if any(k in rest for k in ("COMPLETED", "PARTIAL", "IN_PROGRESS", "AVAILABLE", "就绪",
+                                    "已下载", "已获取", "已包含", "已集成", "硬编码", "已克隆", "成功", "是")):
             state[acc] = True
-        elif status in ("NOT_AVAILABLE", "BLOCKED", "OUT_OF_SCOPE", "MISSING", "未公开", "无法访问"):
+        elif any(k in rest for k in ("NOT_AVAILABLE", "BLOCKED", "OUT_OF_SCOPE", "MISSING",
+                                     "未公开", "无法访问", "不可", "否")):
             state[acc] = False
     return state
 
@@ -405,18 +414,19 @@ def _first_url(text):
 
 def check_data_references(artifact, config):
     claims = [c for c in CLAIMS["data_references"]
-              if c.get("accession") and len(str(c["accession"])) >= 6
+              if c.get("accession") and len(str(c["accession"])) >= 3
               and c.get("ground_truth") != "unknown"]
     system = _parse_data_manifest(artifact)
     mismatches = []
     for c in claims:
         acc = c["accession"]
-        if acc not in system:
+        key = _normalize(acc) if acc not in system else acc
+        if key not in system:
             mismatches.append(f"{acc}: no system judgment")
             continue
         expected = c["downloadable"] == "true"
-        if system[acc] != expected:
-            mismatches.append(f"{acc}: system={system[acc]} expected={expected}")
+        if system[key] != expected:
+            mismatches.append(f"{acc}: system={system[key]} expected={expected}")
     return {"passed": not mismatches, "actual": system,
             "note": "; ".join(mismatches) or "all data judgments match ground truth"}
 
