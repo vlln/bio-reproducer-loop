@@ -1,16 +1,14 @@
-"""Evaluate a completed ClaroAI calibration run against the entry oracle.
+"""Evaluate a completed calibration run against its entry oracle (BL-013).
 
 Usage:
-    python3.12 benchmarks/converters/claroai/evaluate_run.py <run_dir> <entry_dir>
+    PYTHONPATH=. python3.12 benchmarks/converters/claroai/evaluate_run.py \\
+        /storeData/gs/claroai-calibration/runs/bench-220 benchmarks/entries/bench-220
 
-Consumes the agent's actual audit artifacts (data_manifest.md / provision_report.md)
-from a completed loopflow run, builds a submission, and runs the independent
-evaluator (python_verify against oracle/verify.py + claims.yaml ground truth).
-
-Works both for remote runs (pass the /storeData/gs/claroai-calibration/runs/...
-path after fetching, or run on the remote host) and local runs.
+Reads the run's repro-data/04_data/data_manifest.md + 03_provision/provision.md as
+audit evidence, runs the entry's oracle verify.py via the independent evaluator,
+and prints evaluator verdict/score/checks alongside the author calibration
+(claims.yaml calibration section — author scores are calibration-only).
 """
-
 from __future__ import annotations
 
 import json
@@ -19,37 +17,32 @@ import sys
 import tempfile
 from pathlib import Path
 
-import yaml
 
-ARTIFACT_ROLES = (
-    ("data_manifest", ("04_data", "data_manifest.md")),
-    ("provision_report", ("03_provision", "provision.md")),
-)
-
-
-def evaluate_run(run_dir: str | Path, entry_dir: str | Path) -> dict:
-    from benchmarks.runner.independent_evaluator import evaluate_submission
-
-    run = Path(run_dir)
-    entry = Path(entry_dir)
+def main(run_dir: str, entry_dir: str) -> dict:
+    run, entry = Path(run_dir), Path(entry_dir)
     eid = entry.name
-    tmp = Path(tempfile.mkdtemp(prefix=f"eval-{eid}-"))
+    tmp = Path(tempfile.mkdtemp(prefix=f"cal-{eid}-"))
     shutil.copytree(entry, tmp / eid)
     shutil.rmtree(tmp / eid / "input")
     shutil.copytree(entry / "input", tmp / eid / "input")
 
-    repro = run / "repro-data"
-    artifacts = []
-    for role, (subdir, name) in ARTIFACT_ROLES:
-        src = repro / subdir / name
-        if not src.exists():
-            cands = list(repro.rglob(name))
-            src = cands[0] if cands else None
-        if src is not None:
-            dst = tmp / eid / "artifacts" / name
-            dst.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy(src, dst)
-            artifacts.append({"role": role, "path": f"artifacts/{name}"})
+    art = tmp / eid / "artifacts"
+    art.mkdir()
+    dm = run / "repro-data" / "04_data" / "data_manifest.md"
+    prov = run / "repro-data" / "03_provision" / "provision.md"
+    found = []
+    if dm.exists():
+        shutil.copy(dm, art / "data_manifest.md")
+        found.append("data_manifest")
+    if prov.exists():
+        shutil.copy(prov, art / "provision_report.md")
+        found.append("provision_report")
+
+    import yaml
+    from benchmarks.runner.independent_evaluator import evaluate_submission
+    from benchmarks.runner.bundle_validator import validate_entry
+    validate_entry(entry)
+    claims = yaml.safe_load((entry / "oracle" / "claims.yaml").read_text())
 
     sub = {
         "protocol_version": "2.0",
@@ -57,34 +50,28 @@ def evaluate_run(run_dir: str | Path, entry_dir: str | Path) -> dict:
         "bench_id": eid,
         "system": {"name": "bio-reproducer", "version": "0.1.0"},
         "claimed_verdict": "REPRODUCED",
-        "artifacts": artifacts,
+        "artifacts": [{"role": "data_manifest", "path": "artifacts/data_manifest.md"},
+                      {"role": "provision_report", "path": "artifacts/provision_report.md"}],
         "execution": {"purpose": "validation-only", "isolation": "container",
                       "provider": "docker", "stages": []},
     }
-    (tmp / eid / "submission.json").write_text(json.dumps(sub, indent=2))
-    result = evaluate_submission(tmp / eid, tmp / eid / "submission.json")
-
-    claims = yaml.safe_load((entry / "oracle" / "claims.yaml").read_text())
-    return {
+    (tmp / eid / "submission.json").write_text(json.dumps(sub))
+    r = evaluate_submission(tmp / eid, tmp / eid / "submission.json")
+    result = {
         "entry": eid,
-        "verdict": result.get("verdict"),
-        "score": result.get("score"),
-        "checks": [
-            {"id": c.get("id"), "passed": c.get("passed"), "note": c.get("note")}
-            for c in result.get("checks", [])
-        ],
+        "evaluator_verdict": r.get("verdict"),
+        "evaluator_score": r.get("score"),
+        "checks": [{"id": c.get("id"), "passed": c.get("passed"), "note": c.get("note")}
+                   for c in r.get("checks", [])],
         "author_calibration": claims.get("calibration"),
-        "artifacts_found": [a.get("role") for a in artifacts],
+        "artifacts_found": found,
     }
-
-
-def main(argv: list[str] | None = None) -> None:
-    if len(sys.argv) != 3:
-        print(__doc__)
-        sys.exit(2)
-    out = evaluate_run(sys.argv[1], sys.argv[2])
-    print(json.dumps(out, indent=2, ensure_ascii=False))
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    return result
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) != 3:
+        print("usage: evaluate_run.py <run_dir> <entry_dir>", file=sys.stderr)
+        sys.exit(2)
+    main(sys.argv[1], sys.argv[2])
