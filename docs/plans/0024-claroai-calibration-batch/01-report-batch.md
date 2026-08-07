@@ -55,6 +55,30 @@ created: 2026-08-05T00:00:00Z
 
 **bench-223 BLOCKED 校准发现**：作者 D3=2（代码可用）高评，但系统实际运行发现 scMKL 代码 `alpha=1.0` 参数错误（论文代码 bug）——"作者审计认为代码可用 vs 实际运行有 bug"的实证对照（D3 评分与真实可运行性差异）。决定不重启（论文代码 bug 非审计范围可修）。
 
+## 第一批总结（6 篇全部有结果）
+
+| entry | 系统 verdict | evaluator | 作者 cal | 校准结论 |
+|-------|-------------|-----------|----------|----------|
+| bench-220 | REPRODUCED 100 | REPRODUCED 100 | 222 | ✅ 一致（数据+代码公开 → 可复现） |
+| bench-222 | REPRODUCED 100 | REPRODUCED 100 | 222 | ✅ 一致 |
+| bench-203 | REPRODUCED 100 | REPRODUCED 100 | 222 | ✅ 一致（最快 ~6h） |
+| bench-221 | REPRODUCED 100 | REPRODUCED 100 | 222 | ✅ 一致（首次失败重启后成功） |
+| bench-223 | BLOCKED | — | 222 | ⚠️ 作者 D3=2 vs 实际 scMKL 代码 bug |
+| bench-229 | BLOCKED | PARTIAL 50 | 222 | ⚠️ GEO/KPMP 数据受阻（GSE220289 分歧捕获）；KPMP UUID/Zenodo DOI 命名边界 |
+
+**校准核心结论**：作者 D1-D3 全 2 分（作者认为数据+代码完全可用）的 6 篇中，4 篇系统成功复现
+（REPRODUCED 100，evaluator 与作者一致）；2 篇系统 BLOCKED——bench-223 暴露作者 D3 高评
+vs 实际代码 bug，bench-229 暴露作者 D2 高评 vs 实际数据获取受阻（GEO SSL/KPMP 注册）。
+即：**作者审计评分（多模型主观）高估了真实可复现性**——确定性独立评分（系统 verdict +
+evaluator）与作者分数对照，4/6 一致、2/6 系统更保守且暴露了作者评分未覆盖的真实障碍。
+
+**verify 迭代**（校准驱动，converter.py 模板已入库）：5 轮修复覆盖 Markdown 表格/属性表/
+URL 行/状态词/大小写/out-of-scope NA/命名变体模糊匹配。
+
+**资产规范**（AGENTS.local.md + calibration-assets.md + evaluate_run.py）：完成即归档到
+`/storeData/gs/claroai-calibration/runs/`；bench-200/220/222 完整产物因批量归档误操作丢失
+（评估结果已保留），已记录教训。
+
 ## 剩余
 
 - 第一批其余 4 篇（bench-203/221/223/229）待批 1 完成后错峰启动
