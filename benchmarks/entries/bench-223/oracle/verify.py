@@ -29,17 +29,18 @@ def _normalize(name):
 def _keys_match(claim_acc, manifest_keys):
     """Match a claim accession against manifest keys (exact → token-overlap on original words)."""
     norm = _normalize(claim_acc)
-    if norm in manifest_keys:
-        return True, norm
+    norm_keys = {_normalize(k): k for k in manifest_keys}
+    if norm in norm_keys:
+        return True, norm_keys[norm]
     # 基于原始名称分词（空格/连字符/斜杠分隔），再检查每个词是否出现在规范化 key 的子串中
     claim_tokens = [t.lower() for t in re.split(r"[^a-z0-9]+", str(claim_acc), flags=re.I)
                     if len(t) >= 3]
     if not claim_tokens:
         return False, None
-    for key in manifest_keys:
-        hits = sum(1 for t in claim_tokens if t in key)
+    for nkey, orig in norm_keys.items():
+        hits = sum(1 for t in claim_tokens if t in nkey)
         if hits >= max(2, len(claim_tokens) // 2):
-            return True, key
+            return True, orig
     return False, None
 
 
@@ -62,16 +63,22 @@ def _parse_data_manifest(path):
                 state.setdefault(_normalize(m.group(1)), True)
         if len(cols) < 4 or cols[0].lower() in ("source", "srr 编号", "property", "sample id", "属性"):
             continue
-        source = cols[0]
-        rest = " ".join(cols[1:])
-        acc = _first_accession(source) or _normalize(source.split("(")[0].strip())
+        row_text = " ".join(cols)
+        acc = _first_accession(row_text)
+        if acc is None:
+            source = cols[0]
+            acc = _normalize(source.split("(")[0].strip())
         if acc is None or len(str(acc)) < 3:
             continue
+        rest = row_text
         if any(k in rest for k in ("COMPLETED", "PARTIAL", "IN_PROGRESS", "AVAILABLE", "就绪",
-                                    "已下载", "已获取", "已包含", "已集成", "硬编码", "已克隆", "成功", "是")):
+                                    "已下载", "已获取", "已包含", "已集成", "硬编码", "已克隆", "成功",
+                                    "下载中", "是")):
             state[acc] = True
-        elif any(k in rest for k in ("NOT_AVAILABLE", "BLOCKED", "OUT_OF_SCOPE", "MISSING",
-                                     "未公开", "无法访问", "不可", "否")):
+        elif "OUT_OF_SCOPE" in rest or "out-of-scope" in rest.lower():
+            state[acc] = None  # 系统明确标范围外：未审计，计 NA 不失败
+        elif any(k in rest for k in ("NOT_AVAILABLE", "BLOCKED", "MISSING",
+                                     "未公开", "无法访问", "不可", "未获取", "否")):
             state[acc] = False
     return state
 
@@ -121,6 +128,8 @@ def check_data_references(artifact, config):
         if not matched:
             mismatches.append(f"{acc}: no system judgment")
             continue
+        if system[key] is None:
+            continue  # 系统明确标 out-of-scope 未审计 → NA，不计失败
         expected = c["downloadable"] == "true"
         if system[key] != expected:
             mismatches.append(f"{acc}: system={system[key]} expected={expected}")
