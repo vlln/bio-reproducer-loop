@@ -51,6 +51,8 @@ created: 2026-08-05T00:00:00Z
 
 **累计完成 5/6 有结果**（bench-220/222/203/221 全部 REPRODUCED 100 与作者一致；bench-223 BLOCKED）；bench-229 运行中
 
+**bench-229 首次 run 卡死 → 已重启**：Provision 实际完成（sctools ×2 + amulet 镜像共 18GB 就绪 + provision.md），但 agent 因重复提交的幽灵 amulet pull/build 进程（5.5h 未退）卡在等待；清理幽灵进程后 45 分钟未恢复 → 按循环指令重启新 run（镜像已缓存，Provision 应快速复用）。旧 run 保留为 Provision 完成观测。
+
 **bench-223 BLOCKED 校准发现**：作者 D3=2（代码可用）高评，但系统实际运行发现 scMKL 代码 `alpha=1.0` 参数错误（论文代码 bug）——"作者审计认为代码可用 vs 实际运行有 bug"的实证对照（D3 评分与真实可运行性差异）。决定不重启（论文代码 bug 非审计范围可修）。
 
 ## 剩余
