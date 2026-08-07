@@ -47,6 +47,17 @@ created: 2026-08-05T00:00:00Z
 Markdown 表格/属性-值表/URL 行/状态词/大小写归一化/out-of-scope NA/命名变体模糊匹配。
 结论：verify 能可靠解析真实系统产物；命名语义对齐有极限（UUID/DOI 变体），已知限制记录。
 
+## 重跑结果（验证根因 + 补产物）
+
+| entry | 重跑 verdict | evaluator | 结论 |
+|-------|-------------|-----------|------|
+| bench-200 | REPRODUCED | FAILED 0 | 首次 BLOCKED 是系统网络问题（参考基因组下载中断）；重跑系统成功下载数据 → 与作者 D2=0 分歧（作者 D2 低估，工具链限制）；代码不完整与 D3=1 一致 |
+| bench-222 | PARTIAL（图像网络限制） | REPRODUCED 100 | 元数据审计与作者一致；系统自评 PARTIAL 是 scope 语义（图像数据隔离），非审计判断问题 |
+| bench-223 | **PARTIAL**（首次 BLOCKED） | PARTIAL 50 | **证实 alpha 参数是系统路径问题**（首次 BLOCKED 非论文 bug）；scMKL 跑通（AUROC 0.9920），但**未超过 SVM(0.9956)/XGBoost(0.9954)**，与论文声称"scMKL 优于基线"方向相反——复现偏差（R3/R4），SLL 数据仍 blocked |
+| bench-220 | 运行中（Run 阶段） | — | Table 2 + Figure 1 forest plot 已产出 |
+
+**校准结论（最终修正）**：作者 D1-D3 评分评估"数据/代码可用性"层面大体可靠（5/6 的元数据判断与作者一致）；BLOCKED/PARTIAL 根因逐篇分析显示——系统网络/参数路径因素（bench-200 网络、bench-223 alpha）与论文真实限制（bench-229 KPMP/GSE220289、bench-223 SLL 数据）混合；bench-223 重跑还暴露**复现结果与论文声称不一致**（scMKL 未超基线）——这超出 D1-D3 审计范围，属于 D5 复现层面的发现。作者评分既可能高估（D2 未覆盖数据获取阻碍）也可能低估（D2=0 但数据实际可下载）。
+
 ## 重跑状态（验证根因 + 补产物）
 
 | entry | 状态 | 目的 |
