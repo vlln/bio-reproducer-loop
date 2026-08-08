@@ -56,6 +56,11 @@ Markdown 表格/属性-值表/URL 行/状态词/大小写归一化/out-of-scope 
 | bench-223 | **PARTIAL**（首次 BLOCKED） | PARTIAL 50 | **证实 alpha 参数是系统路径问题**（首次 BLOCKED 非论文 bug）；scMKL 跑通（AUROC 0.9920），但**未超过 SVM(0.9956)/XGBoost(0.9954)**，与论文声称"scMKL 优于基线"方向相反——复现偏差（R3/R4），SLL 数据仍 blocked |
 | bench-220 | 运行中（Run 阶段） | — | Table 2 + Figure 1 forest plot 已产出 |
 
+**方法学教训（独立验证原则）**：bench-229 声称"GSE220289 无处理矩阵"经 GEO FTP 独立验证为误报
+（`GSE220289_RAW.tar` 45.6GB 含 19 个处理矩阵文件：filtered_feature_bc_matrix.h5/cellbender_matrix_filtered.h5 等）——
+**校准发现必须独立验证，不可采信 agent 自述**。bench-200（GEO 文件同名同源）与 bench-223（results JSON + 运行日志）
+已独立验证为真实；bench-229 的 GSE220289 部分修正为误报，KPMP 待验证。
+
 **校准结论（最终修正）**：作者 D1-D3 评分评估"数据/代码可用性"层面大体可靠（5/6 的元数据判断与作者一致）；BLOCKED/PARTIAL 根因逐篇分析显示——系统网络/参数路径因素（bench-200 网络、bench-223 alpha）与论文真实限制（bench-229 KPMP/GSE220289、bench-223 SLL 数据）混合；bench-223 重跑还暴露**复现结果与论文声称不一致**（scMKL 未超基线）——这超出 D1-D3 审计范围，属于 D5 复现层面的发现。作者评分既可能高估（D2 未覆盖数据获取阻碍）也可能低估（D2=0 但数据实际可下载）。
 
 ## 重跑状态（验证根因 + 补产物）

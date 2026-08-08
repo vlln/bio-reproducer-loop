@@ -20,13 +20,19 @@
 | bench-203 | MRI diffusion | REPRODUCED 100 | REPRODUCED 100 | D1=2/D2=2/D3=2 | 已归档 ✓ | |
 | bench-221 | Cancer Control | REPRODUCED 100 | REPRODUCED 100 | D1=2/D2=2/D3=2 | 已归档 ✓ | 首次 run 失败后重启 |
 | bench-223 | Comm Biol | BLOCKED | — | D1=2/D2=2/D3=2 | 已归档 ✓ | scMKL alpha=1.0 代码 bug（作者 D3=2 高评 vs 实际 bug） |
-| bench-229 | Genome Biol | BLOCKED | PARTIAL 50 | D1=2/D2=2/D3=2 | 已归档 ✓ | GEO 下载受阻 + KPMP 注册；GSE220289 分歧；KPMP UUID/Zenodo DOI 命名边界 |
+| bench-229 | Genome Biol | BLOCKED | PARTIAL 50 | D1=2/D2=2/D3=2 | 已归档 ✓ | **修正**：GSE220289"无处理矩阵"为 **agent 误报**（GEO 独立验证有 19 个处理矩阵文件，45.6GB）；KPMP 下载需注册待验证；GEO SSL 为系统网络限制 |
 
 **第一批全部闭环（7 run 全归档）**。结论：作者 D1-D3 元数据评分大体可靠（元数据判断多数与作者一致）；
 系统 verdict 差异根因逐篇为：系统网络/参数路径（bench-200/223）+ 论文真实限制（bench-229/223-SLL）；
 bench-223 重跑暴露复现偏差（scMKL 未超基线，属 D5 层面）；bench-200 显示作者 D2 可能低估。
 
 **校准双向发现**：bench-200 重跑显示作者 D2=0 低估（数据实际可下载，作者工具链限制导致判不可下载）；bench-223 显示系统 alpha 参数路径问题（非论文 bug）——作者评分与确定性评分的差异**双向都有**，不能单向归因"作者高估"。
+
+## 方法学规范（独立验证原则）
+
+**校准发现不得采信 agent 自述**——每个"发现"（数据可下载/不可下载、复现偏差、代码 bug、资源缺失）
+必须经独立验证：外部 API（NCBI GEO/PMC/Crossref）或 run 实际产物文件（results/*.json、运行日志），
+与 agent 叙述交叉核对。bench-229 误报（声称 GSE220289 无处理矩阵，GEO 实际有）为此原则的实证教训。
 
 ## 教训与规范
 
