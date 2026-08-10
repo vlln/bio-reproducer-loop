@@ -41,23 +41,34 @@ bio-reproducer 包含三个部分：
 │   │   └── 0001-benchmark.md
 │   ├── interface/
 │   │   ├── README.md
-│   │   └── 0001-benchmark-protocol.md
+│   │   ├── 0001-benchmark-protocol.md
+│   │   └── 0002-claroai-converter.md
 │   ├── ac/
 │   │   ├── README.md
 │   │   ├── 0001-benchmark-layers.md
-│   │   └── 0002-benchmark-runner.md
+│   │   ├── 0002-benchmark-runner.md
+│   │   ├── 0003-input-bundle-fidelity.md
+│   │   ├── 0004-vm-runtime-boundary.md
+│   │   └── 0005-claroai-converter.md
 │   ├── adr/
 │   │   ├── README.md
 │   │   ├── 0001-language.md
 │   │   ├── 0002-benchmark-format.md
 │   │   ├── 0003-test-layers.md
+│   │   ├── 0004-test-infra.md
 │   │   ├── 0005-independent-evaluation.md
-│   │   └── 0006-test-eval-domains.md
+│   │   ├── 0006-test-eval-domains.md
+│   │   ├── 0007-input-bundle-fidelity.md
+│   │   ├── 0008-entry-taxonomy-resource-reuse.md
+│   │   ├── 0009-disposable-vm-runtime.md
+│   │   └── 0010-claroai-bench-adapter.md
 │   └── plans/
 │       └── README.md
 ├── benchmarks/
 │   ├── paper-entries.md
-│   └── entries/
+│   ├── entries/           # bench-001~006, 100, 200~234
+│   ├── runner/            # 执行器 + 适配器 + 独立评估器
+│   └── converters/claroai/  # ClaroAI-Bench 转换器
 ├── loops/bio-reproducer/  # 论文复现系统
 ├── tests/                 # 确定性软件测试
 └── evals/                 # 真实 LLM 内部行为评测

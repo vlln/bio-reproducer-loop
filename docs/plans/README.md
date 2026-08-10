@@ -23,8 +23,10 @@
 | [0020-claroai-converter-infra](0020-claroai-converter-infra/) | — | done |
 | [0021-claroai-converter](0021-claroai-converter/) | `feat/0021-claroai-converter`（已合并） | done |
 | [0022-claroai-system-test](0022-claroai-system-test/) | — | done |
+| [0023-claroai-calibration](0023-claroai-calibration/) | — | done |
+| [0024-claroai-calibration-batch](0024-claroai-calibration-batch/) | — | done |
 
-当前阶段：DESIGN（v0.2.0 发布，新一轮迭代）。Plan 006 在保留的 `spike/0006-vm-isolation` 分支验证了 KVM/QEMU、
+当前阶段：SYSTEM_TEST（v0.2.0 已发布，待人类批准 RELEASE 门禁）。Plan 006 在保留的 `spike/0006-vm-isolation` 分支验证了 KVM/QEMU、
 VM-local Docker、I/O boundary、oracle 隔离和完整 teardown；Plan 007 已将结论冻结到
 ADR-0009、Spec v4、Interface 0001 与 AC-0004。Plan 005 的 Docker sandbox 保留为开发/CI
 validation backend，不再作为可发布结果的正式边界。Plan 008 已实现最小 QEMU/KVM
@@ -43,3 +45,7 @@ Plan 015 完成 loopflow 0.26~0.28 兼容检查：eval harness 迁移到 `--agen
 （paper-01 试跑暴露的缺口）：限定只复现指定 figure/目标，贯通
 Reader→Data→Run→Validate→Package，benchmark adapter 经 metadata `scope` 字段透传
 （物化 ADR-0008 的 entry scored scope）。Plan 017 完成 scope 语义的 component eval 基线。
+Plan 018~019 完成 provision 镜像复用纪律与 scored scope 解耦。Plan 020~021 完成 ClaroAI-Bench
+converter 接入：35 个 L5 审计 entry（bench-200~234）落地，137 测试全绿。Plan 022 完成系统测试。
+Plan 023~024 完成第一批 6 篇校准（bench-200~229），验证系统能端到端跑通 L5 审计 entry，
+三种结局（REPRODUCED/BLOCKED/PARTIAL）均出现，校准方法论与独立验证原则已固化。
