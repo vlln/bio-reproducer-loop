@@ -9,14 +9,14 @@ AI Agent 驱动的生物信息学论文复现系统，配套内部测试体系�
 | 复现系统 | `loops/bio-reproducer/` | 7 阶段 workflow，输入论文自动完成复现全流程 |
 | 软件测试 | `tests/` | 确定性工程门禁，不调用真实 LLM/网络 |
 | 内部评测 | `evals/` | 真实 LLM 的单 Phase 与跨 Phase 行为评测 |
-| 公开 benchmark | `benchmarks/` | L3-L5 引擎无关的论文复现基准，6 个 entry |
+| 公开 benchmark | `benchmarks/` | L3-L5 引擎无关的论文复现基准，42 个 entry |
 
 ## 版本
 
 | 组件 | 版本 |
 |------|------|
-| 项目 | `0.1.0` |
-| Benchmark | `0.1.0`（独立版本） |
+| 项目 | `0.2.0` |
+| Benchmark | `2.1.0`（独立版本） |
 
 ## 前置依赖
 
@@ -80,9 +80,9 @@ python3 -m benchmarks.runner.cli report
 |------|------|------|
 | L1 | 单 Phase Agent 业务逻辑 | `tests/unit/` |
 | L2 | 跨 Phase 信息流 | `tests/integration/` |
-| L3 | 构造论文端到端（5 entries） | `benchmarks/entries/` |
-| L4 | 真实论文 + 冻结材料（1 entry，审查中） | `benchmarks/entries/bench-100/` |
-| L5 | 生产基准（规划中） | — |
+| L3 | 构造论文端到端（6 entries） | `benchmarks/entries/bench-001~006` |
+| L4 | 真实论文 + 冻结材料（1 entry） | `benchmarks/entries/bench-100/` |
+| L5 | ClaroAI 审计基准（35 entries） | `benchmarks/entries/bench-200~234` |
 
 ### Benchmark Entries
 
@@ -90,10 +90,12 @@ python3 -m benchmarks.runner.cli report
 |-------|------|------|------|
 | bench-001 | 差异表达分析（DESeq2） | easy | REPRODUCED |
 | bench-002 | 多工具编排（DESeq2 + clusterProfiler + pathview） | easy | REPRODUCED |
+| bench-003 | 配对 RNA-seq 差异表达（DESeq2 ~donor+condition） | easy | REPRODUCED |
 | bench-100 | Himes et al. 2014 原始材料；GEO Cuffdiff/FPKM 结果验证 | hard | UNDER REVIEW |
 | bench-004 | 跨平台转录组（Python + R） | medium | REPRODUCED |
 | bench-005 | 环境漂移 + 冲突信息 | medium | REPRODUCED |
 | bench-006 | 数据降级 + 故障注入 | medium | REPRODUCED |
+| bench-200~234 | ClaroAI-Bench L5 审计（35 篇真实 NIH 论文，DOI/PMID locator） | mixed | 独立评分 |
 
 ## 文档
 
@@ -110,13 +112,15 @@ bio-reproducer/
 │   ├── workflow.py
 │   ├── pixi.toml
 │   └── agents/
-├── tests/                    # L1-L2 内部测试
+├── tests/                    # 确定性软件测试（不调用 LLM/网络）
 │   ├── unit/
 │   └── integration/
+├── evals/                    # 真实 LLM 内部行为评测
 ├── benchmarks/               # L3-L5 公开 benchmark
 │   ├── VERSION
-│   ├── entries/              # 6 个论文包
-│   └── runner/               # 执行器 + 适配器
-├── docs/                     # devloop 设计文档
+│   ├── entries/              # 42 个论文包（bench-001~006, 100, 200~234）
+│   ├── runner/               # 执行器 + 适配器 + 独立评估器
+│   └── converters/claroai/   # ClaroAI-Bench 转换器 + 校准评估脚本
+├── docs/                     # devloop 设计文档（vision, spec, ADR, AC, plans）
 └── .github/workflows/        # CI 静态检查
 ```
