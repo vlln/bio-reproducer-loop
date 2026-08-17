@@ -55,6 +55,21 @@ created: 2026-08-12T00:00:00Z
 - 与作者 D5 校准的对照扩展到 D5 维度：bench-200/203/223 作者 D5=2 而系统未复现
   claims——作者 D5 高估/系统能力差距双向可见（与 bench-200 D2 低估同属校准双向发现）。
 
+## 端到端验证（2026-08-17，bench-220 claims 模式正式重跑）
+
+| 链路环节 | 证据 |
+|----------|------|
+| 新任务说明 → loop | run.json `"scope": "复现该论文报告的关键定量结果（Blood lead CVD HR...）"`；`d1_d3_audit` 计数=0（含 bench-v3.sh 硬编码修复） |
+| → Reader 解读 | plan.md Reproduction Target = T1–T3 三个 HR claims + 数据/代码核查，out-of-scope 明确 |
+| → 系统执行 | ~1 小时完成（上次 8h23m）：provision 复用 bone-lead-mortality 镜像（7m），Run 产出 Table 2/3 真实结果 |
+| → claims 复现 | validate R1–R6 HR 精确匹配（血铅 1.633903784 vs 1.63），PAF 偏差 ≤0.9pp |
+| → 自动解析评分 | evaluate_run.py 纯自动（含中文表头/数值邻近匹配修复）：**REPRODUCED 100**，5/5 checks PASS |
+| 作者 D5 对照 | 作者 D5=2 → 系统 100，一致 ✓ |
+
+结论：claims 模式端到端链路成立；scope 语义修复同时消除越界重活（8x 提速）。
+归档：`/storeData/gs/claroai-calibration/runs/bench-220`（旧 run 存 legacy 目录），
+calibration-assets.md 已登记。
+
 ## 遗留
 
 1. **无 D5 evidence 的 4 篇**（paper_09/10/23/26 → bench-208/209/222/225）：claims 需

@@ -52,6 +52,29 @@ bench-223 重跑暴露复现偏差（scMKL 未超基线，属 D5 层面）；ben
 记为 FAILED/PARTIAL。作者 D5 与系统 claims 复现的差异（bench-200/203/223 作者 D5=2
 而系统未复现）属校准双向发现，与 bench-200 D2 低估同类。
 
+## Plan 0025：bench-220 claims 模式正式重跑（端到端验证，2026-08-17）
+
+**目的**：验证"新任务说明（metadata.task 自然语言）→ 系统执行 → claims 复现 → 自动
+解析评分"完整链路（此前离线重评只验证了旧产物 vs 新评分体系）。
+
+| 项 | 值 |
+|----|-----|
+| run | `/storeData/gs/claroai-calibration/runs/bench-220`（旧 run 存 `bench-220-legacy-2026-08-07-20-17-39`） |
+| 总耗时 | **~1 小时**（Reader 18m + Provision 7m + Data 12m + Run 20m + Validate 3m + Package）vs 上次 8h23m（**8 倍提速**：provision 复用已有镜像，不再越界建全量环境） |
+| 任务解读 | plan.md Reproduction Target = T1–T3 三个 HR claims（1.63/3.32/2.42）+ T4–T10 数据/代码核查，out-of-scope 声明明确——`d1_d3_audit` 误读不再发生 |
+| 系统执行 | Run 产出 Table 2/3 真实结果（table2_q91/tertile/ptrend、table3_paf csv） |
+| claims 复现 | validate 报告 R1–R6 六项 HR 精确匹配（血铅 1.633903784 vs 1.63，6 位小数一致），PAF 三项偏差 ≤0.9pp |
+| **claims oracle 评估** | **REPRODUCED 100**（5/5 checks：A1/A2 + C1–C3 全部 PASS，自动解析 validate 报告，无手工映射） |
+| 作者校准对照 | 作者 D5=2 → 系统 REPRODUCED 100，**完全一致** ✓ |
+
+验证结论：claims 模式端到端链路成立——自然语言任务被正确解读、系统真实复现论文定量
+声明、独立评估自动评分。耗时从 8h23m 降至 ~1h，证明 scope 语义修复同时消除了越界重活。
+
+**过程教训**（本地流程）：容器以 uid 1000 运行，run 目录子目录（01_plan/.git 等）为
+1000 属主 755 权限，gs 无法清理/移动其内文件——本次归档后 tmp 残留重复副本无法删除
+（/tmp 重启即失，无碍）。**后续基准：run 完成归档前先 `chmod -R a+rX`（或容器内收尾）**，
+否则 mv 跨设备会部分失败。
+
 ## 教训与规范
 
 1. **完成即归档**：run 完成立即 `mv` 到持久区 + 登记本索引，勿事后批量移动（bench-200/220/222 产物因批量移动误操作丢失）
