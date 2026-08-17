@@ -25,6 +25,7 @@
 | [0022-claroai-system-test](0022-claroai-system-test/) | — | done |
 | [0023-claroai-calibration](0023-claroai-calibration/) | — | done |
 | [0024-claroai-calibration-batch](0024-claroai-calibration-batch/) | — | done |
+| [0025-scored-scope-removal-claims](0025-scored-scope-removal-claims/) | — | done |
 
 当前阶段：SYSTEM_TEST（v0.2.0 已发布，待人类批准 RELEASE 门禁）。Plan 006 在保留的 `spike/0006-vm-isolation` 分支验证了 KVM/QEMU、
 VM-local Docker、I/O boundary、oracle 隔离和完整 teardown；Plan 007 已将结论冻结到
@@ -49,3 +50,7 @@ Plan 018~019 完成 provision 镜像复用纪律与 scored scope 解耦。Plan 0
 converter 接入：35 个 L5 审计 entry（bench-200~234）落地，137 测试全绿。Plan 022 完成系统测试。
 Plan 023~024 完成第一批 6 篇校准（bench-200~229），验证系统能端到端跑通 L5 审计 entry，
 三种结局（REPRODUCED/BLOCKED/PARTIAL）均出现，校准方法论与独立验证原则已固化。
+Plan 025 删除 scored_scope 机制（评分维度代码泄漏 + 任务降级载体），ClaroAI entry 恢复
+claims 模式（D5 数值声明转录 + 容差 comparator），6 篇校准 run 离线重评（bench-220
+REPRODUCED 100、bench-221 65、bench-203 PARTIAL 30、bench-200/223/229 FAILED），
+修正审计模式的高估；系统侧越界重活（provision 全量环境）列为执行层 backlog。

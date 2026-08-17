@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed (Plan 0025 — scored_scope 删除与 ClaroAI claims 模式)
+
+- **删除 `scored_scope` 机制**：`metadata.scored_scope`（bench-100/200~234 全部移除）、
+  adapter 透传行、validator CC-002 强制值、verify.py 交叉锚点一并删除。该字段是评分
+  维度代码，曾作为系统侧 scope 参数泄漏评估设计给被测系统并被误读（bench-221 误读
+  为"膳食模式 D1/D3"），导致越界重活与慢运行。
+- **ClaroAI entry 恢复 claims 模式**：converter v0.2.0 从 `scores.json` D5 evidence
+  转录论文数值声明（`pub=/repr=`、`reproduced=,published=`、单行 `HR =`、`match
+  paper` 计数；35 篇共转录 21 条 + bench-223 AUROC 阈值 claim 手工补），rubric 用
+  `check_claim` 确定性数值 comparator（relative/absolute 容差 + gte/lte 阈值）评分；
+  D1–D3 数据/代码可用性为同 rubric 辅助 checks。entry 任务语义由
+  `reproduction_target` + 自然语言 `task` 表达。
+- **系统侧任务说明**：adapter 改读 `metadata.task` 翻译为 loop `scope` 参数；
+  validator CC-002 rev. 禁止任何残留评分维度代码（INVALID_BUNDLE）。
+- **评估工具**：`evaluate_run.py` 支持 `--claims-evidence` 与 `06_validate/report.md`
+  自动装载（role=validate_report）。
+- **6 篇校准 run 离线重评**（claims 模式）：bench-220 REPRODUCED 100、bench-221 65、
+  bench-203 PARTIAL 30、bench-200/223/229 FAILED —— 修正审计模式高估（bench-200 旧
+  REPRODUCED 90 → FAILED 0，其 run 未复现 Fig4A DEG 声明）；与作者 D5 校准对照扩展
+  到 D5 维度（bench-200/203/223 作者 D5=2 而系统未复现 claims）。
+- 测试：converter/validator/adapter 测试更新 + 新增回归（维度代码禁入系统侧、
+  check_claim 容差、scored_scope 拒绝）；全量 141 passed / 4 skipped；42 entry 全过
+  bundle gate。
+
+### Docs
+- ADR-0010 修订块、Interface 0002 v2（claims 评分协议）、Spec 0001（接入段/BR-018/
+  术语）、AC-0005、Plan 0025（plan+report+README）。
+
 ## [0.2.0] — 2026-08-04
 
 ### Added

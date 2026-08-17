@@ -2,7 +2,7 @@
 
 | 字段 | 值 |
 |------|-----|
-| **当前阶段** | `SYSTEM_TEST`（完成，待发布决策）（v0.2.0 已发布；本轮迭代 BL-011 ClaroAI-Bench 接入：35 个 L5 审计 entry 落地、137 测试全绿、35-entry 评分冒烟全过；**系统能力验证完成（BL-012/BL-013 第一批）**：bench-200~229 六篇真实校准跑通全链路（REPRODUCED/BLOCKED/PARTIAL 三种结局），校准方法论与独立验证原则已固化；RELEASE 门禁需人类批准） |
+| **当前阶段** | `SYSTEM_TEST`（完成，待发布决策）（v0.2.0 已发布；本轮迭代 BL-011 ClaroAI-Bench 接入 + **Plan 0025 claims 模式修正**：35 个 L5 claims entry 落地（D5 数值声明 + 容差评分，D1–D3 为辅助证据）、`scored_scope` 机制删除（评分维度代码不再进入被测系统）、141 测试全绿、42 entry 全过 bundle gate；**系统能力验证完成（BL-012/BL-013 第一批）**：6 篇真实校准跑通全链路，claims 模式离线重评修正审计模式高估（bench-220 REPRODUCED 100 / bench-221 65 / bench-203 PARTIAL 30 / bench-200/223/229 FAILED）；校准方法论与独立验证原则已固化；RELEASE 门禁需人类批准） |
 | **设计评估** | ADR-0009/0010 accepted；Spec v5、Interface 0001/0002 与 AC-0004/0009 active |
 | **基建评估** | Plan 008 已实现 QEMU/KVM worker、ExecutionEnvelope、release gate 与 pinned worker recipe；`gs` success/timeout smoke 通过；Plan 013 修复 launcher 三处缺陷（skills 挂载、非 root 运行、HOME 权限） |
 | **系统测试** | Plan 013 正式 smoke：`bench-001` 在 QEMU/KVM disposable VM 中全 7 阶段真实跑通，claimed_verdict REPRODUCED、93/100，release-check FORMAL，teardown 完整；合并态 125 个确定性测试与 4 个显式 Docker probe 通过；不建立 tracked baseline（按 Plan 013 约定） |

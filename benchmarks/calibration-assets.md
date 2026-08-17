@@ -28,6 +28,28 @@ bench-223 重跑暴露复现偏差（scMKL 未超基线，属 D5 层面）；ben
 
 **校准双向发现**：bench-200 重跑显示作者 D2=0 低估（数据实际可下载，作者工具链限制导致判不可下载）；bench-223 显示系统 alpha 参数路径问题（非论文 bug）——作者评分与确定性评分的差异**双向都有**，不能单向归因"作者高估"。
 
+## Plan 0025：claims 模式离线重评（修正审计模式高估）
+
+> 2026-08-12：converter v0.2.0 起 ClaroAI entry 为 claims 模式（D5 数值声明 + 容差
+> 评分，D1–D3 为辅助证据）；`scored_scope`/审计模式已删除。以下对同一批归档 run
+> （证据文件：data_manifest/provision/06_validate report，未重跑）用 claims oracle
+> 离线重评的结果，**取代**上表旧 verdict 作为校准观测（bench-220/221 的 claims
+> evidence 从 validate 报告逐条手工映射，见 Report 025）：
+
+| entry | claims 模式 verdict | 旧（审计模式）verdict | 作者 D5 | 解读 |
+|-------|---------------------|----------------------|---------|------|
+| bench-220 | REPRODUCED 100 | REPRODUCED 100 | 2 | 3 个 HR claims 全部匹配 ✓ |
+| bench-221 | REPRODUCED 65 | REPRODUCED 100 | 2 | 8 个 claims 复现 4 个（fs_enet/pc2 × 全因/癌症）；旧评分高估 |
+| bench-222 | REPRODUCED 100（无数值 claims） | REPRODUCED 100 | 2 | paper_23 scores.json 无 D5 evidence；仅 D1–D3 证据可评 |
+| bench-203 | PARTIAL 30 | REPRODUCED 100 | 2 | LME p 值 claim 未复现 |
+| bench-200 | FAILED 0 | REPRODUCED 90 | 2 | Fig4A DEG claims 未复现；作者 D2=0 低估仍致 A1 失败 |
+| bench-223 | FAILED 15 | BLOCKED | 2 | AUROC claim 未复现（scMKL 阻塞） |
+| bench-229 | FAILED 15 | BLOCKED | 1 | barcode count claims 未复现 |
+
+结论：审计模式的 verdict 系统性高估可复现性；claims 模式把"未复现论文定量声明"如实
+记为 FAILED/PARTIAL。作者 D5 与系统 claims 复现的差异（bench-200/203/223 作者 D5=2
+而系统未复现）属校准双向发现，与 bench-200 D2 低估同类。
+
 ## 教训与规范
 
 1. **完成即归档**：run 完成立即 `mv` 到持久区 + 登记本索引，勿事后批量移动（bench-200/220/222 产物因批量移动误操作丢失）
