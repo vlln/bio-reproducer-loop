@@ -195,11 +195,11 @@ def _parse_claims_evidence(path):
         if not line.strip().startswith("|"):
             continue
         cols = [c.strip().lower() for c in line.strip().strip("|").split("|")]
-        if any(h in cols for h in ("expected", "actual", "论文值", "复现值", "值")):
+        if any(h in cols for h in ("expected", "actual", "论文值", "期望值", "实际值", "复现值")):
             expected_idx = next((j for j, c in enumerate(cols)
-                                 if c in ("expected", "论文值") or c.startswith("expected")), None)
+                                 if c in ("expected", "论文值", "期望值") or c.startswith("expected")), None)
             actual_idx = next((j for j, c in enumerate(cols)
-                               if c in ("actual", "复现值", "系统值") or c.startswith("actual")), None)
+                               if c in ("actual", "复现值", "系统值", "实际值") or c.startswith("actual")), None)
             metric_idx = next((j for j, c in enumerate(cols)
                                if c in ("metric", "指标", "声明")), None)
             data_start = i + 1
