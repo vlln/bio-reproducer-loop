@@ -244,12 +244,12 @@ def _validate_metadata(entry: Path, bundle: dict[str, Any]) -> None:
     _require(isinstance(metadata, dict), "metadata.yaml must contain a mapping")
     _require(metadata.get("id") == bundle["entry_id"], "metadata id conflicts with bundle")
     _require(metadata.get("input_dir") == "input/", "metadata input_dir must be input/")
-    scored_scope = metadata.get("scored_scope")
-    if scored_scope is not None:
-        _require(
-            isinstance(scored_scope, str) and scored_scope.strip(),
-            "metadata scored_scope must be a non-empty string when declared",
-        )
+    # scored_scope 已废弃（Plan 0025）：评分维度代码不得出现在 entry 元数据中
+    # （曾泄漏进被测系统并被误读）。任务语义由 reproduction_target + task 表达。
+    _require(
+        "scored_scope" not in metadata,
+        "metadata scored_scope is removed (Plan 0025); use reproduction_target + task",
+    )
     paper_type = metadata.get("complexity_profile", {}).get("paper", {}).get("paper_type")
     entry_number = int(bundle["entry_id"].removeprefix("bench-"))
     _require(entry_number > 0, "entry IDs start at bench-001")
@@ -267,9 +267,14 @@ def _validate_metadata(entry: Path, bundle: dict[str, Any]) -> None:
         )
 
 
-# Audit-mode (ClaroAI-Bench derived, bench-200+) validation rules CC-002/003/004.
+# ClaroAI-Bench derived (bench-200+) validation rules CC-002/003/004 (rev. Plan 0025).
+# CC-002 (rev): entries declare their task via reproduction_target (ADR-0008 taxonomy)
+# + natural-language task statement; scoring-dimension codes are forbidden.
 AUDIT_MODE_MIN_ENTRY = 200
-AUDIT_MODE_SCOPED_SCOPE = "d1_d3_audit"
+REPRODUCTION_TARGET_VOCAB = {
+    "result_verification", "derived_data_reanalysis", "raw_workflow",
+    "figure_reconstruction", "reproducibility_audit",
+}
 RUBRIC_FORBIDDEN_AUTHOR_KEYS = {
     "author_score", "author_scores", "calibration", "ground_truth", "d1", "d2", "d3",
 }
@@ -282,19 +287,31 @@ def _is_audit_mode_entry(entry_id: str) -> bool:
 
 
 def _validate_audit_mode(entry: Path, bundle: dict[str, Any]) -> None:
-    """CC-002/003/004: audit-mode entries (bench-200+) must declare scored_scope,
-    external primary locator, and an author-truth-free rubric."""
+    """CC-002/003/004 (rev.): bench-200+ entries must carry reproduction_target +
+    a natural-language task statement (no scored_scope), an external primary
+    locator, and an author-truth-free rubric."""
     entry_id = bundle["entry_id"]
     if not _is_audit_mode_entry(entry_id):
         return
 
     metadata_path = entry / "metadata.yaml"
-    _require(metadata_path.is_file(), "Missing metadata for audit-mode entry")
+    _require(metadata_path.is_file(), "Missing metadata for entry")
     metadata = yaml.safe_load(metadata_path.read_text())
     _require(
-        isinstance(metadata, dict) and metadata.get("scored_scope") == AUDIT_MODE_SCOPED_SCOPE,
-        f"Audit-mode entry {entry_id} requires metadata.scored_scope == "
-        f"'{AUDIT_MODE_SCOPED_SCOPE}' (CC-002)",
+        isinstance(metadata, dict) and metadata.get("reproduction_target")
+        in REPRODUCTION_TARGET_VOCAB,
+        f"Entry {entry_id} requires metadata.reproduction_target in "
+        f"{sorted(REPRODUCTION_TARGET_VOCAB)} (CC-002 rev.)",
+    )
+    _require(
+        isinstance(metadata.get("task"), str) and metadata["task"].strip(),
+        f"Entry {entry_id} requires a non-empty metadata.task natural-language "
+        "task statement (CC-002 rev.)",
+    )
+    _require(
+        "scored_scope" not in metadata,
+        f"Entry {entry_id} metadata.scored_scope is removed (Plan 0025); "
+        "scoring-dimension codes must not reach the tested system",
     )
 
     primary_id = bundle["primary_paper"]
@@ -302,7 +319,7 @@ def _validate_audit_mode(entry: Path, bundle: dict[str, Any]) -> None:
     primary = resources[primary_id]
     _require(
         primary.get("availability") == "external",
-        f"Audit-mode entry {entry_id} primary_paper must be an external DOI/PMID locator; "
+        f"Entry {entry_id} primary_paper must be an external DOI/PMID locator; "
         "paper fulltext is not bundled (CC-004)",
     )
 
@@ -316,7 +333,7 @@ def _validate_audit_mode(entry: Path, bundle: dict[str, Any]) -> None:
             forbidden = sorted(set(rubric.keys()) & RUBRIC_FORBIDDEN_AUTHOR_KEYS)
             _require(
                 not forbidden,
-                f"Audit-mode entry {entry_id} rubric contains forbidden author-truth "
+                f"Entry {entry_id} rubric contains forbidden author-truth "
                 f"keys {forbidden} (CC-003)",
             )
 

@@ -74,11 +74,13 @@ def run(entry_path: str, run_dir: Optional[str] = None, sandbox=None) -> dict:
         primary = next(r for r in bundle["resources"]
                        if r["id"] == bundle["primary_paper"])
         args["paper_doi"] = _paper_identifier(primary)
-    # Entry 声明引擎无关的 scored_scope（ADR-0008：一个 entry = 一个 scored scope）；
-    # 本适配器（唯一引擎耦合层）在边界将其翻译为 loop 的 scope 参数，
-    # 使 Reader/Data/Run/Validate 只覆盖范围内目标。
-    if metadata.get("scored_scope"):
-        args["scope"] = str(metadata["scored_scope"])
+    # Entry 声明系统侧自然语言任务说明（metadata.task）；本适配器（唯一引擎耦合层）
+    # 在边界将其翻译为 loop 的 scope 参数（复现范围自由文本，Plan 0016 语义）。
+    # 评分维度代码（如旧 scored_scope=d1_d3_audit）不属于系统侧契约，禁止进入
+    # 被测系统（评估设计泄漏，见 ADR-0010 修订 / Plan 0025）。
+    task = metadata.get("task")
+    if task:
+        args["scope"] = str(task)
     start_time = time.time()
 
     try:

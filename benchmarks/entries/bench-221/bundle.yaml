@@ -27,37 +27,36 @@ resources:
   availability: unavailable
   source: https://wwwn.cdc.gov/nchs/nhanes/
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=NHANES, primary=True; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=NHANES, primary=True; not bundled (system must probe from
+    paper)
 - id: data-ref-2
   role: data
   authority: original
   availability: unavailable
   source: https://ftp.cdc.gov/pub/Health_Statistics/NCHS/datalinkage/linked_mortality/
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=CDC/NCHS, primary=True; not bundled (audit-mode entry,
-    system must probe from paper)
+  access_notes: repository=CDC/NCHS, primary=True; not bundled (system must probe
+    from paper)
 - id: data-ref-3
   role: data
   authority: original
   availability: unavailable
   source: https://github.com/cmainov/NHANES-Diet-Penalized-Regression/blob/main/03-Data-Rodeo/04-Analytic-Data.rds
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=GitHub, primary=False; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=GitHub, primary=False; not bundled (system must probe from
+    paper)
 - id: data-ref-4
   role: data
   authority: original
   availability: unavailable
   source: https://github.com/cmainov/nhanes-fi-ca-mortality-mirror
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=GitHub, primary=True; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=GitHub, primary=True; not bundled (system must probe from
+    paper)
 - id: code-ref-1
   role: code
   authority: original
   availability: unavailable
   source: https://github.com/cmainov/nhanes-fi-ca-mortality-mirror
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: language=R; not bundled (audit-mode entry, system must probe from
-    paper)
+  access_notes: language=R; not bundled (system must probe from paper)

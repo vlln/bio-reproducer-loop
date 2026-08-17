@@ -8,6 +8,21 @@ created: 2026-08-04T00:00:00Z
 
 # ADR-0010: ClaroAI-Bench 接入形态
 
+> **修订（Plan 0025，2026-08-12）**：本文 §2 的"首轮 scored scope = D1–D3 审计模式"
+> 及其机制（`metadata.scored_scope=d1_d3_audit`、adapter 透传、CC-002、verify.py 交叉
+> 锚点）已**全部删除**。原因：(1) 迁移应保留 ClaroAI-Bench 原始任务（D5 结果匹配的
+> claim 级复现），而非把 D1–D3 审计维度改写成任务本身；(2) `scored_scope` 是评分维度
+> 代码，作为系统侧 scope 参数泄漏了评估设计给被测系统，且被测系统不理解（bench-221
+> 曾误读为"膳食模式 D1/D3"）。替代设计：
+> - entry 任务语义由 `metadata.reproduction_target`（ADR-0008 taxonomy）+ 自然语言
+>   `metadata.task` 表达；系统侧不再出现评分维度代码；
+> - D5 数值 claims 从 `scores.json` D5 evidence 转录为 `oracle/claims.yaml` 的
+>   `claims` 段（数值 ground truth + 容差），rubric 用确定性数值 comparator 评分；
+>   D1–D3 证据作为同 rubric 内的辅助 checks（与 ClaroAI 原设计一致）；
+> - `metadata.task` 由 converter 生成自然语言任务说明，经 adapter 翻译为 loop 的
+>   `scope` 参数（Plan 0016 自由文本语义）。
+> 详情见 Plan 0025。下文保留历史决策文本，与上述修订冲突处以后者为准。
+
 ## 背景
 
 BL-011：ClaroAI-Bench（Kyle O'Connell, bioRxiv 2026.05.08.723611）提供 35 篇真实 NIH

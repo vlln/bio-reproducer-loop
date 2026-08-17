@@ -27,37 +27,35 @@ resources:
   availability: unavailable
   source: GEO:GSE174188
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=GEO, primary=True; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=GEO, primary=True; not bundled (system must probe from
+    paper)
 - id: data-ref-2
   role: data
   authority: original
   availability: unavailable
   source: https://www.mg-rast.org/index.html
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=other, primary=True; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=other, primary=True; not bundled (system must probe from
+    paper)
 - id: data-ref-3
   role: data
   authority: original
   availability: unavailable
   source: https://zenodo.org/records/13911623
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=Zenodo, primary=False; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=Zenodo, primary=False; not bundled (system must probe from
+    paper)
 - id: code-ref-1
   role: code
   authority: original
   availability: unavailable
   source: https://github.com/bio-datascience/cosmoDA
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: language=Python; not bundled (audit-mode entry, system must probe
-    from paper)
+  access_notes: language=Python; not bundled (system must probe from paper)
 - id: code-ref-2
   role: code
   authority: original
   availability: unavailable
   source: https://github.com/FrederickHuangLin/ANCOM-BC
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: language=None; not bundled (audit-mode entry, system must probe from
-    paper)
+  access_notes: language=None; not bundled (system must probe from paper)

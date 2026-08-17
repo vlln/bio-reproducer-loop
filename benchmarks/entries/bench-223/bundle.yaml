@@ -27,61 +27,61 @@ resources:
   availability: unavailable
   source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE154873
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=GEO, primary=True; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=GEO, primary=True; not bundled (system must probe from
+    paper)
 - id: data-ref-2
   role: data
   authority: original
   availability: unavailable
   source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE171559
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=GEO, primary=True; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=GEO, primary=True; not bundled (system must probe from
+    paper)
 - id: data-ref-3
   role: data
   authority: original
   availability: unavailable
   source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE176031
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=GEO, primary=False; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=GEO, primary=False; not bundled (system must probe from
+    paper)
 - id: data-ref-4
   role: data
   authority: original
   availability: unavailable
   source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE136246
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=GEO, primary=False; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=GEO, primary=False; not bundled (system must probe from
+    paper)
 - id: data-ref-5
   role: data
   authority: original
   availability: unavailable
   source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE127465
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=GEO, primary=False; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=GEO, primary=False; not bundled (system must probe from
+    paper)
 - id: data-ref-6
   role: data
   authority: original
   availability: unavailable
   source: https://zenodo.org/records/15397923
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=Zenodo, primary=True; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=Zenodo, primary=True; not bundled (system must probe from
+    paper)
 - id: data-ref-7
   role: data
   authority: original
   availability: unavailable
   source: https://github.com/ohsu-cedar-comp-hub/scMKL
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=GitHub, primary=True; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=GitHub, primary=True; not bundled (system must probe from
+    paper)
 - id: data-ref-8
   role: data
   authority: original
   availability: unavailable
   source: https://pypi.org/project/scmkl/
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=PyPI, primary=False; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=PyPI, primary=False; not bundled (system must probe from
+    paper)

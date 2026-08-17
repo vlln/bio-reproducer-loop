@@ -27,29 +27,29 @@ resources:
   availability: unavailable
   source: ClinicalTrials.gov:NCT00001595
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=ClinicalTrials.gov, primary=True; not bundled (audit-mode
-    entry, system must probe from paper)
+  access_notes: repository=ClinicalTrials.gov, primary=True; not bundled (system must
+    probe from paper)
 - id: data-ref-2
   role: data
   authority: original
   availability: unavailable
   source: ClinicalTrials.gov:NCT00001522
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=ClinicalTrials.gov, primary=False; not bundled (audit-mode
-    entry, system must probe from paper)
+  access_notes: repository=ClinicalTrials.gov, primary=False; not bundled (system
+    must probe from paper)
 - id: data-ref-3
   role: data
   authority: original
   availability: unavailable
   source: ClinicalTrials.gov:NCT00001723
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=ClinicalTrials.gov, primary=False; not bundled (audit-mode
-    entry, system must probe from paper)
+  access_notes: repository=ClinicalTrials.gov, primary=False; not bundled (system
+    must probe from paper)
 - id: data-ref-4
   role: data
   authority: original
   availability: unavailable
   source: https://figsharecom/s/799b08517465b6a7df98
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=Figshare, primary=False; not bundled (audit-mode entry,
-    system must probe from paper)
+  access_notes: repository=Figshare, primary=False; not bundled (system must probe
+    from paper)

@@ -3,7 +3,8 @@ paper_title: Interpretable and integrative analysis of single-cell multiomics wi
   scMKL
 paper_doi: 10.1038/s42003-025-08533-7
 pmid: '40770488'
-audit_scope: d1_d3_audit
+reproduction_target: result_verification
+task: 核实该论文引用的数据能否定位并实际下载、代码仓库是否完整可用；复现论文报告的关键定量结果（如有）。
 data_references:
 - accession: GSE154873
   repository: GEO
@@ -58,10 +59,28 @@ code_references:
   language: Python
   ground_truth: unknown
   notes: transcribed from scores.json evidence
+claims:
+- id: C1
+  metric: AUROC best (E2 vs Vehicle RNA classification)
+  paper_value: 0.95
+  unit: value
+  tolerance:
+    type: relative
+    value: 0.05
+  comparison:
+    op: gte
+  source: 'paper claim (scores.json D5 evidence: ''Paper claim AUROC >0.95: CONFIRMED
+    (our best 0.992, notebook best 0.987)'')'
+  author_match: confirmed
+  author_repr: 0.992
+  notes: hand-curated threshold claim; paper states AUROC >0.95, author reproduction
+    best=0.992 (ours) / 0.987 (notebook)
 calibration:
   d1: 2
   d2: 2
   d3: 2
+  d4: 2
+  d5: 2
   confidence:
     d1: 0.98
     d2: 0.97

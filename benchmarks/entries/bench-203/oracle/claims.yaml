@@ -2,7 +2,13 @@ id: bench-203
 paper_title: Spatial Image Gradient Estimation From the Diffusion MRI Profile
 paper_doi: 10.1002/mrm.70258
 pmid: '41578418'
-audit_scope: d1_d3_audit
+reproduction_target: result_verification
+task: "\u590D\u73B0\u8BE5\u8BBA\u6587\u62A5\u544A\u7684\u5173\u952E\u5B9A\u91CF\u7ED3\
+  \u679C\uFF08LME\uFF09\uFF0C\u5E76\u4E0E\u8BBA\u6587\u53D1\u8868\u7684\u6570\u503C\
+  \u6838\u5BF9\uFF1B\u540C\u65F6\u6838\u5B9E\u8BBA\u6587\u5F15\u7528\u7684\u6570\u636E\
+  \u53EF\u5B9A\u4F4D\u3001\u53EF\u4E0B\u8F7D\uFF0C\u4EE5\u53CA\u4EE3\u7801\u4ED3\u5E93\
+  \u662F\u5426\u53EF\u7528\u3002\u4E0D\u9700\u8981\u590D\u73B0\u8BBA\u6587\u7684\u5168\
+  \u90E8\u56FE\u8868\u4E0E\u5206\u6790\u3002"
 data_references:
 - accession: null
   repository: other
@@ -33,10 +39,24 @@ code_references:
   language: MATLAB
   ground_truth: unknown
   notes: transcribed from scores.json evidence
+claims:
+- id: C1
+  metric: LME
+  paper_value: 1.0e-07
+  unit: count
+  tolerance:
+    type: relative
+    value: 0.05
+  source: scores.json D5 evidence
+  author_match: unknown
+  author_repr: 2.2e-08
+  notes: transcribed from scores.json D5 evidence
 calibration:
   d1: 2
   d2: 2
   d3: 2
+  d4: 1
+  d5: 2
   confidence:
     d1: 0.95
     d2: 0.95

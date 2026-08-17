@@ -168,29 +168,36 @@ L4 的 `expected_verdict: PARTIAL` 的合理原因：
 Markdown、抽取图像、格式转换或裁剪数据只能作为派生材料；必须记录原始资源、checksum、
 转换工具、参数和脚本，不能静默替代原始论文或完整数据。
 
-### 审计模式 scored scope（ClaroAI-Bench 接入）
+### ClaroAI-Bench 接入（claims 模式，Plan 0025 修订）
 
 ClaroAI-Bench（BL-011）提供 35 篇真实 NIH 论文及作者给出的 D1–D5 可复现性评分
-（数据可定位/可获取/代码可用/环境可重建/结果可匹配）。第一轮接入采用**审计模式**：
-每个论文任务生成一个标准 entry，其 `scored_scope` 限定为 D1–D3（数据可定位、
-数据可获取、代码可用），评分对象是被测系统在数据获取与代码/环境检查阶段产出的
-审计证据，而非完整分析结果。
+（数据可定位/可获取/代码可用/环境可重建/结果可匹配）。接入保留 ClaroAI-Bench 的
+**原始任务**：复现论文报告的关键定量结果（D5 结果匹配），D1–D3 数据/代码可用性
+作为同 rubric 内的辅助证据维度。
 
-审计模式的语义：被测系统以论文（由 DOI/PMID locator 自行获取）为输入，正常运行
-Reader→Data→Provision 阶段，其执行过程中对论文获取、数据引用解析、下载尝试、代码
-仓库与工具可用性的处理会自然产生审计证据；oracle 将这些证据与作者 ground truth 对比，
-衡量系统**判断论文数据/代码可用性的正确性**。被测系统不被告知"这是审计任务"，也
-不获得作者评分。
+- **评分主体 = D5 数值 claims**：converter 从 `scores.json` D5 evidence 转录论文
+  发表的定量声明（`pub=...` / `reproduced=..., published=...` / 单行 `HR = ...` /
+  `match paper` 计数等格式）为 `oracle/claims.yaml` 的 `claims` 段（数值 ground
+  truth + 容差），rubric 用确定性数值 comparator（`verify.py: check_claim`）比较被测
+  系统的复现值与论文值。
+- **辅助证据 = D1–D3**：数据引用可定位/可下载、代码仓库可用性的作者 ground truth
+  转录为 `data_references` / `code_references`，A1/A2 checks 测系统判断的正确性。
+- **任务语义**：`metadata.reproduction_target`（ADR-0008 taxonomy）+ 自然语言
+  `metadata.task`（converter 生成）。**评分维度代码（如 `d1_d3_audit`）已从 schema
+  删除**：它们曾作为系统侧 scope 参数泄漏评估设计给被测系统并被误读（bench-221
+  误读为"膳食模式 D1/D3"）。被测系统只收到自然语言任务说明。
+- **作者评分只作校准**：`claims.yaml` calibration 段记录作者 D1–D5 分数，不进入
+  rubric expected verdict 与 bundle lock。
 
-审计模式 entry 的约束：
+ClaroAI entry 的约束：
 
 | 约束 | 说明 |
 |------|------|
-| scope 声明 | `metadata.yaml` 的 `scored_scope` 必须显式声明为 `d1_d3_audit`（物化 ADR-0008 的 scored scope，机制见 BL-006/0016；bundle validator 扩展对审计模式 entry 强制该校验，扩展随 converter 一并落地，见 CC-002） |
+| 任务声明 | `metadata.yaml` 必须声明 `reproduction_target`（ADR-0008 词表）与非空 `task`；禁止出现 `scored_scope`（CC-002 rev.，validator 拒绝残留维度代码） |
 | primary paper | 稳定 DOI/PMID locator，`availability=external`，**不附带论文全文文件**（版权决策，与 claroai-bench 归档一致）；被测系统在运行时自行获取（L5 语义） |
-| oracle 真值 | `claims.yaml` 结构化记录每个数据引用/代码引用的作者 ground truth 状态（来自 claroai-bench `scores.json` 的 evidence），`rubric.yaml` 用 `python_verify` 对比 submission 审计产物 |
-| 校准 | 作者 D1–D3 分数只作事后校准参考（baseline 观测），不写入 bundle lock 与 rubric 的 expected verdict |
-| 环境与网络 | 正式运行仍为 disposable VM；审计模式需要真实网络访问外部仓库与论文全文，`network_policy=controlled-egress`（discovery interaction mode） |
+| oracle 真值 | `claims.yaml` 结构化记录数据/代码引用 ground truth + D5 数值 claims（来自 claroai-bench `scores.json` 的 evidence），`rubric.yaml` 用 `python_verify` 对比 submission 证据产物（`data_manifest.md` / `provision.md` / `06_validate/report.md`） |
+| 校准 | 作者 D1–D5 分数只作事后校准参考（baseline 观测），不写入 bundle lock 与 rubric 的 expected verdict |
+| 环境与网络 | 正式运行仍为 disposable VM；需要真实网络访问外部仓库与论文全文，`network_policy=controlled-egress`（discovery interaction mode） |
 
 作者 ground truth 的转录以 claroai-bench 归档的 `papers/paper_XX/scores.json` +
 `extraction.json` 为准（HF `kyleaoconnell22/claroai-bench` 快照），转录脚本与校验逻辑
@@ -493,7 +500,7 @@ workflow 不进入 ExecutionEnvelope 的 runtime enum。
 | BR-015 | Worker teardown 是结果有效性的组成部分 | 所有 run 结束时 | teardown 未完成的 run 不得发布或进入 baseline |
 | BR-016 | 系统打包方式不属于 benchmark runtime taxonomy | adapter 集成时 | Pixi/OCI/source 等只记录 artifact/adapter identity |
 | BR-017 | Validation backend 结果与 formal result 分开 | Docker sandbox 或 mock 执行时 | purpose=validation-only，release gate 必须拒绝 |
-| BR-018 | 审计模式 entry 的 scored_scope 必须为 `d1_d3_audit`，且 rubric 不得包含作者真值派生键（精确名单见 CC-003；作者分数只存于 claims.yaml 的 calibration 段作校准）；bundle lock 沿用 FORBIDDEN_KEYS | 生成/校验 claroai 派生 entry 时 | metadata scored_scope 缺失/非该值，或 rubric 含作者真值派生键 → INVALID_BUNDLE |
+| BR-018 | claroai 派生 entry（bench-200+）必须声明 `reproduction_target`（ADR-0008 词表）与非空 `task`，**禁止 `scored_scope`**（评分维度代码不得进入被测系统）；rubric 不得包含作者真值派生键（精确名单见 CC-003；作者分数只存于 claims.yaml 的 calibration 段作校准）；bundle lock 沿用 FORBIDDEN_KEYS | 生成/校验 claroai 派生 entry 时 | metadata 缺 reproduction_target/task、含 scored_scope，或 rubric 含作者真值派生键 → INVALID_BUNDLE |
 
 ### blocked_reason 分类
 
@@ -549,7 +556,7 @@ workflow 不进入 ExecutionEnvelope 的 runtime enum。
 | Validation backend | 只用于开发/CI 的非正式执行路径，其结果不得进入 release baseline |
 | 评估协议 | evaluator 使用私有 oracle 检查 submission 并生成 result 的规则 |
 | 引擎适配器 | 将引擎无关的论文包映射为特定引擎调用的桥接模块 |
-| 审计模式 | scored scope 限定为 D1–D3（数据可定位/可获取/代码可用）的 entry 形态；评分对象是系统执行过程中的审计证据，而非完整复现结果 |
-| scored_scope | `metadata.yaml` 中声明 entry 评分范围的字段（如 `d1_d3_audit`）；与 claims.yaml 内的 `audit_scope`（oracle 侧声明，供 verify.py 自检）语义一致、分属两侧 |
+| claims 模式 | ClaroAI 派生 entry 形态（Plan 0025）：评分主体为 D5 数值 claims（论文发表的定量声明 + 容差），D1–D3 数据/代码可用性为辅助证据 checks；任务语义由 `reproduction_target` + 自然语言 `task` 表达 |
+| claims | `oracle/claims.yaml` 中 D5 数值声明段：`{id, metric, paper_value, tolerance, source}`，rubric 用 `check_claim` 数值 comparator 评分 |
 | Converter | 把外部 benchmark 任务（如 ClaroAI-Bench paper_XX）确定性转换为标准 entry 的脚本模块 |
 | Ground truth calibration | 以作者/外部评分作事后对照的校准观测，不参与 oracle 判定 |

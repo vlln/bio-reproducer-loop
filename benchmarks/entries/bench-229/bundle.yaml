@@ -27,93 +27,91 @@ resources:
   availability: unavailable
   source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE232222
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=GEO, primary=True; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=GEO, primary=True; not bundled (system must probe from
+    paper)
 - id: data-ref-2
   role: data
   authority: original
   availability: unavailable
   source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE232431
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=GEO, primary=True; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=GEO, primary=True; not bundled (system must probe from
+    paper)
 - id: data-ref-3
   role: data
   authority: original
   availability: unavailable
   source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE220289
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=GEO, primary=False; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=GEO, primary=False; not bundled (system must probe from
+    paper)
 - id: data-ref-4
   role: data
   authority: original
   availability: unavailable
   source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE151302
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=GEO, primary=False; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=GEO, primary=False; not bundled (system must probe from
+    paper)
 - id: data-ref-5
   role: data
   authority: original
   availability: unavailable
   source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE195460
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=GEO, primary=False; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=GEO, primary=False; not bundled (system must probe from
+    paper)
 - id: data-ref-6
   role: data
   authority: original
   availability: unavailable
   source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE172008
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=GEO, primary=False; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=GEO, primary=False; not bundled (system must probe from
+    paper)
 - id: data-ref-7
   role: data
   authority: original
   availability: unavailable
   source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE200547
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=GEO, primary=False; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=GEO, primary=False; not bundled (system must probe from
+    paper)
 - id: data-ref-8
   role: data
   authority: original
   availability: unavailable
   source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE181064
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=GEO, primary=False; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=GEO, primary=False; not bundled (system must probe from
+    paper)
 - id: data-ref-9
   role: data
   authority: original
   availability: unavailable
   source: https://atlas.kpmp.org
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=KPMP, primary=False; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=KPMP, primary=False; not bundled (system must probe from
+    paper)
 - id: data-ref-10
   role: data
   authority: original
   availability: unavailable
   source: https://zenodo.org/records/10463439
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=Zenodo, primary=True; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=Zenodo, primary=True; not bundled (system must probe from
+    paper)
 - id: code-ref-1
   role: code
   authority: original
   availability: unavailable
   source: https://github.com/p4rkerw/Wilson_GBio_2024
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: language=R; not bundled (audit-mode entry, system must probe from
-    paper)
+  access_notes: language=R; not bundled (system must probe from paper)
 - id: code-ref-2
   role: code
   authority: original
   availability: unavailable
   source: https://hub.docker.com/r/p4rkerw/sctools
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: language=R; not bundled (audit-mode entry, system must probe from
-    paper)
+  access_notes: language=R; not bundled (system must probe from paper)

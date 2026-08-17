@@ -27,29 +27,28 @@ resources:
   availability: unavailable
   source: other:None
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=other, primary=True; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=other, primary=True; not bundled (system must probe from
+    paper)
 - id: data-ref-2
   role: data
   authority: original
   availability: unavailable
   source: other:None
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=other, primary=True; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=other, primary=True; not bundled (system must probe from
+    paper)
 - id: data-ref-3
   role: data
   authority: original
   availability: unavailable
   source: other:None
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=other, primary=True; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=other, primary=True; not bundled (system must probe from
+    paper)
 - id: code-ref-1
   role: code
   authority: original
   availability: unavailable
   source: https://github.com/vsubbian/Graph-spa
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: language=None; not bundled (audit-mode entry, system must probe from
-    paper)
+  access_notes: language=None; not bundled (system must probe from paper)
