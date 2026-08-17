@@ -4,6 +4,29 @@
 > 远端持久资产区：`/storeData/gs/claroai-calibration/`（runs/{bench-NNN}/、scripts/、system/）。
 > 临时运行区：`/tmp/bl012/`（重启即失，完成后必须移出）。
 
+## Plan 0025：第一批其余 5 篇 claims 模式重跑（2026-08-17/18，bench-229 待补）
+
+> 新自然语言 task 下正式重跑（bench-220 已先行，REPRODUCED 100）。旧 run 均存
+> `runs/bench-NNN-legacy-*`。verdict 为独立 evaluator 结果（claims oracle 自动解析）。
+
+| entry | 耗时 | 系统自评 | **独立 verdict** | 作者 D5 | 关键失败/发现 |
+|-------|------|----------|-----------------|---------|--------------|
+| bench-200 | ~1h15m | PARTIAL | **FAILED 0** | 2 | Fig4A DEG 复现 163/23 vs 论文 599/1390（**未检测 GEO 标签互换**——作者 agent 曾修正；真实复现缺陷）；A1 因作者 D2=0 低估冲突 |
+| bench-203 | ~2h38m | BLOCKED | **PARTIAL 30** | 2 | LME p 值 claim 未复现（run 阻塞，MRI 数据环境问题） |
+| bench-221 | ~1h35m | REPRODUCED | **REPRODUCED 76.25** | 2 | 8 个 HR claims 复现 7 个；hei.2015 cancer HR 0.88 vs 0.83 超容差；A2 NCHS 链接无判断 |
+| bench-222 | ~2h25m | REPRODUCED | **REPRODUCED 100** | 2 | 无数值 claims（scores.json 无 D5 evidence），仅 D1–D3 证据可评 |
+| bench-223 | ~9h | REPRODUCED | **REPRODUCED 85** | 2 | AUROC≥0.95 复现通过（0.992 vs 作者 0.992）；A1 数据引用判断失败；scMKL 计算重（9h） |
+
+**Provision 越界观察**（对照审计时代）：全部合理——bench-200 复用 deseq2-analysis:bench001
+增量 7 包、bench-221 复用 nhanes-fi-ca-mortality:r4.3.3（论文同名镜像，零构建）、bench-223
+全复用 scmkl-provision:0.1.6、bench-203 仅建 MRtrix3+Python 聚焦环境。**无现成镜像场景
+（203/221）亦未越界装全套**；审计时代的"provision 建全量分析环境"问题未复现。
+
+**校准发现**（claims 维度）：bench-200 系统复现 DEG 数 163/23 vs 论文 599/1390——独立
+验证显示作者 agent 修正了 GEO 标签互换而本系统未检测，属真实复现缺陷（D5 层面）；
+bench-221 的 8 项 HR 中 7 项精确复现。作者 D5=2 的评分在 bench-200/203 与系统实际表现
+不一致（作者高估或系统缺陷，双向可能，符合校准双向发现原则）。
+
 ## 批量校准脚本（远端）
 
 - `bench-v3.sh`：docker 模拟 VM 边界跑 loopflow 全链路（时间戳目录，`bash bench-v3.sh <entry>`）
