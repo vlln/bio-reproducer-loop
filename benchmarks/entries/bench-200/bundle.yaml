@@ -27,69 +27,64 @@ resources:
   availability: unavailable
   source: GEO:GSE308855
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=GEO, primary=True; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=GEO, primary=True; not bundled (system must probe from
+    paper)
 - id: data-ref-2
   role: data
   authority: original
   availability: unavailable
   source: GEO:GSE317298
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=GEO, primary=True; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=GEO, primary=True; not bundled (system must probe from
+    paper)
 - id: data-ref-3
   role: data
   authority: original
   availability: unavailable
   source: SRA:PRJNA1402948
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=SRA, primary=True; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=SRA, primary=True; not bundled (system must probe from
+    paper)
 - id: data-ref-4
   role: data
   authority: original
   availability: unavailable
   source: https://www.ncbi.nlm.nih.gov/sra/PRJNA
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=sra, primary=False; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=sra, primary=False; not bundled (system must probe from
+    paper)
 - id: code-ref-1
   role: code
   authority: original
   availability: unavailable
   source: https://github.com/shamsalazzam/code_Multi-omics-profiling
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: language=R; not bundled (audit-mode entry, system must probe from
-    paper)
+  access_notes: language=R; not bundled (system must probe from paper)
 - id: code-ref-2
   role: code
   authority: original
   availability: unavailable
   source: https://github.com/cit-bioinfo/mMCP-counter
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: language=R; not bundled (audit-mode entry, system must probe from
-    paper)
+  access_notes: language=R; not bundled (system must probe from paper)
 - id: code-ref-3
   role: code
   authority: original
   availability: unavailable
   source: https://github.com/AlexandrovLab/DupCaller
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: language=None; not bundled (audit-mode entry, system must probe from
-    paper)
+  access_notes: language=None; not bundled (system must probe from paper)
 - id: code-ref-4
   role: code
   authority: original
   availability: unavailable
   source: https://github.com/AlexandrovLab/EnsembleVariantCallingPipeline
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: language=None; not bundled (audit-mode entry, system must probe from
-    paper)
+  access_notes: language=None; not bundled (system must probe from paper)
 - id: code-ref-5
   role: code
   authority: original
   availability: unavailable
   source: https://github.com/AlexandrovLab/SigProfilerMatrixGenerator
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: language=None; not bundled (audit-mode entry, system must probe from
-    paper)
+  access_notes: language=None; not bundled (system must probe from paper)

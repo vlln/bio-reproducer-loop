@@ -27,61 +27,61 @@ resources:
   availability: unavailable
   source: other:ROSMAP
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=other, primary=True; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=other, primary=True; not bundled (system must probe from
+    paper)
 - id: data-ref-2
   role: data
   authority: original
   availability: unavailable
   source: other:GTEx
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=other, primary=False; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=other, primary=False; not bundled (system must probe from
+    paper)
 - id: data-ref-3
   role: data
   authority: original
   availability: unavailable
   source: other:ENCODE
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=other, primary=False; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=other, primary=False; not bundled (system must probe from
+    paper)
 - id: data-ref-4
   role: data
   authority: original
   availability: unavailable
   source: other:dbSNP
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=other, primary=False; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=other, primary=False; not bundled (system must probe from
+    paper)
 - id: data-ref-5
   role: data
   authority: original
   availability: unavailable
   source: other:ssREDA
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=other, primary=False; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=other, primary=False; not bundled (system must probe from
+    paper)
 - id: data-ref-6
   role: data
   authority: original
   availability: unavailable
   source: other:DICE
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=other, primary=False; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=other, primary=False; not bundled (system must probe from
+    paper)
 - id: data-ref-7
   role: data
   authority: original
   availability: unavailable
   source: other:L1000
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=other, primary=False; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=other, primary=False; not bundled (system must probe from
+    paper)
 - id: data-ref-8
   role: data
   authority: original
   availability: unavailable
   source: other:MPRAbase
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=other, primary=False; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=other, primary=False; not bundled (system must probe from
+    paper)

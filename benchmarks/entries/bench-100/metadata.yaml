@@ -107,5 +107,6 @@ reproducibility:
   staged_input_size: ~7.1 MiB
   optional_raw_input_size: 46.9 GiB across 16 ENA runs
   source_code_commit: d12f00f74de35e437068349c617869a97856e160
-scored_scope: Processed-output RNA-seq scope (DEG analysis and volcano figure), excluding
-  raw alignment, microarray, GWAS and wet-lab components
+reproduction_target: result_verification
+task: 验证该论文的 RNA-seq 计算结论：核对发布的 Cuffdiff 与 FPKM 输出（DEX 对对照）
+  与差异表达及火山图声明；不含原始比对、microarray、GWAS 与湿实验部分

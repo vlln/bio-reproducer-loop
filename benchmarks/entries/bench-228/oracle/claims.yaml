@@ -3,7 +3,11 @@ paper_title: 'MntJULiP and Jutils: differential splicing analysis of RNA-seq dat
   with covariates'
 paper_doi: 10.1093/nargab/lqaf140
 pmid: '41189648'
-audit_scope: d1_d3_audit
+reproduction_target: result_verification
+task: "\u6838\u5B9E\u8BE5\u8BBA\u6587\u5F15\u7528\u7684\u6570\u636E\u80FD\u5426\u5B9A\
+  \u4F4D\u5E76\u5B9E\u9645\u4E0B\u8F7D\u3001\u4EE3\u7801\u4ED3\u5E93\u662F\u5426\u5B8C\
+  \u6574\u53EF\u7528\uFF1B\u590D\u73B0\u8BBA\u6587\u62A5\u544A\u7684\u5173\u952E\u5B9A\
+  \u91CF\u7ED3\u679C\uFF08\u5982\u6709\uFF09\u3002"
 data_references:
 - accession: null
   repository: SRA
@@ -26,10 +30,13 @@ code_references:
   language: Python
   ground_truth: unknown
   notes: transcribed from scores.json evidence
+claims: []
 calibration:
   d1: 2
   d2: 1
   d3: 1
+  d4: 1
+  d5: 0
   confidence:
     d1: 0.85
     d2: 0.8

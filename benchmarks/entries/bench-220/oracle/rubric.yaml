@@ -1,6 +1,6 @@
 id: bench-220
-benchmark_version: 2.0.0
-oracle_version: 1.0.0
+benchmark_version: 2.1.0
+oracle_version: 1.1.0
 expected_verdict: REPRODUCED
 verdict_match_threshold: 0.6
 verdict_thresholds:
@@ -17,7 +17,7 @@ checks:
     module: verify.py
     function: check_data_references
     config: {}
-  weight: 50
+  weight: 15
 - id: A2
   description: "\u4EE3\u7801\u5F15\u7528\u53EF\u7528\u6027\u5224\u65AD\u4E0E ground\
     \ truth \u4E00\u81F4"
@@ -28,4 +28,40 @@ checks:
     module: verify.py
     function: check_code_references
     config: {}
-  weight: 50
+  weight: 15
+- id: C1
+  description: "\u590D\u73B0\u58F0\u660E Blood lead CVD HR\uFF08\u8BBA\u6587\u503C\
+    \ 1.63\uFF09"
+  evidence:
+    artifact_role: validate_report
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C1
+  weight: 23.333
+- id: C2
+  description: "\u590D\u73B0\u58F0\u660E Tibia lead CVD HR\uFF08\u8BBA\u6587\u503C\
+    \ 3.32\uFF09"
+  evidence:
+    artifact_role: validate_report
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C2
+  weight: 23.333
+- id: C3
+  description: "\u590D\u73B0\u58F0\u660E Patella lead CVD HR\uFF08\u8BBA\u6587\u503C\
+    \ 2.42\uFF09"
+  evidence:
+    artifact_role: validate_report
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C3
+  weight: 23.333

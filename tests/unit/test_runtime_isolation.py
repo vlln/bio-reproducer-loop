@@ -168,7 +168,7 @@ def test_adapter_uses_container_paths_and_never_passes_entry_path(tmp_path):
     assert run_args["consent"] == "auto"
 
 
-def test_adapter_passes_declared_scored_scope_to_loop_args(tmp_path, monkeypatch):
+def test_adapter_passes_declared_task_to_loop_args(tmp_path, monkeypatch):
     captured = None
 
     class FakeSandbox:
@@ -182,17 +182,17 @@ def test_adapter_passes_declared_scored_scope_to_loop_args(tmp_path, monkeypatch
         "protocol_version": "2.0",
         "input_dir": "input/",
         "complexity_profile": {"paper": {"paper_type": "constructed"}},
-        "scored_scope": "figures 4-6 targets (T1-T6)",
+        "task": "仅复现 RNA-seq 差异表达与通路富集",
     }
     monkeypatch.setattr(loopflow, "_read_metadata", lambda entry_dir: metadata)
 
     loopflow.run(ENTRY, run_dir=tmp_path / "run", sandbox=FakeSandbox())
 
     run_args = json.loads(captured.command[captured.command.index("--args") + 1])
-    assert run_args["scope"] == "figures 4-6 targets (T1-T6)"
+    assert run_args["scope"] == "仅复现 RNA-seq 差异表达与通路富集"
 
 
-def test_adapter_omits_scored_scope_when_metadata_undeclared(tmp_path, monkeypatch):
+def test_adapter_omits_task_when_metadata_undeclared(tmp_path, monkeypatch):
     captured = None
 
     class FakeSandbox:
@@ -206,6 +206,32 @@ def test_adapter_omits_scored_scope_when_metadata_undeclared(tmp_path, monkeypat
         "protocol_version": "2.0",
         "input_dir": "input/",
         "complexity_profile": {"paper": {"paper_type": "constructed"}},
+    }
+    monkeypatch.setattr(loopflow, "_read_metadata", lambda entry_dir: metadata)
+
+    loopflow.run(ENTRY, run_dir=tmp_path / "run", sandbox=FakeSandbox())
+
+    run_args = json.loads(captured.command[captured.command.index("--args") + 1])
+    assert "scope" not in run_args
+
+
+def test_adapter_never_passes_scored_scope_into_loop_args(tmp_path, monkeypatch):
+    # Plan 0025 泄漏回归：即使 metadata 残留 scored_scope（validator 会拒绝），
+    # adapter 也不得把它翻译进系统侧 scope 参数。
+    captured = None
+
+    class FakeSandbox:
+        def run(self, request):
+            nonlocal captured
+            captured = request
+            return subprocess.CompletedProcess(request.command, 0, "", "")
+
+    metadata = {
+        "id": "bench-001",
+        "protocol_version": "2.0",
+        "input_dir": "input/",
+        "complexity_profile": {"paper": {"paper_type": "constructed"}},
+        "scored_scope": "d1_d3_audit",
     }
     monkeypatch.setattr(loopflow, "_read_metadata", lambda entry_dir: metadata)
 

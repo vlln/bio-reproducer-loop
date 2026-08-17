@@ -27,21 +27,20 @@ resources:
   availability: unavailable
   source: https://huggingface.co/MahmoodLab/UNI
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=HuggingFace, primary=True; not bundled (audit-mode entry,
-    system must probe from paper)
+  access_notes: repository=HuggingFace, primary=True; not bundled (system must probe
+    from paper)
 - id: data-ref-2
   role: data
   authority: original
   availability: unavailable
   source: https://portal.gdc.cancer.gov/
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=TCGA, primary=False; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=TCGA, primary=False; not bundled (system must probe from
+    paper)
 - id: code-ref-1
   role: code
   authority: original
   availability: unavailable
   source: https://github.com/mahmoodlab/UNI
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: language=Python; not bundled (audit-mode entry, system must probe
-    from paper)
+  access_notes: language=Python; not bundled (system must probe from paper)

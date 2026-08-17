@@ -27,5 +27,5 @@ resources:
   availability: unavailable
   source: other:NHANES
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=other, primary=True; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=other, primary=True; not bundled (system must probe from
+    paper)

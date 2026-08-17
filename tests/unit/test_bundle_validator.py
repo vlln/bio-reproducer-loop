@@ -66,22 +66,32 @@ def test_missing_bundle_is_invalid(tmp_path):
     assert error.value.code == "INVALID_BUNDLE"
 
 
-def test_accepts_optional_scored_scope_declared_in_metadata(tmp_path):
+def test_rejects_scored_scope_present_in_metadata(tmp_path):
+    # Plan 0025：scored_scope 已删除；评分维度代码不得出现在 entry 元数据（防泄漏）
     entry = _copy_entry(tmp_path)
     metadata = yaml.safe_load((entry / "metadata.yaml").read_text())
-    metadata["scored_scope"] = "figures 4-6 targets"
+    metadata["scored_scope"] = "d1_d3_audit"
     (entry / "metadata.yaml").write_text(yaml.safe_dump(metadata, sort_keys=False))
 
-    validate_entry(entry)
+    with pytest.raises(BundleValidationError, match="scored_scope is removed"):
+        validate_entry(entry)
 
 
-def test_rejects_empty_scored_scope_in_metadata(tmp_path):
-    entry = _copy_entry(tmp_path)
+def test_bench200_requires_reproduction_target_and_task(tmp_path):
+    # CC-002 rev.：bench-200+ 必须声明 reproduction_target + 自然语言 task
+    entry = tmp_path / "bench-200"
+    shutil.copytree(ROOT / "benchmarks" / "entries" / "bench-200", entry)
+
     metadata = yaml.safe_load((entry / "metadata.yaml").read_text())
-    metadata["scored_scope"] = "   "
+    del metadata["task"]
     (entry / "metadata.yaml").write_text(yaml.safe_dump(metadata, sort_keys=False))
+    with pytest.raises(BundleValidationError, match="metadata.task"):
+        validate_entry(entry)
 
-    with pytest.raises(BundleValidationError, match="scored_scope must be a non-empty string"):
+    metadata = yaml.safe_load((entry / "metadata.yaml").read_text())
+    metadata["reproduction_target"] = "not_a_vocab_value"
+    (entry / "metadata.yaml").write_text(yaml.safe_dump(metadata, sort_keys=False))
+    with pytest.raises(BundleValidationError, match="reproduction_target"):
         validate_entry(entry)
 
 

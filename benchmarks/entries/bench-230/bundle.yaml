@@ -27,13 +27,12 @@ resources:
   availability: unavailable
   source: https://huggingface.co/datasets/ctheodoris/Genecorpus-30M
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=HuggingFace, primary=True; not bundled (audit-mode entry,
-    system must probe from paper)
+  access_notes: repository=HuggingFace, primary=True; not bundled (system must probe
+    from paper)
 - id: code-ref-1
   role: code
   authority: original
   availability: unavailable
   source: https://huggingface.co/ctheodoris/Geneformer
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: language=Python; not bundled (audit-mode entry, system must probe
-    from paper)
+  access_notes: language=Python; not bundled (system must probe from paper)

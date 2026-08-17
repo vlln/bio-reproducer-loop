@@ -3,7 +3,15 @@ paper_title: 'Dietary patterns among U.S. food insecure cancer survivors and the
   of mortality: NHANES 1999-2018'
 paper_doi: 10.1007/s10552-024-01868-2
 pmid: '38532045'
-audit_scope: d1_d3_audit
+reproduction_target: result_verification
+task: "\u590D\u73B0\u8BE5\u8BBA\u6587\u62A5\u544A\u7684\u5173\u952E\u5B9A\u91CF\u7ED3\
+  \u679C\uFF08fs_enet all-cause linear HR\u3001pc1 all-cause linear HR\u3001pc2 all-cause\
+  \ linear HR\u3001hei.2015 all-cause linear HR\u3001fs_enet cancer linear HR \u7B49\
+  \ 8 \u9879\uFF09\uFF0C\u5E76\u4E0E\u8BBA\u6587\u53D1\u8868\u7684\u6570\u503C\u6838\
+  \u5BF9\uFF1B\u540C\u65F6\u6838\u5B9E\u8BBA\u6587\u5F15\u7528\u7684\u6570\u636E\u53EF\
+  \u5B9A\u4F4D\u3001\u53EF\u4E0B\u8F7D\uFF0C\u4EE5\u53CA\u4EE3\u7801\u4ED3\u5E93\u662F\
+  \u5426\u53EF\u7528\u3002\u4E0D\u9700\u8981\u590D\u73B0\u8BBA\u6587\u7684\u5168\u90E8\
+  \u56FE\u8868\u4E0E\u5206\u6790\u3002"
 data_references:
 - accession: NHANES 1999-2018
   repository: NHANES
@@ -34,10 +42,101 @@ code_references:
   language: R
   ground_truth: unknown
   notes: transcribed from scores.json evidence
+claims:
+- id: C1
+  metric: fs_enet all-cause linear HR
+  paper_value: 1.25
+  unit: value
+  tolerance:
+    type: relative
+    value: 0.05
+  source: scores.json D5 evidence
+  author_match: exact match
+  author_repr: null
+  notes: transcribed from scores.json D5 evidence
+- id: C2
+  metric: pc1 all-cause linear HR
+  paper_value: 1.15
+  unit: value
+  tolerance:
+    type: relative
+    value: 0.05
+  source: scores.json D5 evidence
+  author_match: exact match
+  author_repr: null
+  notes: transcribed from scores.json D5 evidence
+- id: C3
+  metric: pc2 all-cause linear HR
+  paper_value: 0.88
+  unit: value
+  tolerance:
+    type: relative
+    value: 0.05
+  source: scores.json D5 evidence
+  author_match: exact match
+  author_repr: null
+  notes: transcribed from scores.json D5 evidence
+- id: C4
+  metric: hei.2015 all-cause linear HR
+  paper_value: 0.88
+  unit: value
+  tolerance:
+    type: relative
+    value: 0.05
+  source: scores.json D5 evidence
+  author_match: exact match
+  author_repr: null
+  notes: transcribed from scores.json D5 evidence
+- id: C5
+  metric: fs_enet cancer linear HR
+  paper_value: 1.36
+  unit: value
+  tolerance:
+    type: relative
+    value: 0.05
+  source: scores.json D5 evidence
+  author_match: exact match
+  author_repr: null
+  notes: transcribed from scores.json D5 evidence
+- id: C6
+  metric: pc1 cancer linear HR
+  paper_value: 1.16
+  unit: value
+  tolerance:
+    type: relative
+    value: 0.05
+  source: scores.json D5 evidence
+  author_match: exact match
+  author_repr: null
+  notes: transcribed from scores.json D5 evidence
+- id: C7
+  metric: pc2 cancer linear HR
+  paper_value: 0.96
+  unit: value
+  tolerance:
+    type: relative
+    value: 0.05
+  source: scores.json D5 evidence
+  author_match: exact match
+  author_repr: null
+  notes: transcribed from scores.json D5 evidence
+- id: C8
+  metric: hei.2015 cancer linear HR
+  paper_value: 0.83
+  unit: value
+  tolerance:
+    type: relative
+    value: 0.05
+  source: scores.json D5 evidence
+  author_match: exact match
+  author_repr: null
+  notes: transcribed from scores.json D5 evidence
 calibration:
   d1: 2
   d2: 2
   d3: 2
+  d4: 1
+  d5: 2
   confidence:
     d1: 0.98
     d2: 0.98

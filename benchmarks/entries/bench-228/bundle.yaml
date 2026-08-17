@@ -27,29 +27,27 @@ resources:
   availability: unavailable
   source: https://www.ncbi.nlm.nih.gov/sra
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=SRA, primary=True; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=SRA, primary=True; not bundled (system must probe from
+    paper)
 - id: data-ref-2
   role: data
   authority: original
   availability: unavailable
   source: https://zenodo.org
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: repository=Zenodo, primary=True; not bundled (audit-mode entry, system
-    must probe from paper)
+  access_notes: repository=Zenodo, primary=True; not bundled (system must probe from
+    paper)
 - id: code-ref-1
   role: code
   authority: original
   availability: unavailable
   source: https://github.com/splicebox/MntJulip
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: language=Python; not bundled (audit-mode entry, system must probe
-    from paper)
+  access_notes: language=Python; not bundled (system must probe from paper)
 - id: code-ref-2
   role: code
   authority: original
   availability: unavailable
   source: https://github.com/splicebox/Jutils
   checked_at: '2026-08-04T00:00:00Z'
-  access_notes: language=Python; not bundled (audit-mode entry, system must probe
-    from paper)
+  access_notes: language=Python; not bundled (system must probe from paper)

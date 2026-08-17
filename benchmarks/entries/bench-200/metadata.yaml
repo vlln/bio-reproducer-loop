@@ -1,16 +1,23 @@
 id: bench-200
-version: 2.0.0
+version: 2.1.0
 protocol_version: '2.0'
-oracle_version: 1.0.0
+oracle_version: 1.1.0
 title: Multi-omics profiling reveals microenvironmental remodeling as a key driver
   of house dust mite-induced lung cancer progression
 scenario: mixed
 difficulty: medium
 input_dir: input/
 oracle_dir: oracle/
-description: ClaroAI-Bench audit-mode entry (BL-011). PMID 41610471, DOI 10.1016/j.neo.2026.101275,
-  modality genomics_omics. scored_scope=d1_d3_audit.
-scored_scope: d1_d3_audit
+description: 'ClaroAI-Bench entry (BL-011). PMID 41610471, DOI 10.1016/j.neo.2026.101275,
+  modality genomics_omics. reproduction_target=result_verification. Scored task: 2
+  quantitative claim(s) + D1-D3 evidence.'
+reproduction_target: result_verification
+task: "\u590D\u73B0\u8BE5\u8BBA\u6587\u62A5\u544A\u7684\u5173\u952E\u5B9A\u91CF\u7ED3\
+  \u679C\uFF08Fig4A tumor\u3001Fig4A normal\uFF09\uFF0C\u5E76\u4E0E\u8BBA\u6587\u53D1\
+  \u8868\u7684\u6570\u503C\u6838\u5BF9\uFF1B\u540C\u65F6\u6838\u5B9E\u8BBA\u6587\u5F15\
+  \u7528\u7684\u6570\u636E\u53EF\u5B9A\u4F4D\u3001\u53EF\u4E0B\u8F7D\uFF0C\u4EE5\u53CA\
+  \u4EE3\u7801\u4ED3\u5E93\u662F\u5426\u53EF\u7528\u3002\u4E0D\u9700\u8981\u590D\u73B0\
+  \u8BBA\u6587\u7684\u5168\u90E8\u56FE\u8868\u4E0E\u5206\u6790\u3002"
 complexity_profile:
   data:
     data_size: medium
@@ -28,7 +35,7 @@ complexity_profile:
     compute: moderate
   evaluation:
     ground_truth: partially_known
-    claim_type: qualitative
+    claim_type: mixed
     tolerance: moderate
   paper:
     paper_type: real_published

@@ -1,7 +1,7 @@
 {
-  "converter": "claroai2bench@0.1.0",
-  "snapshot_ref": "hf:kyleaoconnell22/claroai-bench@2026-05-06+local-clone",
-  "converted_at": "2026-08-07T11:47:04Z",
+  "converter": "claroai2bench@0.2.0",
+  "snapshot_ref": "git:b8c9ea6d091ac1ef80c2b0bfb98c8277970c21db",
+  "converted_at": "2026-08-17T04:28:38Z",
   "mapping": {
     "paper_01": "bench-200",
     "paper_02": "bench-201",
@@ -40,5 +40,5 @@
     "paper_35": "bench-234"
   },
   "failures": [],
-  "schema": "claroai-converter-provenance/v1"
+  "schema": "claroai-converter-provenance/v2"
 }
