@@ -59,8 +59,11 @@ created: 2026-08-12T00:00:00Z
 
 1. **无 D5 evidence 的 4 篇**（paper_09/10/23/26 → bench-208/209/222/225）：claims 需
    从论文表格人工补全（bench-222 属已校准 6 篇，D5 校准对照不可用）。
-2. **legacy run 的 claims evidence 提取为手工**（跨语言指标名）：后续 run 应产出
-   结构化 claims evidence JSON（role=validate_report），verify 的 JSON 解析已就绪。
+2. **claims evidence 自动解析已打通**（后续补丁 fix(0025)-2）：`_normalize` 保留
+   CJK、千位分隔符解析、`_match_row` 数值邻近回退——bench-220/221 的 legacy run 用
+   原始 validate 报告即可自动评分（无需手工映射）；bench-223 的 AUROC 0.992 也从
+   run 报告自动命中（0.992 ≥ 0.95，与作者同值）。仍建议后续 run 产出结构化
+   claims evidence JSON（role=validate_report）作为首选契约，Markdown 解析为回退。
 3. **全 35 篇的 claims 转录质量**需逐篇 fidelity review（尤其格式 4 `match paper`
    计数与阈值型声明）。
 4. 系统侧运行时的越界重活（provision 全量环境等）属 loop 执行层问题，不在本

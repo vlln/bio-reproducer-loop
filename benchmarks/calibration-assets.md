@@ -7,6 +7,8 @@
 ## 批量校准脚本（远端）
 
 - `bench-v3.sh`：docker 模拟 VM 边界跑 loopflow 全链路（时间戳目录，`bash bench-v3.sh <entry>`）
+  （Plan 0025：不再硬编码 `scope=d1_d3_audit`，改读 entry `metadata.task` 自然语言任务作为
+  loop scope 参数——评分维度代码不再进入被测系统）
 - `watch.sh`：run 完成检测（写 run-done.txt）
 - `evaluate_run.py`（本文件所在仓库）：评估已完成 run
 
