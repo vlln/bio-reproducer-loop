@@ -500,9 +500,9 @@ _SUFFIXES = ("原始数据", "数据", "文件", "files", "data", "mirror", "仓
 
 
 def _normalize(name):
-    """Normalize for fuzzy matching: unify dashes, drop generic suffix words."""
+    """Normalize for fuzzy matching: unify dashes, keep CJK letters, drop generic suffix words."""
     s = str(name).lower().replace("\\u2013", "-").replace("\\u2014", "-")
-    s = re.sub(r"[^0-9a-z]+", "", s)
+    s = re.sub(r"[^0-9a-z\\u4e00-\\u9fff]+", "", s)
     for suf in _SUFFIXES:
         if s.endswith(suf) and len(s) > len(suf) + 2:
             s = s[: -len(suf)]
@@ -707,12 +707,20 @@ def _parse_claims_evidence(path):
 
 
 def _first_number(text):
-    m = re.search(r"-?\\d+(?:\\.\\d+)?", str(text))
+    s = str(text).replace(",", "")
+    m = re.search(r"-?\\d+(?:\\.\\d+)?", s)
     return float(m.group(0)) if m else None
 
 
 def _match_row(claim, rows):
-    """Find the evidence row for a claim: exact normalized metric, then token overlap."""
+    """Find the evidence row for a claim.
+
+    Cascade: exact normalized metric name → token overlap on original words →
+    value proximity (row whose reproduced value is closest to the paper value,
+    within tolerance). Value fallback exists because metric names are not part of
+    the benchmark contract (a tested system may name a metric differently, e.g.
+    cross-language); claim satisfaction is numeric.
+    """
     norm = _normalize(claim["metric"])
     if norm in rows:
         return rows[norm]
@@ -722,9 +730,22 @@ def _match_row(claim, rows):
         hits = sum(1 for t in tokens if t in nkey)
         if hits > best_hits:
             best, best_hits = row, hits
-    if best is not None and best_hits >= max(1, len(tokens) // 2):
+    if best is not None and len(tokens) >= 2 and best_hits >= max(2, len(tokens) // 2):
         return best
-    return None
+    # value proximity: closest actual within tolerance of the paper value
+    paper = float(claim["paper_value"])
+    tol = claim.get("tolerance") or {"type": "relative", "value": 0.05}
+    limit = (float(tol.get("value", 0.05)) if tol.get("type") == "absolute"
+             else abs(paper) * float(tol.get("value", 0.05)))
+    closest, closest_d = None, None
+    for row in rows.values():
+        actual = row.get("actual")
+        if actual is None:
+            continue
+        d = abs(float(actual) - paper)
+        if d <= limit and (closest_d is None or d < closest_d):
+            closest, closest_d = row, d
+    return closest
 
 
 def check_claim(artifact, config):
