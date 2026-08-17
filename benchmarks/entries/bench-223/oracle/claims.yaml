@@ -4,7 +4,7 @@ paper_title: Interpretable and integrative analysis of single-cell multiomics wi
 paper_doi: 10.1038/s42003-025-08533-7
 pmid: '40770488'
 reproduction_target: result_verification
-task: 核实该论文引用的数据能否定位并实际下载、代码仓库是否完整可用；复现论文报告的关键定量结果（如有）。
+task: 复现该论文报告的关键定量结果（AUROC best：论文声称 AUROC >0.95），并与论文发表的数值核对；同时核实论文引用的数据可定位、可下载，以及代码仓库是否可用。不需要复现论文的全部图表与分析。
 data_references:
 - accession: GSE154873
   repository: GEO
