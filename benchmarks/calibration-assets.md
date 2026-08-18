@@ -113,6 +113,16 @@ bench-223 重跑暴露复现偏差（scMKL 未超基线，属 D5 层面）；ben
   bench-223 AUROC 作者复现值（claim 已存在，审计误报）、bench-229 GMM 定性行
 - 验证：141 passed，42 entry 全过 bundle gate（commit 1f45613）
 
+## P1-2：4 篇无 D5 evidence 论文 claims 补全（2026-08-18）
+
+bench-208/209/222/225 的 scores.json 无 D5 evidence，从论文作者复现产物提取数值声明：
+- bench-208（VDAC isoforms）3 条：VDAC1/2/3 比例（论文 Fig1A 50%/30%/18% vs 作者复现 57.6/30.9/11.5）
+- bench-209（EpiFlow）4 条：Mann-Whitney U、p=1.83e-9、H3K9ac/H3K27ac Pearson r（0.41/0.42）
+- bench-222（TorchXRayVision）5 条：DenseNet121/ResNet50 参数量 + 3 个 AUROC（0.88/0.91/0.94）
+- bench-225（NN ensembles）2 条：集成 AUROC 75.1%、BMI-only 64.2%
+全部 entry 通过 bundle gate（141 tests passed），claims 与作者复现校准一致（commit f84ab7d）。
+至此 35 篇全部有可评分的 claims（其余 31 篇来自 converter 转录 + bench-223/231 手工补）。
+
 ## P0：幽灵进程根因与修复（2026-08-18，loopflow idle timeout）
 
 **根因**：loopflow `CliTransport`（cli.py）docstring 声称"Default 300s"超时但从未实现——
