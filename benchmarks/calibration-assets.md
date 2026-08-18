@@ -137,7 +137,11 @@ bench-208/209/222/225 的 scores.json 无 D5 evidence，从论文作者复现产
 - 校准层看门狗 `run-with-watchdog.sh`：容器日志 2.5h 无更新 → kill + 自动重启（默认最多
   2 次）；metrics.json 出现即视为完成。修复了启动竞态（等容器出现再判 idle）。
 
-**验证**：bench-229 在 system-idlefix 镜像 + 看门狗下重跑中（验证项）。
+**验证**：bench-229 在 system-idlefix 镜像 + 看门狗下重跑——全程连续推进 6h 无停摆
+（Reader 20:49→Provision 01:42→Data 01:57→Run 02:21→Validate 02:26），空闲超时未触发
+（无需干预）。**看门狗设计缺陷记录**：以 metrics.json 出现为完成判定过早（Package 阶段
+仍在进行，report.md 未写完），导致误判完成 + 评估缺 validate_report artifact——应改为
+等 loop `Done:` 或容器退出。
 
 ## 教训与规范
 
