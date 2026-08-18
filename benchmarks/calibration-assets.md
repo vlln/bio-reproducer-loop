@@ -102,6 +102,22 @@ bench-223 重跑暴露复现偏差（scMKL 未超基线，属 D5 层面）；ben
 （/tmp 重启即失，无碍）。**后续基准：run 完成归档前先 `chmod -R a+rX`（或容器内收尾）**，
 否则 mv 跨设备会部分失败。
 
+## P0：幽灵进程根因与修复（2026-08-18，loopflow idle timeout）
+
+**根因**：loopflow `CliTransport`（cli.py）docstring 声称"Default 300s"超时但从未实现——
+`self._timeout = None`，`join(timeout=None)` 无限阻塞；`claude -p` 子进程在模型 API 挂起时
+可无限等待（bench-229 实测 Run 阶段 6.5h、Package 阶段 10.5h 无响应）。
+
+**修复**（已应用 local + 远端 /storeData/gs/loopflow 源码 + 运行时镜像新 tag
+`bio-reproducer-runtime:system-idlefix`）：
+- CliTransport 新增**空闲超时**：子进程连续无输出（stdout/stderr）超过阈值即 kill + TimeoutError；
+  任何输出行重置计时。默认 2h（`LOOPFLOW_AGENT_IDLE_TIMEOUT` 可配）——长构建/下载静默
+  30-60min 不受影响，实测挂起 6.5-10.5h 必然被捕获；10s 轮询粒度，本地单测通过。
+- 校准层看门狗 `run-with-watchdog.sh`：容器日志 2.5h 无更新 → kill + 自动重启（默认最多
+  2 次）；metrics.json 出现即视为完成。修复了启动竞态（等容器出现再判 idle）。
+
+**验证**：bench-229 在 system-idlefix 镜像 + 看门狗下重跑中（验证项）。
+
 ## 教训与规范
 
 1. **完成即归档**：run 完成立即 `mv` 到持久区 + 登记本索引，勿事后批量移动（bench-200/220/222 产物因批量移动误操作丢失）
