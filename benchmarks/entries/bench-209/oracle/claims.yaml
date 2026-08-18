@@ -1,13 +1,9 @@
 id: bench-209
-paper_title: Nuclear Histone 3 Post-Translational Modification Profiling in Whole
-  Cells using Spectral Flow Cytometry (EpiFlow)
+paper_title: Nuclear Histone 3 Post-Translational Modification Profiling in Whole Cells using Spectral Flow Cytometry (EpiFlow)
 paper_doi: 10.1101/2024.10.03.616268
 pmid: '41676480'
 reproduction_target: result_verification
-task: "\u6838\u5B9E\u8BE5\u8BBA\u6587\u5F15\u7528\u7684\u6570\u636E\u80FD\u5426\u5B9A\
-  \u4F4D\u5E76\u5B9E\u9645\u4E0B\u8F7D\u3001\u4EE3\u7801\u4ED3\u5E93\u662F\u5426\u5B8C\
-  \u6574\u53EF\u7528\uFF1B\u590D\u73B0\u8BBA\u6587\u62A5\u544A\u7684\u5173\u952E\u5B9A\
-  \u91CF\u7ED3\u679C\uFF08\u5982\u6709\uFF09\u3002"
+task: 复现该论文报告的关键定量结果（H3K4me1 genotype Mann-Whitney U statistic、H3K4me1 genotype p-value、H3K9ac vs PAX6 Pearson correlation、H3K27ac vs PAX6 Pearson correlation），并与论文发表的数值核对；同时核实论文引用的数据可定位、可下载，以及代码仓库是否可用。不需要复现论文的全部图表与分析。
 data_references:
 - accession: RRID:CVCL_C1W7
   repository: other
@@ -32,7 +28,51 @@ code_references:
   language: R
   ground_truth: available
   notes: transcribed from scores.json evidence
-claims: []
+claims:
+- id: C1
+  metric: H3K4me1 genotype Mann-Whitney U statistic
+  paper_value: 9350000
+  unit: count
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper_10/reproduction_report.md §6（论文正文：W = 9.35 x 10^6，对应 Table 40）
+  author_match: exact
+  author_repr: 9346573
+  notes: 论文正文报告 WTC11 vs KMT2D10.4 比较 H3K4me1 的 Mann-Whitney W = 9.35 x 10^6；作者复现 U = 9,346,573，偏差 0.04%
+- id: C2
+  metric: H3K4me1 genotype p-value
+  paper_value: 1.83e-09
+  unit: value
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper_10/reproduction_report.md §6（论文正文：p = 1.83 x 10^-9）
+  author_match: exact
+  author_repr: 1.83e-09
+  notes: 论文正文报告 H3K4me1 基因型比较 p = 1.83 x 10^-9；作者复现 p = 1.83e-09，精确匹配
+- id: C3
+  metric: H3K9ac vs PAX6 Pearson correlation
+  paper_value: 0.41
+  unit: value
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper_10/reproduction_report.md §1（论文 Figure 10，overall histone marks vs PAX6）
+  author_match: exact
+  author_repr: 0.41
+  notes: 论文 Figure 10 报告 H3K9ac 与 PAX6 的总体 Pearson 相关 r = 0.41；作者复现完全一致
+- id: C4
+  metric: H3K27ac vs PAX6 Pearson correlation
+  paper_value: 0.42
+  unit: value
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper_10/reproduction_report.md §1（论文 Figure 10，overall histone marks vs PAX6）
+  author_match: exact
+  author_repr: 0.42
+  notes: 论文 Figure 10 报告 H3K27ac 与 PAX6 的总体 Pearson 相关 r = 0.42；作者复现完全一致
 calibration:
   d1: 2
   d2: 2

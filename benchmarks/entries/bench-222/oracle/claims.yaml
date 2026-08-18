@@ -3,13 +3,65 @@ paper_title: 'TorchXRayVision: A library of chest X-ray datasets and models'
 paper_doi: null
 pmid: null
 reproduction_target: result_verification
-task: "\u6838\u5B9E\u8BE5\u8BBA\u6587\u5F15\u7528\u7684\u6570\u636E\u80FD\u5426\u5B9A\
-  \u4F4D\u5E76\u5B9E\u9645\u4E0B\u8F7D\u3001\u4EE3\u7801\u4ED3\u5E93\u662F\u5426\u5B8C\
-  \u6574\u53EF\u7528\uFF1B\u590D\u73B0\u8BBA\u6587\u62A5\u544A\u7684\u5173\u952E\u5B9A\
-  \u91CF\u7ED3\u679C\uFF08\u5982\u6709\uFF09\u3002"
+task: 复现该论文报告的关键定量结果（DenseNet121 parameter count、ResNet50 parameter count、NIH ChestXray14 DenseNet121 Cardiomegaly AUROC、NIH ChestXray14 DenseNet121 Hernia AUROC、CheXpert DenseNet121 Effusion AUROC），并与论文发表的数值核对；同时核实论文引用的数据可定位、可下载，以及代码仓库是否可用。不需要复现论文的全部图表与分析。
 data_references: []
 code_references: []
-claims: []
+claims:
+- id: C1
+  metric: DenseNet121 parameter count
+  paper_value: 6966034
+  unit: count
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper_23/extraction.json key_results.model_parameters（论文 benchmark 表 / BENCHMARKS.md）；作者复现值见 paper_23/d5_codex/result_gpt_54.json
+  author_match: exact
+  author_repr: 6966034
+  notes: 论文报告 DenseNet121 参数量 6,966,034；作者加载预训练权重直接计数，完全一致
+- id: C2
+  metric: ResNet50 parameter count
+  paper_value: 23538642
+  unit: count
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper_23/extraction.json key_results.model_parameters（论文 benchmark 表 / BENCHMARKS.md）；作者复现值见 paper_23/d5_codex/result_gpt_54.json
+  author_match: exact
+  author_repr: 23538642
+  notes: 论文报告 ResNet50 参数量 23,538,642；作者加载预训练权重直接计数，完全一致
+- id: C3
+  metric: NIH ChestXray14 DenseNet121 Cardiomegaly AUROC
+  paper_value: 0.88
+  unit: value
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper_23/extraction.json key_results.NIH_ChestXray14_DenseNet121（论文 Table）；作者复现值见 paper_23/d5_codex/result_gpt_54.json
+  author_match: exact
+  author_repr: 0.88
+  notes: 论文报告 NIH ChestXray14 上 DenseNet121 对 Cardiomegaly 的 AUROC 0.88；作者复现完全一致
+- id: C4
+  metric: NIH ChestXray14 DenseNet121 Hernia AUROC
+  paper_value: 0.91
+  unit: value
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper_23/extraction.json key_results.NIH_ChestXray14_DenseNet121（论文 Table）；作者复现值见 paper_23/d5_codex/result_gpt_54.json
+  author_match: exact
+  author_repr: 0.91
+  notes: 论文报告 NIH ChestXray14 上 DenseNet121 对 Hernia 的 AUROC 0.91；作者复现完全一致
+- id: C5
+  metric: CheXpert DenseNet121 Effusion AUROC
+  paper_value: 0.94
+  unit: value
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper_23/extraction.json key_results.CheXpert_DenseNet121（论文 Table）；作者复现值见 paper_23/d5_codex/result_gpt_54.json
+  author_match: exact
+  author_repr: 0.94
+  notes: 论文报告 CheXpert 上 DenseNet121 对 Effusion 的 AUROC 0.94；作者复现完全一致
 calibration:
   d1: 2
   d2: 2

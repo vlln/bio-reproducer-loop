@@ -8,8 +8,7 @@ verdict_thresholds:
   partial: 30
 checks:
 - id: A1
-  description: "\u6570\u636E\u5F15\u7528\u5B9A\u4F4D/\u53EF\u83B7\u53D6\u5224\u65AD\
-    \u4E0E ground truth \u4E00\u81F4"
+  description: 数据引用定位/可获取判断与 ground truth 一致
   evidence:
     artifact_role: data_manifest
   comparison:
@@ -17,10 +16,9 @@ checks:
     module: verify.py
     function: check_data_references
     config: {}
-  weight: 50
+  weight: 15
 - id: A2
-  description: "\u4EE3\u7801\u5F15\u7528\u53EF\u7528\u6027\u5224\u65AD\u4E0E ground\
-    \ truth \u4E00\u81F4"
+  description: 代码引用可用性判断与 ground truth 一致
   evidence:
     artifact_role: provision_report
   comparison:
@@ -28,4 +26,59 @@ checks:
     module: verify.py
     function: check_code_references
     config: {}
-  weight: 50
+  weight: 15
+- id: C1
+  description: 复现声明 DenseNet121 parameter count（论文值 6966034）
+  evidence:
+    artifact_role: validate_report
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C1
+  weight: 14.0
+- id: C2
+  description: 复现声明 ResNet50 parameter count（论文值 23538642）
+  evidence:
+    artifact_role: validate_report
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C2
+  weight: 14.0
+- id: C3
+  description: 复现声明 NIH ChestXray14 DenseNet121 Cardiomegaly AUROC（论文值 0.88）
+  evidence:
+    artifact_role: validate_report
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C3
+  weight: 14.0
+- id: C4
+  description: 复现声明 NIH ChestXray14 DenseNet121 Hernia AUROC（论文值 0.91）
+  evidence:
+    artifact_role: validate_report
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C4
+  weight: 14.0
+- id: C5
+  description: 复现声明 CheXpert DenseNet121 Effusion AUROC（论文值 0.94）
+  evidence:
+    artifact_role: validate_report
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C5
+  weight: 14.0

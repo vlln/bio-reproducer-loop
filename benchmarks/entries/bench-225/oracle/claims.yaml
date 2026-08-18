@@ -3,10 +3,7 @@ paper_title: Modeling health risks using neural network ensembles
 paper_doi: 10.1371/journal.pone.0308922
 pmid: '39383158'
 reproduction_target: result_verification
-task: "\u6838\u5B9E\u8BE5\u8BBA\u6587\u5F15\u7528\u7684\u6570\u636E\u80FD\u5426\u5B9A\
-  \u4F4D\u5E76\u5B9E\u9645\u4E0B\u8F7D\u3001\u4EE3\u7801\u4ED3\u5E93\u662F\u5426\u5B8C\
-  \u6574\u53EF\u7528\uFF1B\u590D\u73B0\u8BBA\u6587\u62A5\u544A\u7684\u5173\u952E\u5B9A\
-  \u91CF\u7ED3\u679C\uFF08\u5982\u6709\uFF09\u3002"
+task: 复现该论文报告的关键定量结果（Any-condition eight-input ensemble AUROC、BMI-only any-condition AUROC），并与论文发表的数值核对；同时核实论文引用的数据可定位、可下载，以及代码仓库是否可用。不需要复现论文的全部图表与分析。
 data_references:
 - accession: NHANES
   repository: other
@@ -15,7 +12,29 @@ data_references:
   downloadable: 'false'
   notes: transcribed from scores.json evidence
 code_references: []
-claims: []
+claims:
+- id: C1
+  metric: Any-condition eight-input ensemble AUROC
+  paper_value: 75.1
+  unit: percent
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper_26/extraction.json key_results.stat_1（论文摘要：75.1% AUROC）
+  author_match: unknown
+  author_repr: null
+  notes: 论文报告 8 输入神经网络集成模型预测任意健康状况的 AUROC 75.1%；作者 D5 复现未能在时限内完成（需重建 5 个插补分区与 16 网络集成），无复现值
+- id: C2
+  metric: BMI-only any-condition AUROC
+  paper_value: 64.2
+  unit: percent
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper_26/extraction.json key_results.stat_2（论文正文：64.2% AUROC）；作者复现值见 paper_26/d5_codex/result_gpt_54.json
+  author_match: exact
+  author_repr: 64.13
+  notes: 论文报告仅用 BMI 预测任意健康状况的基线 AUROC 64.2%；作者在论文测试划分上复现 64.13%，偏差 0.1%
 calibration:
   d1: 2
   d2: 0
