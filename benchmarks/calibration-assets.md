@@ -102,6 +102,17 @@ bench-223 重跑暴露复现偏差（scMKL 未超基线，属 D5 层面）；ben
 （/tmp 重启即失，无碍）。**后续基准：run 完成归档前先 `chmod -R a+rX`（或容器内收尾）**，
 否则 mv 跨设备会部分失败。
 
+## P1-1：claims fidelity review（2026-08-18）
+
+对 35 篇 claims.yaml 与 claroai scores.json D5 evidence 的交叉审计：
+- 审计发现 16 篇有转录缺口；修复 converter 3 类格式缺失（pub 值带 % 后缀、
+  "vs published" 格式、 "verified=" 格式）+ 噪声行过滤（outputs=/exit_code=）
+- claims 总数 22 → 29；bench-231 手工补 2 条阈值 claims（论文声称精度 >90%，
+  复现 KNN-5 98.3% / 线性探针 96.7%）
+- 剩余 6 篇发现均为误报或非数值声明：bench-213/220/221 样本量注记（非关键声明）、
+  bench-223 AUROC 作者复现值（claim 已存在，审计误报）、bench-229 GMM 定性行
+- 验证：141 passed，42 entry 全过 bundle gate（commit 1f45613）
+
 ## P0：幽灵进程根因与修复（2026-08-18，loopflow idle timeout）
 
 **根因**：loopflow `CliTransport`（cli.py）docstring 声称"Default 300s"超时但从未实现——
