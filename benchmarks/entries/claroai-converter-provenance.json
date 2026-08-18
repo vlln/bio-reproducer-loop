@@ -1,7 +1,7 @@
 {
   "converter": "claroai2bench@0.2.0",
   "snapshot_ref": "git:b8c9ea6d091ac1ef80c2b0bfb98c8277970c21db",
-  "converted_at": "2026-08-17T04:28:38Z",
+  "converted_at": "2026-08-18T12:33:35Z",
   "mapping": {
     "paper_01": "bench-200",
     "paper_02": "bench-201",

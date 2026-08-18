@@ -17,7 +17,7 @@ checks:
     module: verify.py
     function: check_data_references
     config: {}
-  weight: 50
+  weight: 15
 - id: A2
   description: "\u4EE3\u7801\u5F15\u7528\u53EF\u7528\u6027\u5224\u65AD\u4E0E ground\
     \ truth \u4E00\u81F4"
@@ -28,4 +28,26 @@ checks:
     module: verify.py
     function: check_code_references
     config: {}
-  weight: 50
+  weight: 15
+- id: C1
+  description: "\u590D\u73B0\u58F0\u660E HiRID Graph-spa\uFF08\u8BBA\u6587\u503C 50.02\uFF09"
+  evidence:
+    artifact_role: validate_report
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C1
+  weight: 35.0
+- id: C2
+  description: "\u590D\u73B0\u58F0\u660E HiRID Baseline\uFF08\u8BBA\u6587\u503C 45.61\uFF09"
+  evidence:
+    artifact_role: validate_report
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C2
+  weight: 35.0

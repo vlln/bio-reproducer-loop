@@ -47,11 +47,11 @@ DEFAULT_CLAIM_TOLERANCE = {"type": "relative", "value": 0.05}
 #   2) reproduced=..., published=  "Blood lead CVD HR: reproduced=1.6339, published=1.63"
 #   3) single-line published value "REPRODUCED: fs_enet all-cause linear HR = 1.25 (1.09-1.43) -- EXACT MATCH"
 _CLAIM_LINE_PUB_REPR_RE = re.compile(
-    r"^(?P<metric>.+?):\s*pub=(?P<pub>[\d.]+)\s+repr=(?P<repr>[\d.]+)"
+    r"^(?P<metric>.+?):\s*pub=(?P<pub>[\d.]+)%?\s+repr=(?P<repr>[\d.]+)%?"
     r"(?:\s+match=(?P<match>[a-z]+))?(?:\s*\((?P<detail>[^)]*)\))?\s*$"
 )
 _CLAIM_LINE_REPROD_PUB_RE = re.compile(
-    r"^(?P<metric>.+?):\s*reproduced=(?P<repr>[\d.]+)\s*,\s*published=(?P<pub>[\d.]+)"
+    r"^(?P<metric>.+?):\s*reproduced=(?P<repr>[\d.]+)%?\s*,\s*published=(?P<pub>[\d.]+)%?"
     r"(?:\s*,\s*diff=[^,)]*)?\s*$"
 )
 _CLAIM_LINE_EQ_RE = re.compile(
@@ -64,6 +64,18 @@ _CLAIM_LINE_VS_PUB_RE = re.compile(
     r"^(?P<metric>.+?)(?::|\s+)\s*(?:p=)?(?P<repr>[\d.]+(?:e[+-]?\d+)?)"
     r"\s+vs\s+pub\s+(?:p=)?(?P<pub>[\d.]+(?:e[+-]?\d+)?)\s*$"
 )
+# 6) "X: PR=1.09 [1.05-1.13] vs published 1.08"（bench-206 风格）
+_CLAIM_LINE_VS_PUBLISHED_RE = re.compile(
+    r"^(?P<metric>.+?)(?::|\s+)(?:[A-Za-z]+=\s*)?(?P<repr>[\d.]+)%?\s*\[[^]]*\]"
+    r"\s+vs\s+published\s+(?P<pub>[\d.]+)%?\s*(?:\[[^]]*\])?"
+    r"\s*(?:\((?P<detail>[^)]*)\))?$"
+)
+# 7) "nuclei: pub=2275105 verified=2275105"（bench-210 风格）
+_CLAIM_LINE_PUB_VERIFIED_RE = re.compile(
+    r"^(?P<metric>.+?):\s*pub=(?P<pub>[\d,]+)(?:%?)\s+verified=(?P<repr>[\d,]+)%?\s*$"
+)
+# 噪声行：agent 运行元数据，非论文声明
+_CLAIM_NOISE_TOKENS = ("outputs=", "exit_code=")
 # 5) "match paper" lines carrying name=count tokens:
 #    "Barcode counts match paper: multi=57,491, ATAC=167,772, RNA=78,738, spatial=21,611"
 _MATCH_PAPER_TOKEN_RE = re.compile(r"(?P<metric>[A-Za-z_][A-Za-z0-9_]*)=(?P<pub>[\d,]+)")
@@ -119,10 +131,14 @@ def _extract_d5_claims(scores: dict) -> list[dict]:
     seen: set[str] = set()
     for line in d5.get("evidence") or []:
         stripped = line.strip()
+        if any(tok in stripped.lower() for tok in _CLAIM_NOISE_TOKENS):
+            continue
         m = (_CLAIM_LINE_PUB_REPR_RE.match(stripped)
              or _CLAIM_LINE_REPROD_PUB_RE.match(stripped)
              or _CLAIM_LINE_EQ_RE.match(stripped)
-             or _CLAIM_LINE_VS_PUB_RE.match(stripped))
+             or _CLAIM_LINE_VS_PUB_RE.match(stripped)
+             or _CLAIM_LINE_VS_PUBLISHED_RE.match(stripped)
+             or _CLAIM_LINE_PUB_VERIFIED_RE.match(stripped))
         if m:
             metric = m.group("metric").strip()
             if metric in seen:

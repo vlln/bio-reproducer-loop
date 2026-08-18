@@ -8,7 +8,8 @@ verdict_thresholds:
   partial: 30
 checks:
 - id: A1
-  description: 数据引用定位/可获取判断与 ground truth 一致
+  description: "\u6570\u636E\u5F15\u7528\u5B9A\u4F4D/\u53EF\u83B7\u53D6\u5224\u65AD\
+    \u4E0E ground truth \u4E00\u81F4"
   evidence:
     artifact_role: data_manifest
   comparison:
@@ -16,9 +17,10 @@ checks:
     module: verify.py
     function: check_data_references
     config: {}
-  weight: 15
+  weight: 50
 - id: A2
-  description: 代码引用可用性判断与 ground truth 一致
+  description: "\u4EE3\u7801\u5F15\u7528\u53EF\u7528\u6027\u5224\u65AD\u4E0E ground\
+    \ truth \u4E00\u81F4"
   evidence:
     artifact_role: provision_report
   comparison:
@@ -26,15 +28,4 @@ checks:
     module: verify.py
     function: check_code_references
     config: {}
-  weight: 15
-- id: C1
-  description: 复现声明 AUROC best（论文 AUROC >0.95）
-  evidence:
-    artifact_role: validate_report
-  comparison:
-    comparator: python_verify
-    module: verify.py
-    function: check_claim
-    config:
-      claim_id: C1
-  weight: 70.0
+  weight: 50

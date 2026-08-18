@@ -4,10 +4,13 @@ paper_title: 'Patient-Clinician Sex and Race/Ethnicity Concordance and Adherence
 paper_doi: 10.1007/s11606-025-09631-2
 pmid: '40461740'
 reproduction_target: result_verification
-task: "\u6838\u5B9E\u8BE5\u8BBA\u6587\u5F15\u7528\u7684\u6570\u636E\u80FD\u5426\u5B9A\
-  \u4F4D\u5E76\u5B9E\u9645\u4E0B\u8F7D\u3001\u4EE3\u7801\u4ED3\u5E93\u662F\u5426\u5B8C\
-  \u6574\u53EF\u7528\uFF1B\u590D\u73B0\u8BBA\u6587\u62A5\u544A\u7684\u5173\u952E\u5B9A\
-  \u91CF\u7ED3\u679C\uFF08\u5982\u6709\uFF09\u3002"
+task: "\u590D\u73B0\u8BE5\u8BBA\u6587\u62A5\u544A\u7684\u5173\u952E\u5B9A\u91CF\u7ED3\
+  \u679C\uFF08Flu vaccination\u3001Breast (mammogram)\u3001Pap smear\uFF09\uFF0C\u5E76\
+  \u4E0E\u8BBA\u6587\u53D1\u8868\u7684\u6570\u503C\u6838\u5BF9\uFF1B\u540C\u65F6\u6838\
+  \u5B9E\u8BBA\u6587\u5F15\u7528\u7684\u6570\u636E\u53EF\u5B9A\u4F4D\u3001\u53EF\u4E0B\
+  \u8F7D\uFF0C\u4EE5\u53CA\u4EE3\u7801\u4ED3\u5E93\u662F\u5426\u53EF\u7528\u3002\u4E0D\
+  \u9700\u8981\u590D\u73B0\u8BBA\u6587\u7684\u5168\u90E8\u56FE\u8868\u4E0E\u5206\u6790\
+  \u3002"
 data_references:
 - accession: null
   repository: other
@@ -22,7 +25,40 @@ data_references:
   downloadable: 'true'
   notes: transcribed from scores.json evidence
 code_references: []
-claims: []
+claims:
+- id: C1
+  metric: Flu vaccination
+  paper_value: 1.08
+  unit: value
+  tolerance:
+    type: relative
+    value: 0.05
+  source: scores.json D5 evidence
+  author_match: unknown
+  author_repr: 1.09
+  notes: transcribed from scores.json D5 evidence
+- id: C2
+  metric: Breast (mammogram)
+  paper_value: 1.06
+  unit: value
+  tolerance:
+    type: relative
+    value: 0.05
+  source: scores.json D5 evidence
+  author_match: unknown
+  author_repr: 1.07
+  notes: transcribed from scores.json D5 evidence
+- id: C3
+  metric: Pap smear
+  paper_value: 1.09
+  unit: value
+  tolerance:
+    type: relative
+    value: 0.05
+  source: scores.json D5 evidence
+  author_match: unknown
+  author_repr: 1.09
+  notes: transcribed from scores.json D5 evidence
 calibration:
   d1: 2
   d2: 2
