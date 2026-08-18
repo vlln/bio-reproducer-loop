@@ -8,6 +8,8 @@
 
 > 新自然语言 task 下正式重跑（bench-220 已先行，REPRODUCED 100）。旧 run 均存
 > `runs/bench-NNN-legacy-*`。verdict 为独立 evaluator 结果（claims oracle 自动解析）。
+> bench-229 首次重跑两次幽灵进程挂起（Run 阶段 6.5h、Package 阶段 10.5h 无响应），
+> 评分工件完成后手动评估归档；LLM 长会话无超时为系统级遗留缺陷。
 
 | entry | 耗时 | 系统自评 | **独立 verdict** | 作者 D5 | 关键失败/发现 |
 |-------|------|----------|-----------------|---------|--------------|
@@ -16,11 +18,13 @@
 | bench-221 | ~1h35m | REPRODUCED | **REPRODUCED 76.25** | 2 | 8 个 HR claims 复现 7 个；hei.2015 cancer HR 0.88 vs 0.83 超容差；A2 NCHS 链接无判断 |
 | bench-222 | ~2h25m | REPRODUCED | **REPRODUCED 100** | 2 | 无数值 claims（scores.json 无 D5 evidence），仅 D1–D3 证据可评 |
 | bench-223 | ~9h | REPRODUCED | **REPRODUCED 85** | 2 | AUROC≥0.95 复现通过（0.992 vs 作者 0.992）；A1 数据引用判断失败；scMKL 计算重（9h） |
+| bench-229 | 05:02→08:54（评分工件） | REPRODUCED 87.6 | **PARTIAL 32.5** | 1 | multi 计数 57491 精确复现 ✓；ATAC/RNA/spatial 因 KPMP 注册限制未复现；A1 对 KPMP UUID/Zenodo 无判断；Package 阶段幽灵进程挂起 |
 
 **Provision 越界观察**（对照审计时代）：全部合理——bench-200 复用 deseq2-analysis:bench001
 增量 7 包、bench-221 复用 nhanes-fi-ca-mortality:r4.3.3（论文同名镜像，零构建）、bench-223
-全复用 scmkl-provision:0.1.6、bench-203 仅建 MRtrix3+Python 聚焦环境。**无现成镜像场景
-（203/221）亦未越界装全套**；审计时代的"provision 建全量分析环境"问题未复现。
+全复用 scmkl-provision:0.1.6、bench-203 仅建 MRtrix3+Python 聚焦环境、bench-229 复用
+p4rkerw/sctools。**无现成镜像场景（203）亦未越界装全套**；审计时代的"provision 建全量
+分析环境"问题未复现。
 
 **校准发现**（claims 维度）：bench-200 系统复现 DEG 数 163/23 vs 论文 599/1390——独立
 验证显示作者 agent 修正了 GEO 标签互换而本系统未检测，属真实复现缺陷（D5 层面）；
