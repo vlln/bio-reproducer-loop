@@ -136,7 +136,9 @@ bench-208/209/222/225 的 scores.json 无 D5 evidence，从论文作者复现产
 - **定向 kill**：只杀 /output 挂载匹配本 run 的容器（v1 误杀所有 shard 容器）
 - loopflow 空闲超时提高到 **12h 兜底**（bench-v3.sh env LOOPFLOW_AGENT_IDLE_TIMEOUT=43200，
   防长静默工具调用被 transport 误杀）
-- 批次已按 v2 重启（28 篇，干净数据）
+- 批次已按 v2 重启（28 篇，干净数据）；v2 运行中再发现：30min 无文件活动规则对
+  长 Docker 拉取/构建（bench-214 provision 网络重置卡 30min+）仍误杀 → 窗口放宽到
+  **90min**（长拉取可容忍，数小时真挂起仍必被捕获）；已生效于后续 entry
 
 ## P0：幽灵进程根因与修复（2026-08-18，loopflow idle timeout）
 
