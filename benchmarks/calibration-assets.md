@@ -123,6 +123,21 @@ bench-208/209/222/225 的 scores.json 无 D5 evidence，从论文作者复现产
 全部 entry 通过 bundle gate（141 tests passed），claims 与作者复现校准一致（commit f84ab7d）。
 至此 35 篇全部有可评分的 claims（其余 31 篇来自 converter 转录 + bench-223/231 手工补）。
 
+## P2 批次 v1 故障与看门狗 v2（2026-08-19/20）
+
+35 篇批量首日暴露**看门狗误杀**：以 container.log 静默 2.5h 为挂起信号，但重计算 entry
+（bench-231 特征提取、bench-214 大图下载等）在长工具调用期间 container.log 本来就静默
+（loopflow 只在 agent 消息时写日志）——13 次误杀（bench-214/201 各被杀 3 次），健康 run
+反复被终止，24h 仅 2 篇完成且为截断结果。**container.log 静默 ≠ 挂起**。
+
+**看门狗 v2 修复**：
+- liveness 改为 **run 目录文件活动**：30 分钟无任何文件写入才判挂起（模型调用 <30min，
+  工具调用必写文件——区分可靠）
+- **定向 kill**：只杀 /output 挂载匹配本 run 的容器（v1 误杀所有 shard 容器）
+- loopflow 空闲超时提高到 **12h 兜底**（bench-v3.sh env LOOPFLOW_AGENT_IDLE_TIMEOUT=43200，
+  防长静默工具调用被 transport 误杀）
+- 批次已按 v2 重启（28 篇，干净数据）
+
 ## P0：幽灵进程根因与修复（2026-08-18，loopflow idle timeout）
 
 **根因**：loopflow `CliTransport`（cli.py）docstring 声称"Default 300s"超时但从未实现——
