@@ -140,6 +140,56 @@ bench-208/209/222/225 的 scores.json 无 D5 evidence，从论文作者复现产
   长 Docker 拉取/构建（bench-214 provision 网络重置卡 30min+）仍误杀 → 窗口放宽到
   **90min**（长拉取可容忍，数小时真挂起仍必被捕获）；已生效于后续 entry
 
+## P2：35 篇 claims 模式全量结果（2026-08-22 批次完成）
+
+3 路并行（看门狗 v2.1 + 空闲超时 12h 兜底 + 自动评估/归档），28 篇批次 + 首批 7 篇 = **35 篇全部完成**。
+
+**分布**：REPRODUCED 17 / PARTIAL 12 / FAILED 6（REPRODUCED 率 49%，作者 D5 复现率 ~60% 同量级）
+
+| entry | verdict | score |
+|-------|---------|-------|
+| bench-200 | FAILED | 0.0 |
+| bench-201 | PARTIAL | 46.67 |
+| bench-202 | PARTIAL | 50.0 |
+| bench-203 | PARTIAL | 30.0 |
+| bench-204 | PARTIAL | 50.0 |
+| bench-205 | PARTIAL | 50.0 |
+| bench-206 | PARTIAL | 30.0 |
+| bench-207 | REPRODUCED | 100.0 |
+| bench-208 | REPRODUCED | 85.0 |
+| bench-209 | FAILED | 17.5 |
+| bench-210 | REPRODUCED | 65.0 |
+| bench-211 | REPRODUCED | 100.0 |
+| bench-212 | REPRODUCED | 100.0 |
+| bench-213 | REPRODUCED | 100.0 |
+| bench-214 | REPRODUCED | 85.0 |
+| bench-215 | REPRODUCED | 100.0 |
+| bench-216 | REPRODUCED | 100.0 |
+| bench-217 | REPRODUCED | 100.0 |
+| bench-218 | REPRODUCED | 100.0 |
+| bench-219 | PARTIAL | 50.0 |
+| bench-220 | REPRODUCED | 100.0 |
+| bench-221 | REPRODUCED | 76.25 |
+| bench-222 | REPRODUCED | 100.0 |
+| bench-223 | REPRODUCED | 85.0 |
+| bench-224 | REPRODUCED | 100.0 |
+| bench-225 | FAILED | 15.0 |
+| bench-226 | FAILED | 0.0 |
+| bench-227 | PARTIAL | 50.0 |
+| bench-228 | PARTIAL | 50.0 |
+| bench-229 | FAILED | 15.0 |
+| bench-230 | REPRODUCED | 100.0 |
+| bench-231 | FAILED | 15.0 |
+| bench-232 | PARTIAL | 50.0 |
+| bench-233 | PARTIAL | 50.0 |
+| bench-234 | PARTIAL | 50.0 |
+
+**批次关键发现**：
+- **看门狗演进**：v1（日志静默 2.5h）误杀 13 次 → v2（文件活动 30min）误杀 2 次 → v2.1（90min）0 误杀
+- **API 6MB 请求体限制**：bench-209/210 命中（超大上下文论文），重试可规避（209 attempt1、210 attempt1 均成功越过）
+- **重环境长尾**：bench-226（11h 构建）、bench-234（10h 构建）、bench-209（renv 15h）——provision 是主要耗时源
+- **校准对照**：作者 D5=2 的论文中系统 FAILED 的（200/203/209/225/226/231）——复现缺陷/环境/网络/API 限制多因
+
 ## P0：幽灵进程根因与修复（2026-08-18，loopflow idle timeout）
 
 **根因**：loopflow `CliTransport`（cli.py）docstring 声称"Default 300s"超时但从未实现——
