@@ -82,7 +82,7 @@ def main(run_dir: str, entry_dir: str, claims_evidence: str | None = None) -> di
         "entry": eid,
         "evaluator_verdict": r.get("verdict"),
         "evaluator_score": r.get("score"),
-        "checks": [{"id": c.get("id"), "passed": c.get("passed"), "note": c.get("note")}
+        "checks": [{"id": c.get("check_id") or c.get("id"), "passed": c.get("passed"), "note": c.get("note")}
                    for c in r.get("checks", [])],
         "author_calibration": claims.get("calibration"),
         "artifacts_found": found,
