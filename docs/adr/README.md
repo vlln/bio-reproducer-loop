@@ -12,3 +12,4 @@
 | 0008 | [Entry 分类与共享资源复用](0008-entry-taxonomy-resource-reuse.md) | accepted |
 | 0009 | [Disposable VM 正式运行边界](0009-disposable-vm-runtime.md) | accepted |
 | 0010 | [ClaroAI-Bench 接入形态](0010-claroai-bench-adapter.md) | accepted |
+| 0011 | [可验证的自我判定（诚实核算）](0011-verifiable-self-assessment.md) | proposed |
