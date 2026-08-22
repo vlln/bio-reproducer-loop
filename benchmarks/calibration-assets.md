@@ -140,11 +140,11 @@ bench-208/209/222/225 的 scores.json 无 D5 evidence，从论文作者复现产
   长 Docker 拉取/构建（bench-214 provision 网络重置卡 30min+）仍误杀 → 窗口放宽到
   **90min**（长拉取可容忍，数小时真挂起仍必被捕获）；已生效于后续 entry
 
-## P2：35 篇 claims 模式全量结果（2026-08-22 批次完成）
+## P2：35 篇 claims 模式最终结果（2026-08-22，当前 oracle 权威重评）
 
-3 路并行（看门狗 v2.1 + 空闲超时 12h 兜底 + 自动评估/归档），28 篇批次 + 首批 7 篇 = **35 篇全部完成**。
-
-**分布**：REPRODUCED 17 / PARTIAL 12 / FAILED 6（REPRODUCED 率 49%，作者 D5 复现率 ~60% 同量级）
+> 批次完成后用**当前 claims 完整 oracle** 对全部归档 run 重评（修正批次时部分 entry
+> 尚未补 claims 的差异 + 恢复 bench-223 AUROC claim）。**16 REPRODUCED / 13 PARTIAL /
+> 6 FAILED**（REPRODUCED 率 46%，作者 D5 ~60% 同量级）。
 
 | entry | verdict | score |
 |-------|---------|-------|
@@ -170,7 +170,7 @@ bench-208/209/222/225 的 scores.json 无 D5 evidence，从论文作者复现产
 | bench-219 | PARTIAL | 50.0 |
 | bench-220 | REPRODUCED | 100.0 |
 | bench-221 | REPRODUCED | 76.25 |
-| bench-222 | REPRODUCED | 100.0 |
+| bench-222 | PARTIAL | 30.0 |
 | bench-223 | REPRODUCED | 85.0 |
 | bench-224 | REPRODUCED | 100.0 |
 | bench-225 | FAILED | 15.0 |
@@ -184,11 +184,12 @@ bench-208/209/222/225 的 scores.json 无 D5 evidence，从论文作者复现产
 | bench-233 | PARTIAL | 50.0 |
 | bench-234 | PARTIAL | 50.0 |
 
-**批次关键发现**：
-- **看门狗演进**：v1（日志静默 2.5h）误杀 13 次 → v2（文件活动 30min）误杀 2 次 → v2.1（90min）0 误杀
-- **API 6MB 请求体限制**：bench-209/210 命中（超大上下文论文），重试可规避（209 attempt1、210 attempt1 均成功越过）
-- **重环境长尾**：bench-226（11h 构建）、bench-234（10h 构建）、bench-209（renv 15h）——provision 是主要耗时源
-- **校准对照**：作者 D5=2 的论文中系统 FAILED 的（200/203/209/225/226/231）——复现缺陷/环境/网络/API 限制多因
+**重评发现与修正**：
+- bench-222：REPRODUCED 100 → **PARTIAL 30**（P1-2 补 5 条 claims 后如实显示 0/5 复现）
+- bench-206：PARTIAL 50 → 30（3 条 PR claims 0 通过）
+- **bench-223 AUROC claim 曾被 P1-1 converter 换入覆盖丢失**（重评暴露）→ 已恢复
+  （REPRODUCED 85，AUROC 0.996 ≥ 0.95）
+- 教训：converter 重生成换入会覆盖手工补的 claims——手工补后需回归检查
 
 ## P0：幽灵进程根因与修复（2026-08-18，loopflow idle timeout）
 
