@@ -221,3 +221,18 @@ multi_barcodes.csv 缺 LOY 列无法验证；与作者 D5=1 基本一致）。�
 2. 丢失的 3 篇评估结果已保留（Report 023/024），如需完整产物需重跑
 3. verify 模板（converter.py）已适配：Markdown 表格/属性-值表/URL 行、规范化模糊匹配、out-of-scope NA、状态词
 4. 校准执行方法论（独立验证原则、完成即归档等）属本地流程，见 AGENTS.local.md「校准运行工作目录与资产规范」
+
+## ADR-0011 验证资产（2026-08-22）
+
+零算力验证，全部以已归档 run 作 fixture，产物入库：
+
+| 资产 | 内容 |
+|------|------|
+| `calibration-failure-taxonomy.md` | 35 run 死因四分类 + 独立复核（BL-017） |
+| `package-executability-probe.md` | 26/35 有 run.sh；6 个抽样在干净容器 `run.sh check` **0/6 通过**，全因缺宿主 java/nextflow/R/docker（BL-025） |
+
+验证结论已回填 `docs/adr/0011-verifiable-self-assessment.md` 验证段：证据面可从
+validate 报告切换到结果 CSV（bench-220 三个 HR 零正则复算通过）；「未完成获取」与
+「外部不可得」按终态类别可区分、无需重试阈值（bench-234 vs bench-217）；参数缩减的
+通用检出信号是作者原码与实际执行码的 diff（bench-225）；answers 交叉核对容差由书写
+精度导出、无魔数。

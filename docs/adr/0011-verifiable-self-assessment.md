@@ -71,9 +71,26 @@ bench-232 把公开可下载数据判为需申请、bench-225 私自削减分析
 允许的自定义格式**只有两类**：`answers` 与 `routing.jsonl`。二者都只记标识符与数值/事件，
 **不含状态词、判断、理由**；理由写进散文报告，而散文报告不被任何程序消费。
 
+#### 2.1 阶段整体阻塞时仍必须落尝试日志（验证 3 暴露后追加）
+
+验证 3 发现：bench-217（论文 DOI 在 Crossref 真实 404）**没有 `04_data/` 目录**，其
+「外部不可得」的唯一证据存在于 `container.log`——那是 harness 侧运行观测，不属交付
+产物，外部评估者不应依赖它。因此：
+
+- 即使某 phase 整体 blocked、无任何正常产物，**也必须在该 phase 目录落下尝试日志**
+  （请求了什么、返回了什么）；否则该阻塞在证据面上等同「未尝试」
+- 区分「未完成获取」与「外部不可得」依据**终态类别**而非尝试次数：传输层失败
+  （`curl: (35) Recv failure`、超时、连接重置）属未完成；HTTP 404/403/451 与注册墙/
+  DUA 属外部不可得；`Download complete` + 文件存在属已获取
+- 系统内不得写死任何重试次数阈值（验证 3 证明按终态类别即可判定）
+
 ### 3. Validate 内部化：自反馈路由，不产出对外 verdict
 
-- **输入**：`01_plan` 的复现目标 + Run 的真实产物（结果文件 + answers）
+- **输入**：`01_plan` 的复现目标 + Run 的真实产物（结果文件 + answers + 实际执行的代码）
+- **触发条件用通用信号，不做论文特定判断**（验证 4 修正）：实际执行的代码/参数与声明
+  不一致即触发，证据为**作者原始代码与实际执行代码的 diff**（bench-225 的
+  `DiscRisk_1_train_patched.py` 即此类）。不试图自动判断「某参数是否属于缩减」——那需
+  论文语义、无法通用化；只要求「改了必须声明，未声明即路由回 Run」
 - **输出**：内部路由决策——不达标目标应回到哪个 phase（数据不符 → Data；环境/版本不符
   → Provision；参数或步骤不符 → Run；论文理解错误 → Reader），以及追加式
   `06_validate/routing.jsonl`（字段：ts、target、判定、route_to、reason）
@@ -188,11 +205,11 @@ locator 会绑死被测系统的文件名与列名，baseline 一换即失效，
 | 验证项 | 复现步骤 | 预期结论 | 实际结论 |
 |--------|---------|---------|---------|
 | 现有产物能否支撑证据面切换 | 取 `runs/bench-220`（已知产出 table2_q91/tertile/ptrend、table3_paf CSV），尝试**只用 CSV** 复算 3 个 HR claims，不读 validate 报告 | 3 个 HR 可从 CSV 直接复算 → 证据面切换可行 | **通过（2026-08-22）**：`results/table2_q91_results.csv` 为规整结构化表（`group,outcome,exposure,hr,lower_ci,upper_ci,p_value`）。C1 血铅 CVD HR 论文 1.63 vs 实测 1.63390378426855（偏差 0.24%）、C2 胫骨铅 3.32 vs 3.32464221876738（0.14%）、C3 髌骨铅 2.42 vs 2.42303481511462（0.13%），均在 5% 相对容差内。**全程零正则、未读 validate 报告**。副产品发现两点：(a) claim id 私有导致 answers 无法以 claim_id 为键 → 追加 §4.1 裁决；(b) `figures/figure_hr_comparison_data.csv` 含系统自写的 `expected` 列，oracle 必须忽略 |
-| 反例：无结果文件时不得得分 | 取 `runs/bench-203`（Run 阻塞） | claims 记为无证据、不计分，且不因报告里的文字而得分 | 待回填 |
-| `not_attempted` 与外部不可得可区分 | 取 `runs/bench-234`（同 run 已下 992MB，另 12 个数据集放弃）与 `runs/bench-217`（Crossref 真实 404） | 前者从 curl 日志判为未完成获取，后者判为外部不可得；**无需任何重试次数阈值** | 待回填 |
-| 参数缩减可被检出并触发路由 | 取 `runs/bench-225`（禁用 255 组合穷举） | 实际命令与 plan 声明不一致可检出，routing 目标为 Run | 待回填 |
-| Package 执行证明的真实基线 | 对若干已归档 Package 产物在干净容器执行 `bash run.sh check` | 得到真实退出码（预期多数非 0，印证 19/26 无执行证据） | 待回填 |
-| answers 交叉核对能拦住无据自报 | 构造 answers 含结果文件中不存在的值 | 该 claim 记为无证据、不计分 | 待回填 |
+| 反例：无结果文件时不得得分 | 取 `runs/bench-203`（Run 阻塞） | claims 记为无证据、不计分，且不因报告里的文字而得分 | **通过（2026-08-22）**：`05_run/` 下仅 `run_results.md` 与 `main.nf`，**零结果文件**。散文里写着 `Status: BLOCKED` 与 9 个目标全 blocked，但新证据面不消费散文 → 其 1 条 LME p 值 claim 记为无证据、不计分 |
+| `not_attempted` 与外部不可得可区分 | 取 `runs/bench-234`（同 run 已下 992MB，另 12 个数据集放弃）与 `runs/bench-217`（Crossref 真实 404） | 前者从 curl 日志判为未完成获取，后者判为外部不可得；**无需任何重试次数阈值** | **通过，但暴露新契约要求（2026-08-22）**：bench-234 的 `04_data/` 下**每个数据集一份下载日志**（`p4_gse*.log`）。成功者含逐字节进度 + `Download complete: … (248.6 MB)` + `ls -l`；放弃的 GSE136831 全文仅两行：`curl: (35) Recv failure: Connection reset by peer` 与 `bash: line 1: wget: command not found` → **传输层失败 + 回退工具不存在**，与 HTTP 403/404 权限墙属不同终态类别，**按终态类别即可区分，不需要重试次数**。另发现被计入「12 个放弃」的 GSE135893 实际已下载完成 4 个文件——散文 manifest 夸大了放弃范围。**bench-217 反例暴露缺口**：该 run 无 `04_data/` 目录，DOI 404 证据只存在于 `container.log`（harness 侧），phase 产物内为零 → 追加要求见 §2.1 |
+| 参数缩减可被检出并触发路由 | 取 `runs/bench-225`（禁用 255 组合穷举） | 实际命令与 plan 声明不一致可检出，routing 目标为 Run | **通过，并修正触发条件（2026-08-22）**：证据在文件而非散文——实际执行脚本名为 `DiscRisk_1_train_patched.py`（系统 patch 过作者代码），其 `:674` 为 `evaluate_exhaustive(do_arch_search=False, …)`，而 `01_plan/plan.md:211` 记载「论文说明进行了穷举搜索」。但判定「`do_arch_search=False` 属缩减」需论文语义、不可通用自动化 → 触发条件改为通用信号：作者原始代码与实际执行代码存在 diff 而 plan 未声明（`_patched` 即此类），见 §3 |
+| Package 执行证明的真实基线 | 对若干已归档 Package 产物在干净容器执行 `bash run.sh check` | 得到真实退出码（预期多数非 0，印证 19/26 无执行证据） | **通过，结果比预期更差（2026-08-22）**：35 个 run 中**仅 26 个存在 run.sh**（缺失 9 个：bench-202/203/204/205/206/213/217/218/232）。按体积分层抽 6 个（bench-200/201/215/216/219/230）在干净 `ubuntu:22.04` 容器实测 `run.sh check`（只读挂载 + 拷贝后执行，归档未被改动）：**退出码全为 1，0/6 通过**。首个失败原因全部是缺宿主依赖——java ×4、nextflow ×1、R ×1，其中 2 例显式报 docker/singularity 缺失。路径硬编码 0 例、脚本错误 0 例（check 分支写得正确，是主动 exit 1）。结论：交付包把整套运行时（Java/Nextflow/Docker/R）当作宿主既有环境，既不携带也不安装 → **README + run.sh 不构成自包含的一键重跑制品**。详见 `benchmarks/package-executability-probe.md`。局限：未测 `all` 分支，不能推断全流程可执行性；覆盖 6/26 为分层抽样非随机 |
+| answers 交叉核对能拦住无据自报 | 构造 answers 含结果文件中不存在的值 | 该 claim 记为无证据、不计分 | **通过（2026-08-22）**：原型实测 5 例，核对规则**不含魔数**——容差由 value 自身书写精度导出（`0.5 × 10^-decimals`）：全精度 `1.63390378426855` 命中（容差 5e-15）、四舍五入 `3.325` 命中 3.32464…（容差 5e-4）、两位 `2.42` 命中 2.42303…（容差 5e-3）；伪造值 `2.99` 判 NO-EVIDENCE；source_file 不存在判 NO-EVIDENCE。**未覆盖**「值真实但标错来源文件」一例（本地只取了 table2 一个 CSV），实现时补 |
 
 ## 被废弃的第一稿
 
