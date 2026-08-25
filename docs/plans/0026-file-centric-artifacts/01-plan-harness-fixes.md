@@ -8,7 +8,8 @@
 
 | 缺陷 | 证据 | 后果 |
 |------|------|------|
-| 容器出口网络不通 | bench-213 原文「容器环境没有外网连接（所有 curl 请求超时），MinerU API 和 paperutils 工具也都不可用」；28/35 run 处于降级配置 | 系统能力被系统性低估，跨 entry 不可比 |
+| ~~容器出口网络不通~~ **已证伪** | 探针在运行时镜像 + 同款 flags 下实测：Crossref/EuropePMC/NCBI-FTP 全 `code=200`（`benchmarks/harness-probe.sh`） | 该假设作废；bench-213 的「curl 全超时」为个案（单 run），不是批次性根因 |
+| **技能声明的前置从未满足**（实测真因） | `paperutils` 要求 bin `paperutils`（两端均不存在）、`mineru-api` 要求 env `MINERU_API_URL`（两端未设置）；探针报「未满足前置数: 2」 | 28/35 run 降级；agent 报「技能不可用」属实话 |
 | 挂载 `/var/run/docker.sock` + 整个 `$HOMEDIR` | `bench-v3.sh:28,31` | 与 ADR-0009「host runtime socket 不进入 VM」冲突，结果不能作正式隔离证据 |
 | DinD 挂载缺陷致 Nextflow 降级 | 19 个 run 手工降级为 `docker run` + `docker cp` | 交付的 `main.nf` 从未真正执行 |
 | 镜像缺 wget | bench-234：`curl: (35) Recv failure` 紧接 `wget: command not found` | 下载回退路径静默失效，成为最高频失败的机械成因 |
@@ -19,9 +20,15 @@
 
 ## 范围
 
-1. **出口网络**：定位远端容器出口失效原因（DNS / 代理 / 防火墙 / registry 镜像策略，
-   关联 BL-008），修复后以可复现的探针脚本验证：Crossref、PMC、GEO FTP、Docker Hub 镜像源
-   各一次真实请求，记录状态码与字节数
+1. ~~出口网络修复~~ → **改为技能前置补齐**（2026-08-22 实测后修正范围）：
+   网络实测正常，无需修复；探针 `benchmarks/harness-probe.sh` 保留为回归证据（每次
+   正式批次前跑一次，输出入库）。真正要补的是技能前置：
+   - `paperutils`：确认 CLI 是否存在/可安装；不可得则从 `agents/reader.md` 的 `skills:`
+     移除声明，并要求 Reader 直调 Crossref/EuropePMC API（探针已证可达）
+   - `mineru-api`：确认是否有可用 MinerU 端点；有则由 harness 注入 `MINERU_API_URL`，
+     无则同上移除声明
+   - **不允许保留「声明了但用不了」的技能**：那会让 agent 每次都先撞墙再兜底，
+     并把基建缺失伪装成能力缺失
 2. **隔离边界**：从 `bench-v3.sh` 移除 `/var/run/docker.sock` 与 `$HOMEDIR` 全量挂载，
    改为**沙箱内嵌套 docker daemon（dind）**。
    **不需要 qemu、不需要 sudo**（2026-08-22 远端实测：`gs` 在 docker 组 gid 999、
@@ -41,8 +48,9 @@
 
 | 项 | 判据 |
 |----|------|
-| 出口网络 | 探针脚本 4 个目标全部拿到真实响应（非超时），输出可复现记录文件 |
-| 技能可用性 | 同一容器内 paperutils / mineru-api / biocontainers 各跑一次真实调用成功 |
+| 出口网络 | ✅ **已通过（2026-08-22）**：探针实测 3 个目标全 `code=200`，记录可复现 |
+| 技能前置 | 探针 [3] 段「未满足前置数: 0」；当前为 2（paperutils bin、mineru-api env） |
+| 技能可用性 | 保留声明的技能必须在同一容器内跑通一次真实调用；用不了的技能必须从 agent 声明中移除 |
 | 隔离 | `bench-v3.sh` 不再挂 docker.sock 与 $HOMEDIR，改用嵌套 daemon；grep 可证 + 沙箱内 `docker info` 显示的是自己的 daemon |
 | DinD | 一个最小 Nextflow 流程在容器内用 docker executor 跑通；或降级被显式写入产物 |
 | 下载 | 断点续传实测：中断后续传成功，日志留下两段记录 |

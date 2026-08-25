@@ -230,6 +230,7 @@ multi_barcodes.csv 缺 LOY 列无法验证；与作者 D5=1 基本一致）。�
 |------|------|
 | `calibration-failure-taxonomy.md` | 35 run 死因四分类 + 独立复核（BL-017） |
 | `package-executability-probe.md` | 26/35 有 run.sh；6 个抽样在干净容器 `run.sh check` **0/6 通过**，全因缺宿主 java/nextflow/R/docker（BL-025） |
+| `harness-probe.sh` | harness 前置探针（可复现）：出口网络 3/3 `code=200`、`wget`/`aria2c` 缺失、技能前置未满足 2 项（paperutils bin / mineru-api env）。**用途：任何「网络不通/技能坏了」的判断必须先跑它**，BL-019 已因跳过实测误诊两次 |
 
 验证结论已回填 `docs/adr/0011-verifiable-self-assessment.md` 验证段：证据面可从
 validate 报告切换到结果 CSV（bench-220 三个 HR 零正则复算通过）；「未完成获取」与
