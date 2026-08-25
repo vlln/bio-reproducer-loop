@@ -93,8 +93,26 @@ bench-232 把公开可下载数据判为需申请、bench-225 私自削减分析
 - `answers` 由**产生结果的阶段（Run）**落盘，不由 Validate 落盘
 - **强制交叉核对**：answers 中每个值必须能在同一 run 的结果文件中定位到；定位失败则
   该 claim 不计分（不是判错，而是无证据）
+- **系统产物中出现的"论文期望值"一律忽略**：验证中发现 bench-220 的
+  `figures/figure_hr_comparison_data.csv` 含 `expected` 列（1.63/3.32/2.42，系统自己从
+  论文读来的值）。oracle 只用自身 ground truth，不得消费产物里的任何期望值字段
 
-选择让系统落 answers（而非 oracle 从 CSV 自行抽取）的理由见 trade-off 表。
+#### 4.1 问题清单公开、期望值私有（验证 1 暴露后追加）
+
+验证 1 发现原设计的漏洞：**claim id（C1/C2/C3）是 oracle 私有的，系统不可能知道**，
+因此"系统落 `claim_id → value`"写不通；若改由 oracle 去结果文件里猜哪一行对应哪个 claim，
+等于把 301 行正则换个位置重写。裁决：
+
+- `input/questions.*`（**公开**）：`target_id` + 一句话问题 + 单位。这是任务的一部分
+- `05_run/answers.*`（系统产出）：`target_id, value, unit, source_file`
+- `oracle/claims.yaml`（**私有**）：论文期望值 + 容差 + 来源
+- oracle 判分 = 比对 answers 的 value 与私有期望值，并核对该值存在于 answers 自述的
+  `source_file` 中
+
+代价（必须在论文 limitation 中声明）：公开问题清单**把"自行判断该报告哪些数值"从测量中
+移除了**。换来的是评分无歧义与引擎中立——裸 agent 与开源 agent 用同一份问题清单，
+各自的文件名/列名差异不影响评分。反之若坚持问题私有、由 oracle 用私有 locator 取值，
+locator 会绑死被测系统的文件名与列名，baseline 一换即失效，benchmark 不再引擎无关。
 
 ### 5. 检查方式随之变薄
 
@@ -119,6 +137,7 @@ bench-232 把公开可下载数据判为需申请、bench-225 私自削减分析
 | 自定义 state.json 厚 schema（第一稿） | 字段齐全、解析简单 | 随需求腐化；诱导模型填满而非如实记录；仍是系统自报 | 拒绝 |
 | 给 6 个 agent 补 output schema（第一稿 F1） | 复用 loopflow 已有校验与重试 | 校验的是不持久化的返回值，下游消费不到 | 拒绝 |
 | **answers 由系统落盘 + oracle 交叉核对**（采纳） | oracle 无需为 35 篇各写抽取代码；值可被结果文件反查 | 仍是系统自报数值，需依赖交叉核对约束 | **采纳** |
+| 问题清单公开 + 期望值私有（采纳，见 §4.1） | 评分无歧义；引擎中立，baseline 可比；oracle 无需 per-entry locator | 把「自行判断该报告什么」从测量中移除，须在 limitation 声明 | **采纳** |
 | oracle 侧从结果 CSV 自行抽取 | 证据面最纯粹，系统零自报 | 每 entry 一段私有抽取规则（35 篇 = 35 段）；且需规定 CSV 列名，等于换一种方式约束系统 | 拒绝（工作量差一个数量级） |
 | 仅在 benchmark 侧扣分，不动系统 | 不动系统 | 只惩罚不修复；真实用户仍收到未经验证的交付物 | 拒绝 |
 
@@ -168,7 +187,7 @@ bench-232 把公开可下载数据判为需申请、bench-225 私自削减分析
 
 | 验证项 | 复现步骤 | 预期结论 | 实际结论 |
 |--------|---------|---------|---------|
-| 现有产物能否支撑证据面切换 | 取 `runs/bench-220`（已知产出 table2_q91/tertile/ptrend、table3_paf CSV），尝试**只用 CSV** 复算 3 个 HR claims，不读 validate 报告 | 3 个 HR 可从 CSV 直接复算 → 证据面切换可行 | 待回填 |
+| 现有产物能否支撑证据面切换 | 取 `runs/bench-220`（已知产出 table2_q91/tertile/ptrend、table3_paf CSV），尝试**只用 CSV** 复算 3 个 HR claims，不读 validate 报告 | 3 个 HR 可从 CSV 直接复算 → 证据面切换可行 | **通过（2026-08-22）**：`results/table2_q91_results.csv` 为规整结构化表（`group,outcome,exposure,hr,lower_ci,upper_ci,p_value`）。C1 血铅 CVD HR 论文 1.63 vs 实测 1.63390378426855（偏差 0.24%）、C2 胫骨铅 3.32 vs 3.32464221876738（0.14%）、C3 髌骨铅 2.42 vs 2.42303481511462（0.13%），均在 5% 相对容差内。**全程零正则、未读 validate 报告**。副产品发现两点：(a) claim id 私有导致 answers 无法以 claim_id 为键 → 追加 §4.1 裁决；(b) `figures/figure_hr_comparison_data.csv` 含系统自写的 `expected` 列，oracle 必须忽略 |
 | 反例：无结果文件时不得得分 | 取 `runs/bench-203`（Run 阻塞） | claims 记为无证据、不计分，且不因报告里的文字而得分 | 待回填 |
 | `not_attempted` 与外部不可得可区分 | 取 `runs/bench-234`（同 run 已下 992MB，另 12 个数据集放弃）与 `runs/bench-217`（Crossref 真实 404） | 前者从 curl 日志判为未完成获取，后者判为外部不可得；**无需任何重试次数阈值** | 待回填 |
 | 参数缩减可被检出并触发路由 | 取 `runs/bench-225`（禁用 255 组合穷举） | 实际命令与 plan 声明不一致可检出，routing 目标为 Run | 待回填 |
