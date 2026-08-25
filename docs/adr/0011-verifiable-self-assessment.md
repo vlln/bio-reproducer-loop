@@ -2,7 +2,7 @@
 title: ADR-0011 — 文件为核心的产物契约与 Validate 内部化
 description: 事实以标准格式文件持久化，禁止发明厚 schema；Validate 退为系统内部自反馈路由，不产出对外 verdict；外部评分证据面收缩到真实产物 + 极薄 answers 并强制交叉核对。
 type: adr
-status: proposed
+status: accepted
 created: 2026-08-22T00:00:00Z
 ---
 
@@ -199,7 +199,7 @@ locator 会绑死被测系统的文件名与列名，baseline 一换即失效，
 
 ## 验证
 
-> status=proposed。验证段回填后方可 promote 为 accepted（devloop DESIGN 门禁）。
+> **验证段已全部回填，2026-08-22 经人类确认 promote 为 accepted。**
 > 全部验证项使用已归档 run 作 fixture，零新增算力。
 
 | 验证项 | 复现步骤 | 预期结论 | 实际结论 |

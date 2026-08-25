@@ -26,6 +26,7 @@
 | [0023-claroai-calibration](0023-claroai-calibration/) | — | done |
 | [0024-claroai-calibration-batch](0024-claroai-calibration-batch/) | — | done |
 | [0025-scored-scope-removal-claims](0025-scored-scope-removal-claims/) | — | done |
+| [0026-file-centric-artifacts](0026-file-centric-artifacts/) | `refactor/0026-file-centric-artifacts`（待创建） | in-progress |
 
 当前阶段：SYSTEM_TEST（v0.2.0 已发布，待人类批准 RELEASE 门禁）。Plan 006 在保留的 `spike/0006-vm-isolation` 分支验证了 KVM/QEMU、
 VM-local Docker、I/O boundary、oracle 隔离和完整 teardown；Plan 007 已将结论冻结到
