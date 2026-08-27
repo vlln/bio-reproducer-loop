@@ -487,3 +487,47 @@ def test_existing_run_submission_discovers_contrast_named_results(tmp_path):
             "id": "volcano",
         },
     ]
+
+
+# ── evaluate_run.main 证据打包：source_file 交叉核对（BL-028 run4 实证）──
+def test_evaluate_run_packages_results_for_crosscheck(tmp_path):
+    """answers 的 source_file 指向 05_run/results/ 时，evaluate_run 必须把
+    results/ 一并打包进 artifacts/，否则 verify 的交叉核对找不到源文件
+    （2026-08-27 run4 实证：C1-C3 报 source_file 不存在，NO-EVIDENCE）。"""
+    from benchmarks.converters.claroai.evaluate_run import main as eval_main
+
+    entry = Path(__file__).parents[2] / "benchmarks" / "entries" / "bench-220"
+    assert entry.is_dir(), f"bench-220 entry missing: {entry}"
+
+    run_dir = tmp_path / "run"
+    (run_dir / "repro-data" / "05_run" / "results").mkdir(parents=True)
+    # 结果文件包含 answers 引用的值（1.6339 等，交叉核对按书写精度容差）
+    (run_dir / "repro-data" / "05_run" / "results" / "table2_cvd_hr_results.csv").write_text(
+        "exposure,hr,ci_lower,ci_upper\n"
+        "Blood,1.6339,1.2467,2.1414\n"
+        "Tibia,3.3246,1.9281,5.7326\n"
+        "Patella,2.4230,1.5617,3.7595\n"
+    )
+    (run_dir / "repro-data" / "05_run" / "answers.csv").write_text(
+        "target_id,value,unit,source_file\n"
+        "blood-lead-cvd-hr,1.6339,HR,results/table2_cvd_hr_results.csv\n"
+        "tibia-lead-cvd-hr,3.3246,HR,results/table2_cvd_hr_results.csv\n"
+        "patella-lead-cvd-hr,2.4230,HR,results/table2_cvd_hr_results.csv\n"
+    )
+    (run_dir / "repro-data" / "03_provision").mkdir(parents=True)
+    (run_dir / "repro-data" / "03_provision" / "digests.txt").write_text(
+        "REPOSITORY TAG DIGEST IMAGE ID CREATED SIZE\n"
+        "bone-lead-mortality-r 4.2.0 sha256:abc 123 1 day 2.39GB\n"
+    )
+    (run_dir / "repro-data" / "04_data").mkdir(parents=True)
+    (run_dir / "repro-data" / "04_data" / "sha256sums.txt").write_text(
+        "e010ac0e287d9b2c8e133d5f617a3abd5fcb403b7d94b722edb732566a99659f  raw_data/pbmort3.rda\n"
+    )
+
+    result = eval_main(str(run_dir), str(entry))
+
+    assert result["evaluator_verdict"] == "REPRODUCED"
+    assert result["evaluator_score"] == 100.0
+    c1 = next(c for c in result["checks"] if c["id"] == "C1")
+    assert c1["passed"] is True
+    assert "交叉核对通过" in c1["note"]

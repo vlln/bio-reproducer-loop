@@ -42,6 +42,13 @@ def main(run_dir: str, entry_dir: str) -> dict:
         shutil.copy(answers, art / "answers.csv")
         found.append("answers")
         artifacts.append({"role": "answers", "path": "artifacts/answers.csv"})
+        # answers 的 source_file 指向 05_run/results/（ADR-0011 §4/FC-005 交叉核对）：
+        # 必须把 results/ 一并打包进 artifacts/，否则 verify 的
+        # `answers_path.parent / source_file` 解析不到（2026-08-27 run4 实证：
+        # 交叉核对失败 — source_file 不存在）。
+        results_src = run / "repro-data" / "05_run" / "results"
+        if results_src.is_dir():
+            shutil.copytree(results_src, art / "results")
     if checksums.exists():
         shutil.copy(checksums, art / "sha256sums.txt")
         found.append("data_evidence")
