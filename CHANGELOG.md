@@ -31,6 +31,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   check_claim 容差、scored_scope 拒绝）；全量 141 passed / 4 skipped；42 entry 全过
   bundle gate。
 
+### Changed (Plan 0026-02 — Data phase 产物契约改标准格式文件，ADR-0011 落地)
+
+- **04_data 契约**：`agents/data.md` 状态词表拆分 `completed / partial / unavailable /
+  not_attempted`（按终态信号判定，不按尝试次数；传输层失败 ≠ 外部不可得）；每数据资源
+  一份获取日志（阻塞也落）；已下载文件汇总 `sha256sums.txt`；下载统一 `curl -C -`
+  续传（镜像内无 wget/aria2c）；manifest 降级为从证据文件渲染的散文摘要。
+- **workflow 检查升级**：新增 `artifact_checks.py`（终态类别判定器 + 04_data 证据收集）与
+  `_require_parsable`；Data 阶段后 fail-fast「存在 + 可被标准工具解析」，抓「声称完成但
+  无任何标准格式证据」（BL-014 部分）。
+- **死技能声明移除**（BL-019 闭环）：`agents/reader.md` 删除 `paperutils`/`mineru-api`
+  声明，标识符解析改直调 Crossref / EuropePMC；PDF 转换不再绑定具体工具；系统 artifact
+  skills.lock 收缩 7 → 5，`.skills/` 死目录删除。
+- 测试：新增 `tests/contract/test_data_phase_contract.py`（18 例，正反例用已归档 run
+  真实产物 fixture `tests/fixtures/contract/`：bench-234 传输失败→not_attempted、
+  中途失败续传完成→completed、bench-217 无证据）；全量 166 passed / 4 skipped。
+
 ### Docs
 - ADR-0010 修订块、Interface 0002 v2（claims 评分协议）、Spec 0001（接入段/BR-018/
   术语）、AC-0005、Plan 0025（plan+report+README）。

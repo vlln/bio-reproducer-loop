@@ -70,8 +70,6 @@ def _build(tmp_path: Path, **overrides):
             "background-task",
             "biocontainers",
             "image-mirror-skill",
-            "mineru-api",
-            "paperutils",
             "quay",
             "zenodo",
         )
@@ -115,8 +113,6 @@ def test_builder_is_deterministic_and_records_pinned_inputs(tmp_path):
         "background-task",
         "biocontainers",
         "image-mirror-skill",
-        "mineru-api",
-        "paperutils",
         "quay",
         "zenodo",
     ]

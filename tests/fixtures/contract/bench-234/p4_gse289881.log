@@ -1,0 +1,7 @@
+curl: (56) OpenSSL SSL_read: OpenSSL/3.6.3: error:0A000126:SSL routines::unexpected eof while reading, errno 0
+Download complete: GSE289881_RAW.tar (628.6 MB)
+Resuming from byte 447599, total: 260644563
+Download complete: GSE289881_processed_data_all_samples.txt.gz (248.6 MB)
+GSE289881 complete
+-rw-r--r-- 1 1000 1000 629M Aug 21 13:20 GSE289881_RAW.tar
+-rw-r--r-- 1 1000 1000 249M Aug 21 13:35 GSE289881_processed_data_all_samples.txt.gz

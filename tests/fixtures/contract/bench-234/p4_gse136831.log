@@ -1,0 +1,2 @@
+curl: (35) Recv failure: Connection reset by peer
+bash: line 1: wget: command not found

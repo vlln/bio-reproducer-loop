@@ -23,17 +23,22 @@ skills:
 
 2. **尝试获取**
    - 尝试下载公开数据；大文件下载必须通过 `async_submit.sh`
+   - 下载统一使用 `curl -C -`（断点续传；实测 NCBI 支持 Range/HTTP 206）。
+     **不要安装或调用 wget/aria2c**——运行时镜像内不存在，回退路径会静默失效
    - 尝试获取示例数据
    - 检查是否有预下载的数据
 
 3. **处理访问障碍**
    - 若原始数据受限、缺失、需申请、需登录或成本较高，暂停并按权限模式处理（ask 模式下报告选项等待用户决策）
    - 不擅自替换数据；如用户批准替代/示例/技术验证数据，在 manifest 中记录
+   - **即使某数据源整体无法获取，也必须为该源落下一份获取日志**（请求了什么 URL、返回了什么），
+     禁止只写一句"不可获取"——没有尝试日志的阻塞在证据面上等同"未尝试"
 
-4. **记录到 data_manifest.md**
-   - 实际获取的数据
-   - 无法获取的数据及原因
-   - 用户决策
+4. **记录标准格式证据（每资源）**
+   - 每个数据资源一份获取日志：`04_data/<source>_<id>.log`，保存 curl/wget 的**原始输出**
+     （含进度、HTTP 响应、错误行、`Download complete`）
+   - 每个已下载数据文件跑 `sha256sum`，全部输出汇总到 `04_data/sha256sums.txt`（任何人可重算）
+   - 从上述文件渲染 `data_manifest.md` 散文摘要；散文不得包含日志/校验文件中不存在的状态结论
 
 ## 输出文件
 
@@ -41,9 +46,27 @@ skills:
 |------|---------|
 | `data.nf` | 数据获取 workflow |
 | `nextflow.config` | 可选，仅在需要 Phase 4 覆盖配置时创建；可 include `../02_bootstrap/nextflow.base.config` |
-| `data_manifest.md` | 数据清单 |
+| `data_manifest.md` | 数据清单（散文摘要，从日志/校验文件渲染） |
+| `<source>_<id>.log` | **每资源一份获取日志**（原始输出；阻塞时也必须有） |
+| `sha256sums.txt` | 全部已下载文件的 sha256 校验和输出 |
 | `raw_data/` | 样本文件 |
 | `reference/` | 参考文件 |
+
+## 状态词表（终态类别，依证据判定）
+
+每个数据资源在 manifest 中必须标注以下状态之一，**不得使用含糊词**（如"不可获取""需要更好网络"）：
+
+| 状态 | 含义 | 判定依据（终态信号，非尝试次数） |
+|------|------|------|
+| `completed` | 已获取 | 获取日志含 `Download complete` 且文件存在（`ls -l` 输出/校验文件） |
+| `partial` | 部分获取 | 部分文件完成、其余未完成 |
+| `unavailable` | 外部不可得 | HTTP 404/403/451、注册墙、DUA 等访问墙信号 |
+| `not_attempted` | 未完成获取 | 传输层失败（`curl: (35)` 连接重置、`curl: (56)` SSL、超时）、回退工具缺失（`command not found`） |
+
+要点：
+- 传输层失败 ≠ 外部不可得：前者可能重试/续传成功，后者是访问墙。**按终态信号区分，不按尝试次数**
+- 中途传输失败但最终 `Download complete` → 记 `completed`（续传已克服）
+- 无任何日志的资源 → 记 `not_attempted`（无证据），不得标 `unavailable`
 
 ## data_manifest.md 模板
 
@@ -57,7 +80,8 @@ skills:
 | Strategy | Original/Supplementary/Technical-Only |
 
 ## Data Sources
-| Source | Required | Obtained | Location | Notes |
+| Source | Required | Obtained | Location | Status | Log | Notes |
+|--------|----------|----------|----------|--------|-----|-------|
 
 ## Samples
 | Sample ID | Source | Files | Size | Status |
@@ -66,11 +90,12 @@ skills:
 | File | Source | Size | Status |
 
 ## Blocked Data
-| Source | Reason | User Decision |
+| Source | Reason | User Decision | Attempt Log |
+|--------|--------|---------------|-------------|
 
 ## Verification
-- [ ] All files present
-- [ ] Checksums verified
+- [ ] sha256sums.txt 已生成且可被 `sha256sum -c` 解析
+- [ ] 每个数据源都有获取日志（含阻塞源）
 ```
 
 ## 数据来源类型
@@ -84,11 +109,16 @@ skills:
 
 ## 规则
 
-- `data_manifest.md` 是 Phase 5 的数据来源依据，必须记录路径、来源、状态和校验信息。
+- 标准格式证据（获取日志 + `sha256sums.txt`）是 Phase 5 与外部评估者的数据来源依据；
+  `data_manifest.md` 是从它们渲染的散文摘要，**不得包含证据中不存在的状态结论**。
 - Phase 4 可以使用 Phase 1 已记录的 External Identifier Records，但必须重新记录实际获取结果。
 - 下载到 `04_data/raw_data/`、`04_data/reference/`，或用户批准的外部数据目录。
+- 下载只用 `curl -C -`（续传）；不安装 wget/aria2c。
+- 阻塞也必须落尝试日志：请求了什么 URL、返回了什么；无日志的阻塞记 `not_attempted`。
 
 ## 返回
 
-返回自然语言简报（见 `_base.md` 返回）：已获取的数据文件及大小、无法获取的数据源及原因。详细清单写入 `04_data/data_manifest.md`。
+返回自然语言简报（见 `_base.md` 返回）：已获取的数据文件及大小（附 sha256sums.txt 路径）、
+未获取数据源的终态类别（`unavailable`/`not_attempted`）及对应日志文件名。
+详细清单写入 `04_data/data_manifest.md`。
 

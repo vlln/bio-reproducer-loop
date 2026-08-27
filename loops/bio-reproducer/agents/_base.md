@@ -67,4 +67,3 @@ input:
 
 ### 辅助工具
 - **background-task** — 异步任务提交与状态管理（`async_submit.sh` / `check_status.sh`）
-- `paperutils get` / `paperutils explain` — 解析论文标识符（仅对论文中已出现的标识符使用）

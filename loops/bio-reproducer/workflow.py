@@ -5,7 +5,12 @@ eval harness 从同一注册表取单 agent 调用的 prompt/agent_def
 （loopflow ≥0.26.0 的 `--agent` 单 agent 运行入口）。
 """
 import json
+import sys
 from pathlib import Path
+
+# 同目录模块：workflow 可能以任意 CWD 被加载（loopflow runtime / pytest importlib）
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from artifact_checks import check_data_phase  # noqa: E402
 
 # ── Phase agent 调用注册表（唯一事实来源）───────────────────────────────
 # workflow run() 按序执行；eval harness 从同一注册表取单 agent 调用的
@@ -100,6 +105,19 @@ def _require_files(log, *paths):
     return True
 
 
+def _require_parsable(log, check):
+    """fail-fast 升级：前置产物必须「存在 + 可被标准工具解析」（ADR-0011 §5）。
+
+    check 为无参可调用，返回 (ok: bool, detail: str)。当前仅用于 Data phase
+    （04_data 契约），其余 phase 的解析检查随单元 03/04 推广。
+    """
+    ok, detail = check()
+    if not ok:
+        log(f"前置产物不可用: {detail}；请排查后开新 run 重跑")
+        return False
+    return True
+
+
 def run(agent, parallel, pipeline, log, args, workflow, intervene, state):
     paper_path = args.get("paper_path")
     paper_doi = args.get("paper_doi")
@@ -158,6 +176,9 @@ def run(agent, parallel, pipeline, log, args, workflow, intervene, state):
     data_result = _phase(agent, "Data", common)
     if data_result.status != "complete":
         log(f"Data: {data_result.status} — {data_result.reason} (turns={data_result.turns}, tokens={data_result.tokens})")
+        return None
+    # 04_data 契约：存在 + 可被标准工具解析（抓「声称完成但无任何标准格式证据」）
+    if not _require_parsable(log, check_data_phase):
         return None
 
     # ── Phase 5: Run ─────────────────────────────────────────────────

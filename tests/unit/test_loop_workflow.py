@@ -58,6 +58,13 @@ def write_files(base, *paths):
         p.write_text("x")
 
 
+def write_data_evidence(base):
+    """04_data 标准格式证据（ADR-0011 §2）：可解析的 sha256sum 输出。"""
+    p = Path(base) / "04_data" / "sha256sums.txt"
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text("0" * 64 + "  sample.fastq.gz\n")
+
+
 def run_workflow(tmp_path, agent, intervene, args=None):
     logs = []
     base_args = {"paper_path": "paper.pdf"}
@@ -76,6 +83,7 @@ def run_workflow(tmp_path, agent, intervene, args=None):
 
 def test_happy_path(tmp_path):
     write_files(tmp_path, *REQUIRED_FILES)
+    write_data_evidence(tmp_path)
     agent, intervene = FakeAgent(), FakeIntervene()
     result, _ = run_workflow(tmp_path, agent, intervene)
     assert agent.calls == ALL_PHASES
@@ -104,6 +112,7 @@ def test_confirm_plan_abort(tmp_path):
 
 def test_confirm_plan_false_skips_intervene(tmp_path):
     write_files(tmp_path, *REQUIRED_FILES)
+    write_data_evidence(tmp_path)
     agent, intervene = FakeAgent(), FakeIntervene()
     result, _ = run_workflow(tmp_path, agent, intervene, {"confirm_plan": False})
     assert intervene.calls == []
@@ -112,6 +121,7 @@ def test_confirm_plan_false_skips_intervene(tmp_path):
 
 def test_failed_verdict_skips_package(tmp_path):
     write_files(tmp_path, *REQUIRED_FILES)
+    write_data_evidence(tmp_path)
     agent = FakeAgent(results={"Validate": make_result(verdict="FAILED")})
     result, logs = run_workflow(tmp_path, agent, FakeIntervene())
     assert "Package" not in agent.calls
@@ -121,6 +131,7 @@ def test_failed_verdict_skips_package(tmp_path):
 
 def test_missing_data_manifest_stops_before_run(tmp_path):
     write_files(tmp_path, "01_plan/plan.md", "03_provision/provision.md")
+    write_data_evidence(tmp_path)
     agent, intervene = FakeAgent(), FakeIntervene()
     result, logs = run_workflow(tmp_path, agent, intervene)
     assert agent.calls == ["Reader", "Bootstrap", "Provision", "Data"]
@@ -155,6 +166,7 @@ def test_phases_registry_is_complete_and_consistent():
 def test_phases_registry_drives_agent_calls(tmp_path):
     """workflow 的 agent 调用完全由 PHASES 注册表驱动（单一事实来源）。"""
     write_files(tmp_path, *REQUIRED_FILES)
+    write_data_evidence(tmp_path)
     agent, intervene = FakeAgent(), FakeIntervene()
     result, _ = run_workflow(tmp_path, agent, intervene)
     assert agent.calls == list(wf.PHASES)
@@ -173,6 +185,7 @@ class ScopeCapturingAgent(FakeAgent):
 
 def test_scope_arg_passes_through_to_all_agents(tmp_path):
     write_files(tmp_path, *REQUIRED_FILES)
+    write_data_evidence(tmp_path)
     agent, intervene = ScopeCapturingAgent(), FakeIntervene()
     run_workflow(tmp_path, agent, intervene, {"scope": "figures=figure4,figure5"})
     assert len(agent.kwargs) == len(ALL_PHASES)
@@ -181,6 +194,7 @@ def test_scope_arg_passes_through_to_all_agents(tmp_path):
 
 def test_scope_defaults_to_empty(tmp_path):
     write_files(tmp_path, *REQUIRED_FILES)
+    write_data_evidence(tmp_path)
     agent, intervene = ScopeCapturingAgent(), FakeIntervene()
     run_workflow(tmp_path, agent, intervene)
     assert len(agent.kwargs) == len(ALL_PHASES)
