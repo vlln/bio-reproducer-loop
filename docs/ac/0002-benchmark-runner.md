@@ -2,7 +2,7 @@
 title: AC 002 — Benchmark Runner
 description: benchmark 执行器的验收标准，覆盖 CLI、执行、评估、报告功能。
 type: ac
-status: proposed
+status: active
 created: 2026-07-15T00:00:00Z
 ---
 

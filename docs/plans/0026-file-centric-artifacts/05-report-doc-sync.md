@@ -14,7 +14,7 @@ Spec/Interface/AC 才回到 active。
 | `docs/ac/0005-claroai-converter.md` | N-6（questions/target_id）、N-7（交叉核对四态 + NO-EVIDENCE）、B-5（无 answers 不得从散文兜底，FC-006）、F-5（validate_report 残留拒绝，FC-004） |
 | `docs/adr/0011-verifiable-self-assessment.md` | **FC-003 措辞修订**：routing.jsonl 的 reason 字段与旧字面「不得含理由」冲突——§3 明示含 reason，落实为键名白名单（answers 4 列 / routing 5 键，检出手段指向 `artifact_checks.py` 的 lint） |
 
-状态：以上 Spec/Interface/AC 均**退回 proposed**（发布就绪审计要求），promote 后回 active。
+状态：以上 Spec/Interface/AC 曾**退回 proposed**（发布就绪审计要求）；**2026-08-27 经人类 promote 全部回 active**。
 
 ## 待人类决策清单
 

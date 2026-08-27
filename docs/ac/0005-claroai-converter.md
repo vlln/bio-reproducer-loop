@@ -2,7 +2,7 @@
 title: AC 009 — ClaroAI Converter
 description: 验收 ClaroAI-Bench 任务到标准 entry（L5，DOI/PMID locator，不附带论文全文）的确定性转换、oracle 转录与 claims 评分闭环（BL-011 / ADR-0010 / Plan 0025）。
 type: ac
-status: proposed
+status: active
 created: 2026-08-04T00:00:00Z
 ---
 

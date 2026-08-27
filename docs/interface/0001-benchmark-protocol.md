@@ -2,7 +2,7 @@
 title: Interface 001 — Benchmark 输入、执行、提交与评估协议
 description: 定义 disposable VM execution envelope、可追溯 InputBundle、SubmissionBundle、EvaluatorResult 及其信任边界。
 type: interface
-status: proposed
+status: active
 created: 2026-07-19T00:00:00Z
 ---
 
