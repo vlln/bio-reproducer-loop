@@ -117,6 +117,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   交叉核对场景。ADR-0011 FC-003 修订为键名白名单（routing 含 reason 以 §3 为准）。
 - 受影响文档退回 proposed（发布就绪审计要求），promote 后回 active。
 
+### Changed (Plan 0026-07 — run-entry.sh 首跑 + BL-013 挂起根因修复)
+
+- **run-entry.sh 端到端首跑**（bench-220，2026-08-27）：跑通 Reader→Bootstrap→
+  Provision，验证 dind 新基建、三个 harness 修复、技能补齐、digests.txt 契约；
+  终止于 Provision 收尾的 agent 挂起，产物归档（Report 07）。
+- **BL-013 根因确认（实测）**：claude 2.1.126 对非官方端点（ANTHROPIC_BASE_URL）
+  的 SSE 流式空闲看门狗默认关闭（官方 v2.1.196 起才对所有 provider 默认开启，
+  v2.1.210 起支持 `CLAUDE_STREAM_IDLE_TIMEOUT_MS`）；`API_TIMEOUT_MS` 实测对流式
+  无效。挂起点 = thinking 后 SSE 静默中断（「Fixed a hang where the assistant
+  could finish thinking but show no output」官方条目精确对应）。
+- **修复**：(a) runtime 镜像内 claude 2.1.126→2.1.247，commit
+  `bio-reproducer-runtime:system-idlefix-cc247`，run-entry.sh 默认镜像改指；
+  (b) settings.json env 加 `CLAUDE_ENABLE_STREAM_WATCHDOG=1` +
+  `CLAUDE_STREAM_IDLE_TIMEOUT_MS=300000`；(c) loopflow `CliTransport` 空闲看门狗
+  子进程感知化（长命令不误杀、无子进程才 kill，默认 7200s，loopflow develop
+  `4b9bdf7`，446 测试全绿）。backlog 新增 BL-027。
+- 剩余：重跑 bench-220 验证 Data/Run/Validate/Package 四阶段。
+
 ### Docs
 - ADR-0010 修订块、Interface 0002 v2（claims 评分协议）、Spec 0001（接入段/BR-018/
   术语）、AC-0005、Plan 0025（plan+report+README）。

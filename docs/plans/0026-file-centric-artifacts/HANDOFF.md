@@ -73,9 +73,15 @@
 
 ## 已完成但未部署 / 未验证的部分
 
-- `run-entry.sh` **只跑过 selftest，没跑过完整 entry**。首次实跑安排在单元 05 文档
-  同步之后（新契约产物端到端验证：answers/routing/digests 实跑；宿主先 export
-  `MINERU_API_URL=http://172.16.218.40:8001/`）
+- `run-entry.sh` **首跑已完成（2026-08-27）**：bench-220 跑通 Reader→Bootstrap→Provision，
+  终止于 Provision 收尾的 agent 挂起（见 `07-report-first-run.md`）；产物已归档
+  `/storeData/gs/claroai-calibration/runs/bench-220-0026-run1/`
+- **BL-013 挂起根因已确认并修复（2026-08-27 续）**：claude 2.1.126 对非官方端点 SSE
+  看门狗默认关闭（v2.1.196 起才默认开）。修复：镜像内 claude 升级 2.1.247
+  （`bio-reproducer-runtime:system-idlefix-cc247`）+ settings.json watchdog env +
+  loopflow 子进程感知看门狗（develop `4b9bdf7`）。**重跑前置已解决**，下一步直接
+  重跑 bench-220 验证 Data/Run/Validate/Package 四阶段
+- 宿主先 export `MINERU_API_URL=http://172.16.218.40:8001/`
 - 远端 `bench-v3.sh` 暂留，等 `run-entry.sh` 跑通完整 entry 后再删
 - `benchmarks/harness/crosscheck-prototype.py` 是交叉核对原型，其 locate 逻辑已内嵌
   `VERIFY_TEMPLATE`（单元 04）；原型与样例（3 PASS / 2 NO-EVIDENCE）保留可复跑

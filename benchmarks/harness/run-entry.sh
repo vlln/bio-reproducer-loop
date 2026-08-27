@@ -24,7 +24,7 @@ set -uo pipefail
 
 MODE="${1:?用法: run-entry.sh <entry-id|selftest> [repo_dir]}"
 REPO="${2:-$HOME/bio-reproducer}"
-IMAGE="${HARNESS_RUNTIME_IMAGE:-bio-reproducer-runtime:system-idlefix}"
+IMAGE="${HARNESS_RUNTIME_IMAGE:-bio-reproducer-runtime:system-idlefix-cc247}"
 DIND_IMAGE="${HARNESS_DIND_IMAGE:-docker:latest}"
 SKILLS_DIR="${HARNESS_SKILLS_DIR:-$HOME/.agents/skills}"
 STAMP=$(date +%Y%m%d-%H%M%S)
