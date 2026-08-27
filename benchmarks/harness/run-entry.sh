@@ -92,8 +92,10 @@ sandbox() {  # sandbox <image> <cmd...>：零特权沙箱，容器运行时指�
   # 整个 /home/sandbox 挂载为可写 volume（uid 1000 需要写 ~/.claude session 与
   # ~/.loopflow/runs；镜像内无 /home/sandbox，docker 自动创建为 root 属主——
   # 首跑实测 claude 写 session 静默失败 → Reader 无产物，2026-08-27）。
+  # .loopflow 必须在宿主预建并 777：docker 为嵌套挂载（skills）预建的目录
+  # 属主 root，uid 1000 仍不可写 runs/（第二次迭代实测）。
   # skills / loop 定义为嵌套子挂载（只读）。
-  mkdir -p "$RUN/home" && chmod 777 "$RUN/home"
+  mkdir -p "$RUN/home/.loopflow" && chmod -R 777 "$RUN/home"
   docker run --rm -i --network "$NET" \
     --user 1000:1000 --cap-drop ALL --security-opt no-new-privileges \
     --workdir /workspace \
