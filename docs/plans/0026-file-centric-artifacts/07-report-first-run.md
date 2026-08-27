@@ -113,6 +113,39 @@ Package（check.log）。**重跑前置已解决**：BL-013 根因确认（claud
 - **影响**：本次 run2 的 answers 用了 T 编号，外部评分拿不到 C1-C3 证据；数值本身
   正确（与论文一致）且交叉核对可通过。修复后重跑一次即可让外部评分闭环。
 
+## run3（2026-08-27）——补强验证：Reader 门 fail-fast 实证 + Questions Mapping 强制
+
+run3（`/tmp/harness/run-bench-220-20260827-175437`，归档 `bench-220-0026-run3/` 68M）
+在 run2 修复（run.md/reader.md 软指引）后重跑，**暴露软指引不够**：
+- Reader 产出的 plan.md **没有** Questions Mapping（reader.md 的「若存在则标注」
+  未被执行）→ Run agent 自造 `t2_cvd_bpb` 等 ID 且把 answers.csv 放进
+  `05_run/results/`（位置也错）→ `check_run_phase` fail-fast 在 Run 完成后拦截
+  （`前置产物不可用: answers.csv 缺失或表头不合规`），浪费了 Provision/Data 算力。
+- **补强（commit 2f5d0e2）**：(a) reader.md 升级为**强制**——必读
+  `input/questions.yaml`、逐字转录、plan.md 必须含 `Questions Mapping` 表；
+  (b) run.md 显式禁止自造 target_id + answers.csv 位置钉死 `05_run/` 根目录；
+  (c) artifact_checks 新增 `check_reader_phase`（plan 覆盖问题清单键，**Reader
+  完成门早期拦截**，省算力）+ `questions_target_ids` 复用；(d) workflow.py Reader
+  门接入；契约测试 +5（211 passed/4 skipped）。
+- 价值：run3 是**失败即信息**——它实证了「软指引不可靠、必须硬门禁」。
+
+## run4（2026-08-27）——BL-028 完整闭环：外部评分 C1-C3 真正计分 ✅
+
+run4（`/tmp/harness/run-bench-220-20260827-192104`，归档 `bench-220-0026-run4/`
+454M）带完整修复（Reader 门 + 强制 Questions Mapping）重跑：
+- **验证点 A（Reader 门）**：plan.md 含 `Questions Mapping` 表，3 个问题清单键
+  （blood-lead-cvd-hr/tibia-lead-cvd-hr/patella-lead-cvd-hr）逐字映射 T1-T3 → 通过。
+- **验证点 B（Run 门）**：`05_run/answers.csv` 根目录 + target_id 逐字用清单键 +
+  数值实算（svycoxph：1.6339/3.3246/2.4230，与论文一致）→ 通过。
+- **外部评估闭环**：evaluate_run.py 首次 C1/C2/C3 **passed=True**——
+  `paper=1.63 system=1.6339 within tol=0.05 OK（交叉核对通过）`，verdict
+  REPRODUCED 100。对比 run2 的「REPRODUCED 但 C1-C3 全 NO-EVIDENCE」彻底修复。
+- **副产品修复（commit f7043fd）**：evaluate_run.py 打包缺口——只拷
+  answers/sha256sums/digests 没拷 answers 引用的 `05_run/results/`，导致交叉
+  核对 `source_file 不存在`（run4 首次评估暴露）；已加 `results/` copytree
+  + 端到端测试（212 passed/4 skipped）。
+- **验收**：verify-0026-run.sh 19/19、契约测试 212 passed、归档路径评估通过。
+
 ### 监控方法教训（run2 补充）
 
 - 阶段推进以 `container.log` 的 `[loopflow] Agent responded` / `[agent]` 行 + 产物目录

@@ -142,6 +142,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   必须用 `input/questions.yaml` 键）、`agents/reader.md`（Target 表标注 questions
   target_id）、`artifact_checks.py`（`check_run_phase` 键对齐 fail-fast）+ 契约
   测试 +3（206 passed / 4 skipped）。
+- **BL-028 补强（run3 实证软指引不够）**：run3 的 plan.md 无 Questions Mapping、
+  Run agent 自造 `t2_cvd_bpb` ID 且 answers 放错位置 → check_run_phase 拦截。
+  补强：reader.md 强制 Questions Mapping 表（必读/逐字转录）、run.md 禁自造 ID +
+  answers 位置钉死 `05_run/` 根、artifact_checks 新增 `check_reader_phase`（Reader
+  完成门早期拦截，省 Provision/Data 算力）+ workflow 接入；测试 +5（211 passed）。
+- **BL-028 完整闭环（run4）**：带 Reader 门 + 强制映射重跑——plan.md 含
+  Questions Mapping、answers 键/位置全对、外部评估 C1/C2/C3 **passed=True**
+  （`paper=1.63 system=1.6339 within tol=0.05 OK`），verdict REPRODUCED 100。
+  另修 evaluate_run.py 打包缺口（answers 引用的 `05_run/results/` 未打包致
+  交叉核对失败——run4 首次评估暴露），加 results/ copytree + 端到端测试
+  （212 passed/4 skipped）。run2/3/4 归档 `bench-220-0026-run2/3/4`。
 
 ### Docs
 - ADR-0010 修订块、Interface 0002 v2（claims 评分协议）、Spec 0001（接入段/BR-018/

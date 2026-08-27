@@ -87,9 +87,17 @@
 - **验收发现并修复 target_id 脱节（run2 后）**：answers 用了 plan.md T 编号而非公开
   问题清单键（ADR-0011 §4.1）→ 外部评分 C1-C3 全 NO-EVIDENCE。已修 run.md/reader.md/
   artifact_checks.py（check_run_phase 键对齐 fail-fast）+ 契约测试，全量 206 passed。
-  **剩余**：修复后需再跑一次 run3 让外部评分闭环（C1-C3 应真正计分）。
+- **run3（补强实证）**：软指引不够——plan.md 无 Questions Mapping、Run 自造
+  `t2_cvd_bpb`、answers 放错位置 → 补强为硬门禁（reader.md 强制 Questions Mapping、
+  run.md 禁自造 ID、artifact_checks 新增 check_reader_phase 早期拦截、workflow 接入），
+  211 passed。归档 `bench-220-0026-run3/`。
+- **run4（BL-028 完整闭环 ✅）**：Reader 门过 + Run 门过 + **外部评估 C1/C2/C3
+  passed=True（交叉核对通过）**，verdict REPRODUCED 100；另修 evaluate_run.py 打包
+  缺口（results/ 未打包致交叉核对失败），212 passed/4 skipped。归档
+  `bench-220-0026-run4/`（454M）。**端到端新契约闭环达成，容器完成判据 3 满足**。
 - 宿主先 export `MINERU_API_URL=http://172.16.218.40:8001/`
-- 远端 `bench-v3.sh` 暂留，等 `run-entry.sh` 跑通完整 entry 后再删
+- 远端 `bench-v3.sh` 已删除（2026-08-27，run-entry.sh 跑通完整 entry 后收尾；
+  备份在 scripts/archive-bench-v3-20260827/）
 - `benchmarks/harness/crosscheck-prototype.py` 是交叉核对原型，其 locate 逻辑已内嵌
   `VERIFY_TEMPLATE`（单元 04）；原型与样例（3 PASS / 2 NO-EVIDENCE）保留可复跑
 - **单元 04 迁移教训**：backfill 初次运行误改 7 个手写 entry（bench-001~006/100）的
