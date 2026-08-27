@@ -2,9 +2,9 @@
 title: Interface 002 — ClaroAI Converter 与评分协议
 description: 定义 claroai2bench CLI 契约、claims 模式 oracle 的 ground truth 结构、rubric check 模式与 submission 证据约定（BL-011 / ADR-0010 / Plan 0025）。
 type: interface
-status: active
+status: proposed
 created: 2026-08-04T00:00:00Z
-updated: 2026-08-12T00:00:00Z
+updated: 2026-08-27T00:00:00Z
 ---
 
 # Interface 002: ClaroAI Converter 与评分协议
@@ -13,12 +13,17 @@ updated: 2026-08-12T00:00:00Z
 > 原始任务——D5 数值 claims（论文发表的定量声明）为评分主体，D1–D3 数据/代码可用性
 > 状态为同 rubric 内辅助 checks。系统侧任务为自然语言（`metadata.task`），评分维度
 > 代码不再进入被测系统。
+>
+> **单元 04 修订（2026-08-27，证据面切换，ADR-0011 §4/§4.1）**：外部评分只读
+> **标准格式真实产物**——数值 claim 的证据是 `05_run/answers.csv`（+强制交叉核对），
+> 数据/代码审计的证据是 04_data sha256sums+获取日志、03_provision digests；
+> `06_validate/` 整目录不在证据面；`validate_report` 角色已从 converter 生成的
+> rubric 移除（FC-004）。公开问题清单 `input/questions.yaml`（ADR §4.1）新增。
 
 本接口服务两类使用者：benchmark maintainer（运行 converter 生成 entry）与 evaluator
-（消费 claims 模式 oracle/submission）。被测系统不接触本接口；对被测系统的唯一
-要求是正常执行 Reader→Data→Provision→Run→Validate 阶段并产出既有报告产物
-（`data_manifest.md`、`provision.md`、`06_validate/report.md`），D5 数值比较基于
-被测系统自行产出的复现值（claims evidence）。
+（消费 claims 模式 oracle/submission）。被测系统不接触 oracle 私有部分；对被测系统的
+唯一要求是产出标准格式产物（04_data/03_provision/05_run 契约，见 Interface 001
+「被测系统标准格式产物」），其中 `05_run/answers.csv` 是数值 claim 的证据。
 
 ## 1. Converter CLI：`claroai2bench`
 
@@ -79,6 +84,7 @@ code_references:        # 来源 extraction.json code_references + scores D3 evi
     notes: "README 描述 pipeline 但零可执行代码"
 claims:                 # D5 数值声明（Plan 0025 新增；从 scores.json D5 evidence 转录）
   - id: C1
+    target_id: fig4a-tumor      # 公开问题清单的键（ADR §4.1，单元 04 新增）
     metric: "Fig4A tumor"
     paper_value: 599      # 论文发表值（ground truth）
     unit: count
@@ -88,6 +94,7 @@ claims:                 # D5 数值声明（Plan 0025 新增；从 scores.json D
     author_repr: 599.0
     notes: "..."
   - id: C2
+    target_id: fig4a-normal
     metric: "Fig4A normal"
     paper_value: 1390
     tolerance: {type: relative, value: 0.05}
@@ -112,28 +119,64 @@ calibration:            # 作者分数只作校准，不进 rubric（含 d1–d5
 | code_references.ground_truth | `available` / `hollow` / `missing` / `unknown` | 代码仓库：完整可跑 / 空壳 / 404 或不存在 / 无法判断 |
 | claims[].tolerance | `{type: relative\|absolute, value: <float>}` | D5 数值比较容差（默认 relative 0.05） |
 | claims[].comparison | `{op: gte\|lte}`（可选） | 阈值型声明（如论文声明 AUROC > 0.95 → op=gte, paper_value=0.95） |
+| claims[].target_id | 小写连字符 slug | 公开问题清单的键（`input/questions.yaml`）；claim id（C1/…）是 oracle 私有，系统不可能知道（ADR §4.1） |
+
+## 2.1 公开问题清单：`input/questions.yaml`（ADR §4.1，单元 04 新增）
+
+converter 从 `claims.yaml` 转录生成，**只含标识符与问题，无期望值**：
+
+```yaml
+schema: questions/v1
+questions:
+  - target_id: fig4a-tumor
+    question: "复现论文报告的 Fig4A tumor 数值"
+    unit: count
+  - target_id: fig4a-normal
+    question: "复现论文报告的 Fig4A normal 数值"
+    unit: count
+```
+
+- 这是任务的一部分：被测系统按 `target_id` 在 `05_run/answers.csv` 中填写复现值
+  （`target_id,value,unit,source_file`）
+- oracle 判分 = 比对 answers 的 value 与私有期望值（`claims.yaml` paper_value +
+  容差），并**强制交叉核对**（FC-005）：value 必须能在 answers 自述的 `source_file`
+  中定位（容差由书写精度导出，`0.5×10^-decimals`，无魔数）；交叉核对失败 →
+  **NO-EVIDENCE**（该 claim 不计分不扣分，非判错）
+- 代价（论文 limitation 中声明）：公开问题清单把「自行判断该报告哪些数值」从测量中
+  移除——换来评分无歧义与引擎中立（baseline 系统用同一份清单）
 
 ## 3. Claims 模式 rubric check 模式
 
 rubric 的 check 统一使用 `python_verify` comparator，`module` 指向 entry 内
-`oracle/verify.py`；每个 check 声明 evidence artifact role（指向被测系统既有产物）。
+`oracle/verify.py`；每个 check 声明 evidence artifact role（指向**标准格式真实产物**，
+单元 04 起不读任何系统散文报告）：
 
 ```yaml
 checks:
   - id: A1
-    description: "系统对 GSE308855 数据可定位性的判断与 ground truth 一致"
+    description: "数据引用可获取判断与 ground truth 一致"
     evidence:
-      artifact_role: data_manifest   # 被测系统 Data 阶段报告
+      artifact_role: data_evidence   # 04_data sha256sums 输出（+同目录获取日志）
     comparison:
       comparator: python_verify
       module: verify.py
-      function: check_data_references   # verify.py 内命名函数
+      function: check_data_references
+      config: {}
+    weight: 15
+  - id: A2
+    description: "代码引用可用性判断与 ground truth 一致"
+    evidence:
+      artifact_role: environment   # 03_provision digests.txt（docker images --digests 输出）
+    comparison:
+      comparator: python_verify
+      module: verify.py
+      function: check_code_references
       config: {}
     weight: 15
   - id: C1
     description: "复现声明 Fig4A tumor（论文值 599）"
     evidence:
-      artifact_role: validate_report   # 被测系统 Validate 阶段报告（含复现值）
+      artifact_role: answers   # 05_run/answers.csv（target_id,value,unit,source_file）
     comparison:
       comparator: python_verify
       module: verify.py
@@ -146,29 +189,30 @@ checks:
 无数值 claims 可转录的 entry（湿实验论文或 scores.json 无 D5 evidence）回退为
 A1/A2 各 50，`metadata.task` 如实说明边界。
 
-`verify.py` 的职责：解析 evidence artifact（`data_manifest.md`/`provision_report.md`
-或 `validate_report.md`）提取系统判断/复现值，与 `claims.yaml` ground truth 对比；
-`check_claim` 支持容差数值比较（relative/absolute）与阈值比较（gte/lte）；系统判断
-缺失或无法解析时该 check 判定失败并附原因（不做无依据的 NA 放行，除非 ground truth
-为 `unknown`）。claims evidence artifact 接受两种格式：结构化 JSON
-（`{"claims": [{"metric": ..., "actual": ...}]}`，推荐）或 validate report Markdown
-表格（Expected/Actual 列，legacy run 兼容）。
+`verify.py` 的职责（单元 04 起，301 行散文解析已退役）：
+- `check_claim`：读 `answers.csv` 中 `target_id` 匹配行 → **交叉核对** value 能在
+  `source_file` 定位（容差由书写精度导出）→ 与 `claims.yaml` paper_value 容差/阈值
+  比较；交叉核对失败或 target 缺失 → 返回 `no_evidence`（不计分不扣分）
+- `check_data_references`：从 04_data 获取日志终态（completed/unavailable/
+  not_attempted，ADR §2.1）推导系统判断，与 ground truth 比对
+- `check_code_references`：从 digests 是否存在推导环境构建产出
 
 ## 4. Submission 证据约定
 
-被测系统不新增协议要求；它照常执行复现 pipeline。verify.py 按以下优先级消费证据：
+被测系统产出标准格式产物（Interface 001「被测系统标准格式产物」）。verify.py 只消费：
 
-1. `submission.json` artifacts 中 role=`validate_report` 的产物：结构化 claims
-   evidence JSON（`{"claims": [{"metric": ..., "actual": ...}]}`，推荐）或
-   `06_validate/report.md`（表格含 Expected/Actual 列）；claims checks（C*）只消费
-   该产物；
-2. role=`data_manifest`（`data_manifest.md`）+ role=`provision_report`
-   （`provision.md`）：D1–D3 证据 checks（A1/A2）的输入；
-3. 任一产物缺失或无法解析 → 对应 check 判定失败，记录 `evidence_unavailable`。
+1. role=`answers`（`05_run/answers.csv`）：claims checks（C*）的唯一证据；
+   `target_id` 来自公开问题清单，值必须能在自述 `source_file` 中定位；
+2. role=`data_evidence`（`04_data/sha256sums.txt`，同目录获取日志）：A1 输入；
+3. role=`environment`（`03_provision/digests.txt`）：A2 输入。
 
-系统对引用做出的**错误判断**（如把无效 accession 记为可用）按对应 check 失败计入：
-D1–D3 checks 测系统判断论文数据/代码可用性的正确性；claims checks 测系统复现值与
-论文发表值的数值一致性。
+**`06_validate/` 整目录不在证据面**（FC-006）：Validate 是系统内部自反馈路由，
+不产出对外 verdict；claimed_verdict 只作校准观测。
+
+**NO-EVIDENCE 语义**（FC-005）：任一产物缺失、target 缺失或交叉核对失败 →
+该 check 记为 `no_evidence`，**不计分不扣分**（不是判错）；全部 check 均无证据 →
+evaluator 返回 BLOCKED，score 不构成复现率。系统对引用做出的**错误判断**（如把无效
+accession 记为可用、复现值与论文值超容差）按对应 check 失败计入。
 
 ## 5. 信任边界
 

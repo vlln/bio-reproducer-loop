@@ -2,7 +2,7 @@
 title: Interface 001 — Benchmark 输入、执行、提交与评估协议
 description: 定义 disposable VM execution envelope、可追溯 InputBundle、SubmissionBundle、EvaluatorResult 及其信任边界。
 type: interface
-status: active
+status: proposed
 created: 2026-07-19T00:00:00Z
 ---
 
@@ -41,7 +41,9 @@ entries/<id>/
 │   ├── supplementary/     # 补充材料原件
 │   ├── code/              # cited code 的冻结快照
 │   ├── data/              # 冻结数据、派生数据或访问 descriptor
-│   └── resources/         # 场景实际提供的辅助材料
+│   ├── resources/         # 场景实际提供的辅助材料
+│   └── questions.yaml     # 公开问题清单（ADR §4.1，单元 04）：target_id+question+unit，
+│                          # 无期望值；被测系统按 target_id 填 answers.csv
 ├── oracle/                # evaluator 私有
 └── metadata.yaml          # Runner 元数据，不 stage
 ```
@@ -95,8 +97,8 @@ resources:
 | 字段 | 必需 | 说明 |
 |------|------|------|
 | `id` | 是 | entry bundle 内稳定且唯一的资源 ID |
-| `role` | 是 | `paper` / `supplementary` / `code` / `data` / `metadata` / `environment` / `resource_page` |
-| `authority` | 是 | `original` 或 `derived` |
+| `role` | 是 | `paper` / `supplementary` / `code` / `data` / `metadata` / `environment` / `resource_page` / `questions` |
+| `authority` | 是 | `original` / `derived` / `benchmark`（benchmark 自产资源如 questions.yaml，converter 确定性生成，不要求 derived_from） |
 | `availability` | 是 | `bundled` / `external` / `restricted` / `unavailable` / `not_applicable` |
 | `path` | bundled 时 | 相对 `input_root` 的文件路径；禁止绝对路径和 `..` |
 | `source` | original 时 | DOI、accession、仓库/发布页 URL；constructed L3 使用 `urn:benchmark:<entry>:<resource>` |
@@ -226,6 +228,28 @@ deadline 和 completed teardown 全部必需。当前不允许 provider fallback
 `claimed_verdict` 可缺省且不参与最终分数计算。Artifact role 允许扩展，但未知 role
 必须被 evaluator 保留而非静默丢弃。同一 role 存在多个语义产物时必须提供稳定的 `id`
 （例如 contrast 名称），oracle 可以声明正反 contrast 或合并表为等价证据，但不得改写系统原始产物。
+
+## 被测系统标准格式产物（ADR-0011 §2，单元 02-04 落地）
+
+被测系统（引擎无关）必须按以下标准格式持久化事实；**外部评分只读这些产物，
+不读任何系统散文报告**。`06_validate/` 整目录不在证据面（FC-006）——Validate 是
+系统内部自反馈路由，`claimed_verdict` 只作校准观测。
+
+| 阶段 | 必须落下的标准格式产物 | 可核验方式 |
+|------|----------------------|-----------|
+| 03_provision | `digests.txt`：`docker images --digests` 原始输出 | 任何人可重算核对 |
+| 04_data | 数据文件本体 + `sha256sums.txt`（sha256sum 输出）+ **每资源一份获取日志**（curl/wget 原始输出；阻塞时也必须落） | `sha256sum -c`；日志终态判定（completed/unavailable/not_attempted，§2.1） |
+| 05_run | `results/` 结果 CSV/TSV + `answers.csv`（`target_id,value,unit,source_file`，表头精确白名单）+ `reports/commands.log`（命令+退出码） | 标准 csv 解析；answers 值须能在 source_file 定位（FC-005） |
+| 07_package | `run.sh` + 干净环境执行日志（含退出码） | 执行日志退出码为 0（FC-008，单元 06） |
+
+允许的自定义格式只有两类（FC-002/FC-003 键名白名单）：
+- `05_run/answers.csv`：4 列 `target_id,value,unit,source_file`，无状态词/判断/理由
+- `06_validate/routing.jsonl`：5 键 `ts,target,decision,route_to,reason`，追加式一行一事件，
+  系统内部路由（数据不符→data、环境/版本→provision、参数/步骤→run、论文理解→reader）
+
+**NO-EVIDENCE 语义**（FC-005）：answers 值无法在自述 source_file 中定位、产物缺失或
+target 缺失 → 该 claim 记为 `no_evidence`，**不计分不扣分**（不是判错）；全部 check
+均无证据 → evaluator 返回 BLOCKED，score 不构成复现率。
 
 已存在的 protocol v1 运行仍可执行 `bench-run submit --entry <id>`，从 `repro-data/` 补建
 manifest 并由 evaluator 生成历史观测；原系统生成的 `result.json` 保留为

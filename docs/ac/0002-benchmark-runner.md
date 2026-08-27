@@ -2,7 +2,7 @@
 title: AC 002 — Benchmark Runner
 description: benchmark 执行器的验收标准，覆盖 CLI、执行、评估、报告功能。
 type: ac
-status: active
+status: proposed
 created: 2026-07-15T00:00:00Z
 ---
 
@@ -51,6 +51,8 @@ created: 2026-07-15T00:00:00Z
 | AC-0005-N-1 | bench-001 InputBundle 完整 | 调用 adapter.run(input_bundle) | 返回标准 submission.json 和 artifacts | 自动化 |
 | AC-0005-N-2 | bench-001 InputBundle 完整 | 调用 adapter | execution 中 stages 的 name 和 status 正确 | 自动化 |
 | AC-0005-N-3 | entry 同时含 input/ 与 oracle/ | 调用 adapter | 被测进程工作目录中 oracle 不可见 | 自动化 |
+| AC-0005-N-4 | entry 含 questions.yaml（单元 04） | 调用 adapter.run | submission artifacts 含 answers/data_evidence/environment 角色（05_run/answers.csv、04_data sha256sums、03_provision digests）；`06_validate/` 产物不在 artifacts（FC-006） | 自动化 |
+| AC-0005-N-5 | 执行器 deadline 配置（单元 04，FC-007） | 调用 adapter.run | loop args 含 `routing_budget`，值由 deadline 派生（如 5h→4、1h→0），系统内无硬编码上限 | 自动化 |
 
 ## 边界场景
 

@@ -2,7 +2,7 @@
 title: Spec 001 — 测试、评测与基准体系
 description: bio-reproducer 的确定性测试、内部 LLM 评测，以及采用 disposable VM、分层 InputBundle 和独立评分的公开黑盒 benchmark；含 ClaroAI-Bench 真实论文任务接入（BL-011）。
 type: spec
-status: active
+status: proposed
 version: 5
 created: 2026-07-15T00:00:00Z
 ---
@@ -195,9 +195,15 @@ ClaroAI entry 的约束：
 |------|------|
 | 任务声明 | `metadata.yaml` 必须声明 `reproduction_target`（ADR-0008 词表）与非空 `task`；禁止出现 `scored_scope`（CC-002 rev.，validator 拒绝残留维度代码） |
 | primary paper | 稳定 DOI/PMID locator，`availability=external`，**不附带论文全文文件**（版权决策，与 claroai-bench 归档一致）；被测系统在运行时自行获取（L5 语义） |
-| oracle 真值 | `claims.yaml` 结构化记录数据/代码引用 ground truth + D5 数值 claims（来自 claroai-bench `scores.json` 的 evidence），`rubric.yaml` 用 `python_verify` 对比 submission 证据产物（`data_manifest.md` / `provision.md` / `06_validate/report.md`） |
+| 公开问题清单 | `input/questions.yaml`（ADR §4.1，单元 04）：target_id + 一句话问题 + 单位，**无期望值**；被测系统按 target_id 填 `05_run/answers.csv` |
+| oracle 真值 | `claims.yaml` 结构化记录数据/代码引用 ground truth + D5 数值 claims（含 `target_id`，来自 claroai-bench `scores.json` evidence），`rubric.yaml` 用 `python_verify` 对比**标准格式真实产物**（`05_run/answers.csv` / 04_data sha256sums+获取日志 / 03_provision digests；`06_validate/` 不在证据面，FC-004/FC-006） |
 | 校准 | 作者 D1–D5 分数只作事后校准参考（baseline 观测），不写入 bundle lock 与 rubric 的 expected verdict |
 | 环境与网络 | 正式运行仍为 disposable VM；需要真实网络访问外部仓库与论文全文，`network_policy=controlled-egress`（discovery interaction mode） |
+
+评分语义（单元 04）：answers 每个值**强制交叉核对**——须能在自述 `source_file` 中
+定位（容差由书写精度导出，无魔数），失败记 `no_evidence`（不计分不扣分，非判错）；
+全部 check 无证据 → BLOCKED，score 不构成复现率。**系统散文报告（data_manifest.md、
+provision.md、06_validate/report.md）不被任何 check 消费**（BR-002 的落地）。
 
 作者 ground truth 的转录以 claroai-bench 归档的 `papers/paper_XX/scores.json` +
 `extraction.json` 为准（HF `kyleaoconnell22/claroai-bench` 快照），转录脚本与校验逻辑

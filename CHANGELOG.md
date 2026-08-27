@@ -92,6 +92,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 测试：新增 `tests/contract/test_evidence_switch.py`（8 例：交叉核对四态、A1/A2 推导、
   evaluator 三态、provision 契约）；全量 199 passed / 4 skipped；42 entry bundle gate 全过。
 
+### Docs (Plan 0026-05 — 下游文档同步，待人类 promote)
+
+- Interface 0001：InputBundle 加 questions.yaml；BundleResource 扩展（questions/
+  benchmark authority）；新增「被测系统标准格式产物」节；NO-EVIDENCE 语义。
+- Interface 0002：证据面切换修订（claims target_id、公开问题清单 §2.1、rubric 证据
+  角色 answers/data_evidence/environment、submission 约定重写）。
+- Spec 001 / AC-0002 / AC-0005：claims 模式节、routing_budget 透传、questions 与
+  交叉核对场景。ADR-0011 FC-003 修订为键名白名单（routing 含 reason 以 §3 为准）。
+- 受影响文档退回 proposed（发布就绪审计要求），promote 后回 active。
+
 ### Docs
 - ADR-0010 修订块、Interface 0002 v2（claims 评分协议）、Spec 0001（接入段/BR-018/
   术语）、AC-0005、Plan 0025（plan+report+README）。
