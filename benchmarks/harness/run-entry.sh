@@ -89,16 +89,17 @@ fi
 
 sandbox() {  # sandbox <image> <cmd...>：零特权沙箱，容器运行时指向 dind
   local img="$1"; shift
-  # ~/.loopflow 挂载为可写目录（uid 1000 需要写 runs/ 等）；skills 作为
-  # 嵌套子挂载只读覆盖（首跑实测：docker 自动创建的 /home/sandbox/.loopflow
-  # 属主 root，沙箱 uid 1000 无法写 runs/ —— 2026-08-27）
-  mkdir -p "$RUN/lf" && chmod 777 "$RUN/lf"
+  # 整个 /home/sandbox 挂载为可写 volume（uid 1000 需要写 ~/.claude session 与
+  # ~/.loopflow/runs；镜像内无 /home/sandbox，docker 自动创建为 root 属主——
+  # 首跑实测 claude 写 session 静默失败 → Reader 无产物，2026-08-27）。
+  # skills / loop 定义为嵌套子挂载（只读）。
+  mkdir -p "$RUN/home" && chmod 777 "$RUN/home"
   docker run --rm -i --network "$NET" \
     --user 1000:1000 --cap-drop ALL --security-opt no-new-privileges \
     --workdir /workspace \
     ${DOCKER_BIN:+-v "$DOCKER_BIN:/usr/bin/docker:ro"} \
     -v "$RUN/input:/input:ro" -v "$RUN/workspace:/workspace" -v "$RUN/repro-data:/output" \
-    -v "$RUN/lf:/home/sandbox/.loopflow" \
+    -v "$RUN/home:/home/sandbox" \
     -v "$SKILLS_DIR:/home/sandbox/.loopflow/skills:ro" \
     -v "$REPO/loops/bio-reproducer:/home/sandbox/.loopflow/loops/bio-reproducer:ro" \
     -e HOME=/home/sandbox \
