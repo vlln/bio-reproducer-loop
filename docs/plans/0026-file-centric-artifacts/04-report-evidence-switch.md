@@ -7,15 +7,15 @@
 
 | 文件 | 改动 |
 |------|------|
-| `benchmarks/converters/claroai/converter.py` | `_slugify`（metric → 公开 target_id）；claim 加 `target_id`；`_build_questions`（input/questions.yaml，无期望值）；`_build_rubric` 证据面切换（validate_report→answers、data_manifest→data_evidence、provision_report→environment）；`_build_bundle` 声明 questions 资源；`VERIFY_TEMPLATE` 重写（178 行，退役全部散文解析） |
-| `benchmarks/converters/claroai/backfill_evidence_switch.py` | **新增**：42 entry 幂等迁移（claims 加 target_id、生成 questions.yaml、rubric 重挂、bundle 声明 questions、替换 verify.py）；保护：非 claroai claims 结构（bench-001~006/100）跳过 |
+| `benchmarks/converters/claroai/converter.py` | `_slugify`（metric → 公开 target_id）；claim 加 `target_id`；`_build_questions`（input/questions.yaml，无期望值）；`_build_rubric` 证据面切换（validate_report→answers、data_manifest→data_evidence、provision_report→environment）；`_build_bundle` 声明 questions 资源；`VERIFY_TEMPLATE` 重写（约 180 行，退役全部散文解析） |
+| `benchmarks/converters/claroai/backfill_evidence_switch.py` | **新增**：35 个 claroai entry 幂等迁移（claims 加 target_id、生成 questions.yaml、rubric 重挂、bundle 声明 questions、替换 verify.py）；保护：非 claroai claims 结构（bench-001~006/100，7 个手写 entry）跳过 |
 | `benchmarks/runner/independent_evaluator.py` | **NO-EVIDENCE 三态**（FC-005）：verify 返回 `no_evidence` → check 从权重排除（不计分不扣分）；全部 check 无证据 → BLOCKED（score 不构成复现率） |
 | `benchmarks/runner/adapters/loopflow.py` | `_read_verdict_and_score` 删除 report.md 正则回退（散文解析退役），metrics.json 仅作 claimed_verdict 观测（FC-006）；`_artifact_candidates` 加 answers/data_evidence 角色；`_derive_routing_budget`（FC-007：从执行器 deadline 派生，5h→4、1h→0） |
 | `benchmarks/runner/bundle_validator.py` | RESOURCE_ROLES 加 `questions`、AUTHORITIES 加 `benchmark`（benchmark 自产资源不要求 derived_from） |
 | `benchmarks/converters/claroai/evaluate_run.py` | 新证据流：只读 answers.csv + sha256sums + digests；旧协议 run 不可重评（明确报错）；`--claims-evidence` 移除 |
 | `loops/bio-reproducer/agents/provision.md` + `artifact_checks.py` + `workflow.py` | **provision 契约推广**：`03_provision/digests.txt`（docker images --digests 原始输出）+ `check_provision_phase` + Provision 后 fail-fast |
 | `tests/contract/test_evidence_switch.py` | **新增** 8 例：交叉核对命中/标错 source_file/缺 target/超容差判错、A1 日志终态推导、A2 digests 推导、evaluator 三态、check_provision_phase |
-| 42 个 entry | claims.yaml 加 target_id（46 条）、input/questions.yaml（42 份）、rubric 证据重挂（35 个 claroai entry）、bundle 声明 questions、verify.py 换新模板 |
+| 35 个 claroai entry | claims.yaml 加 target_id（46 条）、input/questions.yaml（35 份）、rubric 证据重挂、bundle 声明 questions、verify.py 换新模板；7 个手写 entry 按保护跳过 |
 
 ## 验收结果（对照 Plan 04）
 

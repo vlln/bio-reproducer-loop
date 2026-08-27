@@ -85,8 +85,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   证据 → BLOCKED。evaluator 三态落地。
 - **provision 契约推广**：`03_provision/digests.txt`（docker images --digests 原始
   输出）+ `check_provision_phase` + workflow fail-fast（A2 证据）。
-- **verify.py 退役散文解析**：VERIFY_TEMPLATE 重写（301 → 178 行，无
-  `_parse_data_manifest` 等）；42 entry 迁移（backfill 幂等脚本，含手写 entry 保护）；
+- **verify.py 退役散文解析**：VERIFY_TEMPLATE 重写（302 → 约 180 行，无
+  `_parse_data_manifest` 等）；35 个 claroai entry 迁移（backfill 幂等脚本，含手写 entry 保护）；
   `evaluate_run.py` 只接受新契约 run（旧 pilot 不可重评）。
 - **routing_budget 透传**（FC-007）：adapter 从执行器 deadline 派生（5h→4、1h→0）。
 - 测试：新增 `tests/contract/test_evidence_switch.py`（8 例：交叉核对四态、A1/A2 推导、

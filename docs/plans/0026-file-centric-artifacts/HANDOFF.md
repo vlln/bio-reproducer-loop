@@ -32,8 +32,9 @@
 
 - 系统侧：04_data/05_run/03_provision 标准格式契约 + `_require_parsable` fail-fast +
   goal 从 plan.md 派生 + Validate 内部路由（routing.jsonl）+ 回环预算（调用方给定）
-- benchmark 侧：42 entry 已迁移（claims target_id + questions.yaml + rubric 重挂 +
-  新 verify.py），**评分只读 answers/sha256sums/digests**，NO-EVIDENCE 三态
+- benchmark 侧：35 个 claroai entry 已迁移（claims target_id + questions.yaml +
+  rubric 重挂 + 新 verify.py；7 个手写 entry 按保护跳过），**评分只读
+  answers/sha256sums/digests**，NO-EVIDENCE 三态
 - `evaluate_run.py` 只接受新契约 run（旧 pilot run 不可重评——报错，勿绕行）
 - 技能（paperutils/mineru-api）已恢复并补齐前置（2026-08-27）
 

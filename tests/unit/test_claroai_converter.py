@@ -54,13 +54,23 @@ def test_n1_generates_entries_and_passes_bundle_gate(snapshot, tmp_path):
         validate_entry(entry_dir)  # raises on failure
 
 
-# ── AC-0009-N-2: 确定性可重放（同快照 → 字节一致） ──────────────────────────
+# ── AC-0009-N-2: 确定性可重放（同快照 → entry 字节一致） ─────────────────────
 def test_n2_deterministic_output(snapshot, tmp_path):
     out1, out2 = tmp_path / "e1", tmp_path / "e2"
     _run_converter(snapshot, out1)
     _run_converter(snapshot, out2)
-    files1 = sorted(p.relative_to(out1) for p in out1.rglob("*") if p.is_file())
-    files2 = sorted(p.relative_to(out2) for p in out2.rglob("*") if p.is_file())
+    # 排除 claroai-converter-provenance.json：其 converted_at 是运行时刻观测
+    # （秒级时间戳，跨秒边界字节必然不同），不属于 AC-0009-N-2 承诺的确定性
+    # 输出范围（metadata/bundle/claims/rubric/questions/verify/locator）。
+    # 历史：曾因全目录字节对比跨秒偶发失败（flake 根因，2026-08-27 审查确认）。
+    files1 = sorted(
+        p.relative_to(out1) for p in out1.rglob("*")
+        if p.is_file() and p.name != "claroai-converter-provenance.json"
+    )
+    files2 = sorted(
+        p.relative_to(out2) for p in out2.rglob("*")
+        if p.is_file() and p.name != "claroai-converter-provenance.json"
+    )
     assert [str(f) for f in files1] == [str(f) for f in files2]
     for f in files1:
         assert (out1 / f).read_bytes() == (out2 / f).read_bytes()
