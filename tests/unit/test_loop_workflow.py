@@ -84,11 +84,21 @@ def write_run_evidence(base):
     answers.write_text("target_id,value,unit,source_file\nT1,1.63,HR,results/table1.csv\n")
 
 
+def write_package_evidence(base):
+    """07_package 标准格式证据（FC-008）：run.sh + check.log 退出码 0。"""
+    root = Path(base)
+    (root / "run.sh").write_text("#!/usr/bin/env bash\ncheck() { echo OK; }\n\"${@:-check}\"\n")
+    p = root / "07_package" / "check.log"
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text("=== 检查前置条件 ===\nOK: 前置条件满足\nEXIT=0\n")
+
+
 def write_full_evidence(base):
     write_files(base, *REQUIRED_FILES)
     write_provision_evidence(base)
     write_data_evidence(base)
     write_run_evidence(base)
+    write_package_evidence(base)
 
 
 def run_workflow(tmp_path, agent, intervene, args=None):
@@ -385,3 +395,42 @@ def test_run_prompt_contains_result_contract():
     for marker in ("answers.csv", "target_id,value,unit,source_file", "results/"):
         assert marker in run, f"run.md missing: {marker}"
     assert "commands.log" in run or "命令日志" in run
+
+
+def test_package_prompt_contains_self_contained_rules():
+    """package.md 必须含自包含纪律（BL-025）与 FC-008 执行日志要求。"""
+    package = (WORKFLOW_PATH.parent / "agents" / "package.md").read_text()
+    for marker in ("只要求 Docker", "digests.txt", "check.log", "退出码"):
+        assert marker in package, f"package.md missing: {marker}"
+    # check 子命令不得再要求宿主 java/nextflow/R（自包含：分析环境在镜像内）
+    check_section = package.split("check() {")[1].split("}")[0]
+    assert "nextflow" not in check_section and "java" not in check_section.lower()
+
+
+def test_package_fail_fast_without_check_log(tmp_path):
+    """Package 返回 complete 但无 check.log → fail-fast（FC-008）。"""
+    write_files(tmp_path, *REQUIRED_FILES)
+    write_provision_evidence(tmp_path)
+    write_data_evidence(tmp_path)
+    write_run_evidence(tmp_path)
+    (tmp_path / "run.sh").write_text("#!/usr/bin/env bash\necho hi\n")
+    # 无 07_package/check.log
+    agent, intervene = FakeAgent(), FakeIntervene()
+    result, logs = run_workflow(tmp_path, agent, intervene)
+    assert result is not None  # 返回 validate value（与既有 Package 失败语义一致）
+    assert any("前置产物不可用" in line and "check.log" in line for line in logs)
+
+
+def test_package_fail_fast_with_nonzero_check_log(tmp_path):
+    """check.log 退出码非 0 → fail-fast（FC-008）。"""
+    write_files(tmp_path, *REQUIRED_FILES)
+    write_provision_evidence(tmp_path)
+    write_data_evidence(tmp_path)
+    write_run_evidence(tmp_path)
+    (tmp_path / "run.sh").write_text("#!/usr/bin/env bash\necho hi\n")
+    p = tmp_path / "07_package" / "check.log"
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text("ERROR: nextflow not found\nEXIT=1\n")
+    agent, intervene = FakeAgent(), FakeIntervene()
+    result, logs = run_workflow(tmp_path, agent, intervene)
+    assert any("前置产物不可用" in line and "退出码 0" in line for line in logs)

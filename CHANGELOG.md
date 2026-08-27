@@ -92,6 +92,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 测试：新增 `tests/contract/test_evidence_switch.py`（8 例：交叉核对四态、A1/A2 推导、
   evaluator 三态、provision 契约）；全量 199 passed / 4 skipped；42 entry bundle gate 全过。
 
+- 受影响文档退回 proposed（发布就绪审计要求），promote 后回 active。
+
+### Changed (Plan 0026-06 — 交付包自包含，BL-025/FC-008)
+
+- **自包含纪律**：交付包只要求 Docker，Java/Nextflow/R 全在镜像内（镜像清单 =
+  `03_provision/digests.txt`）；run.sh check 不再检查宿主 java/nextflow/R；
+  run/validate 用 `docker run` 执行分析镜像（0/6 干净容器失败根因消除）。
+- **FC-008 执行证明**：Package 必须执行 `bash run.sh check` 并落
+  `07_package/check.log`（退出码 0）；workflow 出口 `check_package_phase`
+  fail-fast（无执行证明不得声明 completed）。
+- 测试：check_package_phase 五态 + workflow 2 用例 + prompt 断言；
+  全量 203 passed / 4 skipped。
+- **容器 0026 全部 6 单元完成**（Report 01-06）；FC-001~FC-008 检出手段全部落地；
+  完成判据 1/2 ✅、3 待 run-entry.sh 端到端首跑。
+
 ### Docs (Plan 0026-05 — 下游文档同步，待人类 promote)
 
 - Interface 0001：InputBundle 加 questions.yaml；BundleResource 扩展（questions/

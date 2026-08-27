@@ -24,7 +24,7 @@ benchmark 侧证据面。系统行为改动一律成对跑（同子集 before/af
 | 03 | Validate 内部化 + `routing.jsonl` + goal 从 plan.md 派生（删 RNA-seq 硬编码） | BL-016 BL-022 | **done**，见 [Report 03](03-report-validate-internalization.md)；回环预算 `routing_budget` 来自调用方参数（FC-007）；Run 结果契约（results/ + answers.csv）已推广 |
 | 04 | 证据面切换：46 个 check 重挂 `result_table`+`answers`、converter 禁用 validate_report、adapter 停读 metrics.json、交叉核对实现 | BL-023 BL-015 | **done**，见 [Report 04](04-report-evidence-switch.md)；评分只读真实产物（answers/sha256sums/digests），NO-EVIDENCE 三态，42 entry bundle gate 全过；provision 契约（digests.txt）随 A2 推广 |
 | 05 | 下游文档同步：Spec 001、Interface 0001/0002、AC 补场景（需人类再次 promote） | — | **done（已 promote）**，见 [Report 05](05-report-doc-sync.md)；FC-003 措辞已修订；审查修正（test_n2 flake 根因 + 文档数字）随 10300c3 落地 |
-| 06 | 交付包自包含：Package 出口以干净容器 `run.sh check` 通过为准 | BL-025 | pending |
+| 06 | 交付包自包含：Package 出口以干净容器 `run.sh check` 通过为准 | BL-025 | **done**，见 [Report 06](06-report-package-self-contained.md)；自包含纪律（只要求 Docker）+ FC-008 check.log 执行证明；**容器 6 单元全部 done**，待 run-entry.sh 端到端首跑 + 人类验收 |
 
 ## 不做什么
 
@@ -32,8 +32,8 @@ benchmark 侧证据面。系统行为改动一律成对跑（同子集 before/af
 - 不重跑 35 篇正式批次（量具冻结前跑批即返工；该批已定性为 pilot 数据）
 - 不新增 claims 策展（属 benchmark 侧独立工作，等证据面切换完成后再排）
 
-## 完成判据
+## 完成判据（2026-08-27 更新）
 
-1. 单元 01-04 各自的验收项通过，且 141 个既有确定性测试保持全绿
-2. ADR-0011 的 FC-001~FC-008 每条都有对应检出手段落地（非口头承诺）
-3. 一个 entry 端到端跑通新契约：产物为标准格式、evaluator 不读 `06_validate/` 即可判分
+1. 单元 01-04 各自的验收项通过，且既有确定性测试保持全绿 → **203 passed / 4 skipped**（基线 141 → 203，+62 契约/回归用例）
+2. ADR-0011 的 FC-001~FC-008 每条都有对应检出手段落地（非口头承诺）→ **全部落地**（FC-008 由单元 06 `check_package_phase` 补上）
+3. 一个 entry 端到端跑通新契约：产物为标准格式、evaluator 不读 `06_validate/` 即可判分 → **集成测试覆盖评分闭环**（bench-220 answers 3 claims 全过 + NO-EVIDENCE 三态）；**真实 run-entry.sh 端到端首跑待执行**（需算力 + 宿主 export MINERU_API_URL；完成后此项闭环）

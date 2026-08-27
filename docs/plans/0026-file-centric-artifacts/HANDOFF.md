@@ -1,7 +1,7 @@
 # 交接说明（0026 容器）
 
 > 写给接手的 agent。**只凭文件即可恢复状态**，不要依赖任何对话历史。
-> 最后更新：2026-08-27（单元 04 完成后）
+> 最后更新：2026-08-27（单元 06 完成后——容器全部单元 done）
 
 ## 先读这些（按序）
 
@@ -9,11 +9,17 @@
 2. `docs/backlog.md` —— BL-014~BL-026 是本轮全部工程债；**文件末尾有防返工排序（S0-S5）与人类已作决策**
 3. `docs/adr/0011-verifiable-self-assessment.md` —— accepted，本容器的唯一设计依据；
    **文末「被废弃的第一稿」记录了三类必须避免的思维惯性**
-4. 本容器 `README.md`（单元表 + 状态）→ `01-report-harness-fixes.md` → `02-report-artifact-contract.md`
-   → `03-report-validate-internalization.md` → `04-report-evidence-switch.md`（单元 04，证据面切换）
+4. 本容器 `README.md`（单元表 + 状态 + 完成判据）→ `01-report-harness-fixes.md` →
+   `02-report-artifact-contract.md` → `03-report-validate-internalization.md` →
+   `04-report-evidence-switch.md` → `05-report-doc-sync.md` → `06-report-package-self-contained.md`
 5. `benchmarks/calibration-failure-taxonomy.md`、`benchmarks/package-executability-probe.md` —— 35 run 的实测事实基础
 
-## 立刻可以开始的下一步：单元 05（人类 promote 门禁）
+## 容器已完成（01-06），下一步：run-entry.sh 端到端首跑
+
+单元 02-06 全部落地（Report 02-06），Spec/Interface/AC 已 promote。
+**剩余执行项**：`run-entry.sh` 完整 entry 首跑（新契约端到端 + Package 干净容器
+冒烟）——需算力 + 宿主 `export MINERU_API_URL=http://172.16.218.40:8001/`；
+跑通后删远端 `bench-v3.sh`，并请人类按容器完成判据验收（README「完成判据」节）。
 
 下游文档同步（Spec 001、Interface 0001/0002、AC），**改完给简报、需人类再次 promote**：
 

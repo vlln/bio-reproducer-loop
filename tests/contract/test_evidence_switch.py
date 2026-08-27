@@ -213,3 +213,34 @@ def test_check_provision_phase(tmp_path):
     (prov / "digests.txt").write_text("no digests here\n")
     ok, _ = ac.check_provision_phase(tmp_path)
     assert ok is False
+
+
+# ── check_package_phase（FC-008：run.sh + check.log 退出码 0）─────────
+def test_check_package_phase(tmp_path):
+    spec = importlib.util.spec_from_file_location(
+        "artifact_checks", ROOT / "loops" / "bio-reproducer" / "artifact_checks.py")
+    ac = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(ac)
+
+    ok, detail = ac.check_package_phase(tmp_path)
+    assert ok is False and "run.sh" in detail  # 缺 run.sh
+
+    (tmp_path / "run.sh").write_text("#!/usr/bin/env bash\ncheck(){ echo OK; }\n")
+    ok, detail = ac.check_package_phase(tmp_path)
+    assert ok is False and "check.log" in detail  # 缺 check.log
+
+    log = tmp_path / "07_package" / "check.log"
+    log.parent.mkdir()
+    log.write_text("=== check ===\nOK: 前置条件满足\nEXIT=1\n")
+    ok, detail = ac.check_package_phase(tmp_path)
+    assert ok is False and "退出码 0" in detail  # 退出码非 0
+
+    log.write_text("=== check ===\nOK: 前置条件满足\nEXIT=0\n")
+    ok, detail = ac.check_package_phase(tmp_path)
+    assert ok is True and "退出码 0" in detail
+
+    # status: 0 / exit 0 也是标准记录
+    log.write_text("status: 0\n")
+    assert ac.check_package_phase(tmp_path)[0] is True
+    log.write_text("exit 0\n")
+    assert ac.check_package_phase(tmp_path)[0] is True

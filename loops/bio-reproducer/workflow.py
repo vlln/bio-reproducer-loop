@@ -16,6 +16,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from artifact_checks import (  # noqa: E402
     check_data_phase,
+    check_package_phase,
     check_provision_phase,
     check_run_phase,
 )
@@ -328,6 +329,10 @@ def run(agent, parallel, pipeline, log, args, workflow, intervene, state):
         package_result = _phase(agent, "Package", common)
         if package_result.status != "complete":
             log(f"Package: {package_result.status} — {package_result.reason} (turns={package_result.turns}, tokens={package_result.tokens})")
+        # 07_package 契约（FC-008）：Package 声明 completed 必须有
+        # run.sh check 的真实执行日志且退出码 0，否则不通过
+        elif not _require_parsable(log, check_package_phase):
+            return validate_result.value
     else:
         log(f"跳过 Package：verdict={verdict}")
 

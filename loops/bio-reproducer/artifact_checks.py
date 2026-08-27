@@ -214,6 +214,31 @@ def check_provision_phase(workdir="."):
     return True, "digests.txt 存在且含 digest 行"
 
 
+# ── Package phase（07_package）契约 ──────────────────────────────────
+def check_package_phase(workdir="."):
+    """07_package 契约检查：「存在 + 可被标准工具解析」（FC-008）。
+
+    判据（防 Package 幻觉 complete）：Package 声明 completed 必须有
+    `bash run.sh check` 的真实执行日志且退出码 0（ADR-0011 §2 契约表）：
+    - `run.sh` 存在（交付根目录）
+    - `07_package/check.log` 存在且含退出码 0 记录（`exit 0` / `EXIT=0` /
+      `status: 0` 等标准记录）
+    """
+    root = Path(workdir)
+    run_sh = root / "run.sh"
+    if not run_sh.is_file():
+        return False, "run.sh 不存在（交付根目录）"
+    check_log = root / "07_package" / "check.log"
+    if not check_log.is_file():
+        return False, "07_package/check.log 不存在（bash run.sh check 的真实执行日志）"
+    text = check_log.read_text(encoding="utf-8", errors="replace")
+    # 退出码 0 记录：exit/EXIT/status/STATUS + 可选分隔符(= 或 :) + 独立 0
+    # （(?<!\d)(?!\d) 防止 "exit 10" 的 0 误报）
+    if not re.search(r"\b(?:exit|EXIT|status|STATUS)\s*(?:[=:]\s*)?(?<!\d)0(?!\d)", text):
+        return False, "07_package/check.log 未记录退出码 0（FC-008：无执行证明不得声明 completed）"
+    return True, "run.sh 存在且 check.log 记录退出码 0"
+
+
 # ── routing.jsonl 键名白名单（FC-003）──────────────────────────────────
 ROUTING_KEYS = {"ts", "target", "decision", "route_to", "reason"}
 
