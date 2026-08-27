@@ -80,6 +80,46 @@ Package（check.log）。**重跑前置已解决**：BL-013 根因确认（claud
 端点 SSE 看门狗默认关闭）+ 官方修复（升级 2.1.247 + `CLAUDE_STREAM_IDLE_TIMEOUT_MS`）
 + loopflow 兜底（子进程感知看门狗）——见上文 BL-013 修复表，可直接重跑。
 
+## 重跑完成（run2，2026-08-27 续）——端到端全通 + 发现并修复 target_id 契约缺口
+
+**run2**：`run-entry.sh bench-220`，目录 `/tmp/harness/run-bench-220-20260827-161422`，
+归档 `/storeData/gs/claroai-calibration/runs/bench-220-0026-run2/`（69M）。BL-013 修复后
+**一次跑通全部 7 阶段**（Reader→Bootstrap→Provision→Data→Run→Validate→Package），
+全程无挂起（claude 2.1.247 看门狗未触发，说明无静默断流；监控按进程树确认正常）。
+
+| 验证项 | 结果 |
+|--------|------|
+| Data 契约：sha256sums.txt + 每资源日志 | ✅ 5 个关键资源 sha256 落盘 + 11 个 fetch.log（per-resource 纪律）；含 curl 206/Range 续传证据 |
+| Data 纪律 | ✅ raw.githubusercontent 卡住自动切 git clone；NHANES-III .dat + 预测模型 RData + 分析代码全获取 |
+| Run 契约：answers.csv + commands.log | ✅ 表头 4 列精确；3 行（T1/T2/T3）；`reports/commands.log` 落盘 |
+| Run 实际计算 | ✅ `results/table2_cvd_hr_results.csv`（svycoxph 实际算得：血铅 1.63/胫骨 3.32/髌骨 2.42，与论文一致） |
+| Validate 契约：routing.jsonl | ✅ 6 行，5 键白名单（ts/target/decision/route_to/reason），全部 reproduced、route_to=null 无需回环 |
+| Package 契约：check.log | ✅ 前置检查（docker CLI/daemon/镜像）全 OK，EXIT=0；README + run.sh 自包含入口 |
+| 独立评估器 evaluate_run.py | ⚠️ 见下方缺口——verdict REPRODUCED 但 C1-C3 NO-EVIDENCE |
+
+### 验收发现并修复：answers target_id 与公开问题清单脱节（ADR-0011 §4.1 执行缺口）
+
+- **现象**：evaluate_run.py 输出 `evaluator_verdict: REPRODUCED (100)` 但 C1/C2/C3 全部
+  NO-EVIDENCE——answers.csv 用 plan.md 内部 T 编号（T1/T2/T3），而公开问题清单
+  `input/questions.yaml` 与 oracle claims 的键是 metric slug（`blood-lead-cvd-hr` 等）。
+- **根因**：`agents/run.md` 写成「target_id 用 plan.md 的复现目标 ID」，偏离
+  ADR-0011 §4.1 / Interface 0002 §2.1「系统按公开问题清单键填 answers」。
+- **修复**（本地 commit 待做）：(a) `run.md`：target_id 必须用 `input/questions.yaml`
+  的键，无问题清单时才用 T 编号；(b) `reader.md`：Reproduction Target 表每行标注
+  questions target_id（如 `id: T1 (blood-lead-cvd-hr)`）；(c) `artifact_checks.py`
+  `check_run_phase` 增加键对齐检查——有 questions.yaml 时 answers target_id ⊆ 问题
+  清单键，否则 Run 完成门 fail-fast（实测 T1/T2 → 拦截，slug → 通过）；(d) 契约测试
+  +3（对齐/拦截/无清单兼容），全量 **206 passed / 4 skipped**。
+- **影响**：本次 run2 的 answers 用了 T 编号，外部评分拿不到 C1-C3 证据；数值本身
+  正确（与论文一致）且交叉核对可通过。修复后重跑一次即可让外部评分闭环。
+
+### 监控方法教训（run2 补充）
+
+- 阶段推进以 `container.log` 的 `[loopflow] Agent responded` / `[agent]` 行 + 产物目录
+  出现为准；dind 镜像列表看拉取/构建进度；R 包编译期 dind CPU 500%+ 属正常。
+- 验证脚本 `benchmarks/harness/verify-0026-run.sh`（run 根目录 + `repro-data/` 路径假设
+  已修正）19 项契约检查可一键复验归档 run。
+
 ### 监控方法教训
 
 container.log 无新行 ≠ 挂起：需用 `docker top` 看 claude 子进程树区分

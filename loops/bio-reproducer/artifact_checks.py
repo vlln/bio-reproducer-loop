@@ -179,9 +179,13 @@ def check_run_phase(workdir="."):
     - `05_run/` 目录存在
     - `results/` 至少一个非空 CSV/TSV（结果本体，可被标准 csv 解析）
     - `answers.csv` 存在且表头合规（target_id,value,unit,source_file）
+    - 存在 `input/questions.yaml` 时，answers 的 target_id 必须 ⊆ 问题清单键
+      （ADR-0011 §4.1 / Interface 0002 §2.1：公开问题清单键是外部 evaluator
+      与 oracle claims 匹配的唯一键；用 plan.md 内部 T 编号会让所有 claim
+      变成 NO-EVIDENCE——2026-08-27 端到端验收实证）
 
     返回 (ok: bool, detail: str)。answers 的**值定位交叉核对**（FC-005）由
-    单元 04 的 evaluator 实现，本检查只验格式。
+    单元 04 的 evaluator 实现，本检查只验格式与键对齐。
     """
     run_dir = Path(workdir) / "05_run"
     if not run_dir.is_dir():
@@ -191,7 +195,29 @@ def check_run_phase(workdir="."):
         return False, "05_run/results/ 无任何非空 CSV/TSV 结果文件"
     if not evidence["has_answers"]:
         return False, "05_run/answers.csv 缺失或表头不合规（须含 target_id,value,unit,source_file）"
-    return True, f"results 有 {len(evidence['results_csv'])} 个 CSV/TSV，answers 表头合规"
+    # 键对齐：answers target_id ⊆ input/questions.yaml 的 target_id
+    questions_file = Path(workdir) / "input" / "questions.yaml"
+    if not questions_file.is_file():
+        questions_file = Path(workdir).parent / "input" / "questions.yaml"
+    if questions_file.is_file():
+        try:
+            import yaml
+            qdata = yaml.safe_load(questions_file.read_text())
+            qkeys = {q["target_id"] for q in (qdata.get("questions") or [])}
+        except Exception:
+            qkeys = set()
+        if qkeys:
+            import csv as _csv
+            with open(run_dir / "answers.csv", newline="") as f:
+                answer_keys = {row["target_id"] for row in _csv.DictReader(f)}
+            stray = answer_keys - qkeys
+            if stray:
+                return False, (
+                    f"answers.csv 的 target_id 不在公开问题清单 input/questions.yaml 中: "
+                    f"{sorted(stray)}（问题清单键: {sorted(qkeys)}；须用问题清单键，"
+                    f"不能用 plan.md 内部 T 编号——ADR-0011 §4.1）"
+                )
+    return True, f"results 有 {len(evidence['results_csv'])} 个 CSV/TSV，answers 表头合规且 target_id 对齐问题清单"
 
 
 # ── Provision phase（03_provision）契约 ──────────────────────────────

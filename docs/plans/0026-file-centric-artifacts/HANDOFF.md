@@ -79,8 +79,15 @@
 - **BL-013 挂起根因已确认并修复（2026-08-27 续）**：claude 2.1.126 对非官方端点 SSE
   看门狗默认关闭（v2.1.196 起才默认开）。修复：镜像内 claude 升级 2.1.247
   （`bio-reproducer-runtime:system-idlefix-cc247`）+ settings.json watchdog env +
-  loopflow 子进程感知看门狗（develop `4b9bdf7`）。**重跑前置已解决**，下一步直接
-  重跑 bench-220 验证 Data/Run/Validate/Package 四阶段
+  loopflow 子进程感知看门狗（develop `4b9bdf7`）。
+- **重跑已完成（run2，2026-08-27）**：`/tmp/harness/run-bench-220-20260827-161422`，
+  归档 `/storeData/gs/claroai-calibration/runs/bench-220-0026-run2/`——BL-013 修复后
+  **7 阶段一次跑通**（REPRODUCED 98/100 自评），Data/Run/Validate/Package 契约全部
+  真实落盘（sha256sums/answers.csv/routing.jsonl/check.log，verify-0026-run.sh 19 项全过）。
+- **验收发现并修复 target_id 脱节（run2 后）**：answers 用了 plan.md T 编号而非公开
+  问题清单键（ADR-0011 §4.1）→ 外部评分 C1-C3 全 NO-EVIDENCE。已修 run.md/reader.md/
+  artifact_checks.py（check_run_phase 键对齐 fail-fast）+ 契约测试，全量 206 passed。
+  **剩余**：修复后需再跑一次 run3 让外部评分闭环（C1-C3 应真正计分）。
 - 宿主先 export `MINERU_API_URL=http://172.16.218.40:8001/`
 - 远端 `bench-v3.sh` 暂留，等 `run-entry.sh` 跑通完整 entry 后再删
 - `benchmarks/harness/crosscheck-prototype.py` 是交叉核对原型，其 locate 逻辑已内嵌

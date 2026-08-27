@@ -183,6 +183,12 @@ DOI: [doi or URL]
 ### Reproduction Target
 [说明复现时最需要重现的 outputs、figures、tables、metrics 或 qualitative findings。每个目标分配稳定 ID（T1、T2、……），以 `id / target / priority / source` 列表形式呈现；Phase 6 的检查项将通过 Target ID 追溯到这些目标。]
 
+**公开问题清单对齐（ADR-0011 §4.1 / Interface 0002 §2.1）**：若 `input/questions.yaml`
+存在，其 `target_id`（小写连字符 slug）是外部 evaluator 匹配的唯一键——Target 表
+中对应的行必须在括号内标注 `target_id`（如 `id: T1 (blood-lead-cvd-hr)`），确保
+Run 阶段写 answers.csv 时能按问题清单键落值；问题清单未覆盖的目标（如数据可定位性
+检查）保持 T 编号且不写入 answers.csv。
+
 复现范围非空时：Target 表只列出范围内的目标（按范围输入筛选 figure/panel/claim，T 编号从 T1 连续重排）；范围外内容不进入 Target 表，在 Decision Record 记录。复现范围为空时：Target 表覆盖全论文关键可复现输出（与现状一致）。
 
 ## Paper Claims

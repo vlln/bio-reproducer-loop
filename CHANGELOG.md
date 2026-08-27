@@ -133,7 +133,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `CLAUDE_STREAM_IDLE_TIMEOUT_MS=300000`；(c) loopflow `CliTransport` 空闲看门狗
   子进程感知化（长命令不误杀、无子进程才 kill，默认 7200s，loopflow develop
   `4b9bdf7`，446 测试全绿）。backlog 新增 BL-027。
-- 剩余：重跑 bench-220 验证 Data/Run/Validate/Package 四阶段。
+- **重跑完成（run2）**：BL-013 修复后 bench-220 7 阶段一次跑通（REPRODUCED 98/100
+  自评），归档 `bench-220-0026-run2/`；Data/Run/Validate/Package 新契约全部真实
+  落盘（sha256sums/answers.csv/routing.jsonl/check.log），`verify-0026-run.sh`
+  19 项契约检查全过。
+- **修复 answers target_id 与公开问题清单脱节**（run2 验收实证）：answers 用
+  plan.md T 编号 → 外部评分 C1-C3 全 NO-EVIDENCE。修 `agents/run.md`（target_id
+  必须用 `input/questions.yaml` 键）、`agents/reader.md`（Target 表标注 questions
+  target_id）、`artifact_checks.py`（`check_run_phase` 键对齐 fail-fast）+ 契约
+  测试 +3（206 passed / 4 skipped）。
 
 ### Docs
 - ADR-0010 修订块、Interface 0002 v2（claims 评分协议）、Spec 0001（接入段/BR-018/
