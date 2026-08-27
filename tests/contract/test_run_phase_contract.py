@@ -134,6 +134,61 @@ def test_check_run_phase_no_questions_skips_alignment(tmp_path):
     assert ok is True
 
 
+# ── check_reader_phase：plan.md Questions Mapping 对齐（BL-028）─────────
+def _write_plan(base, text):
+    (base / "01_plan").mkdir(parents=True, exist_ok=True)
+    (base / "01_plan" / "plan.md").write_text(text)
+
+
+def test_check_reader_phase_no_questions_ok(tmp_path):
+    _write_plan(tmp_path, "# Paper\n\n## Reproduction Target\nT1: xxx\n")
+    ok, detail = ac.check_reader_phase(tmp_path)
+    assert ok is True
+    assert "跳过键对齐" in detail
+
+
+def test_check_reader_phase_missing_plan(tmp_path):
+    ok, detail = ac.check_reader_phase(tmp_path)
+    assert ok is False
+    assert "plan.md" in detail
+
+
+def test_check_reader_phase_mapping_covers_all_keys(tmp_path):
+    _write_questions(tmp_path, ["blood-lead-cvd-hr", "tibia-lead-cvd-hr"])
+    _write_plan(tmp_path, (
+        "# Paper\n\n## Reproduction Target\nT1: xxx\n\n"
+        "## Questions Mapping\n"
+        "| target_id | 复现目标 |\n|-----------|----------|\n"
+        "| blood-lead-cvd-hr | T1 |\n| tibia-lead-cvd-hr | T2 |\n"
+    ))
+    ok, detail = ac.check_reader_phase(tmp_path)
+    assert ok is True
+    assert "覆盖全部 2 个问题清单键" in detail
+
+
+def test_check_reader_phase_missing_key_rejected(tmp_path):
+    # plan 未列出问题清单键（run3 实证：Reader 产出无映射 → Run 自造 ID）
+    _write_questions(tmp_path, ["blood-lead-cvd-hr", "tibia-lead-cvd-hr"])
+    _write_plan(tmp_path, (
+        "# Paper\n\n## Reproduction Target\nT1: blood lead HR\nT2: tibia HR\n"
+    ))
+    ok, detail = ac.check_reader_phase(tmp_path)
+    assert ok is False
+    assert "blood-lead-cvd-hr" in detail and "tibia-lead-cvd-hr" in detail
+
+
+def test_check_reader_phase_partial_mapping_rejected(tmp_path):
+    # 只映射部分键 → 拦截（缺 tibia-lead-cvd-hr）
+    _write_questions(tmp_path, ["blood-lead-cvd-hr", "tibia-lead-cvd-hr"])
+    _write_plan(tmp_path, (
+        "# Paper\n\n## Questions Mapping\n"
+        "| blood-lead-cvd-hr | T1 |\n"
+    ))
+    ok, detail = ac.check_reader_phase(tmp_path)
+    assert ok is False
+    assert "tibia-lead-cvd-hr" in detail
+
+
 # ── routing.jsonl 键名白名单（FC-003）───────────────────────────────
 def test_routing_events_ok_accepts_whitelist():
     events = [

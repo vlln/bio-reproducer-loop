@@ -69,12 +69,15 @@ agent 必须尝试运行作者代码或记录阻止执行的具体不兼容性�
   `table2_q91_results.csv`）；图表的数值输入表也落这里。结果文件是 Phase 6 与
   外部评估者的证据，**不要只写在 run_results.md 散文里**
 - **`answers.csv`**：论文数值声明 → 复现值的对照，每行一条：
-  `target_id,value,unit,source_file`。**`target_id` 必须用公开问题清单
-  `input/questions.yaml` 的键**（ADR-0011 §4.1 / Interface 0002 §2.1——外部
-  evaluator 与 oracle claims 都按它匹配；无 `input/questions.yaml` 时才用
-  plan.md 的复现目标 ID 作内部标识）；`source_file` 指向 `results/` 下**该值
-  实际所在文件**（相对路径）。只记标识符与数值，**不含状态词、判断、理由**
-  （FC-003）
+  `target_id,value,unit,source_file`。**`target_id` 必须逐字使用
+  `01_plan/plan.md` 的 **`Questions Mapping` 表左列值**（即公开问题清单
+  `input/questions.yaml` 的键，ADR-0011 §4.1 / Interface 0002 §2.1——外部
+  evaluator 与 oracle claims 都按它匹配）。**禁止自造 target_id**（如
+  `t2_cvd_bpb`、`T1`——2026-08-27 run3 实证：自造 ID 使外部评分全部
+  NO-EVIDENCE 且被 check_run_phase fail-fast 拦截）。`source_file` 指向
+  `results/` 下**该值实际所在文件**（相对路径）。**文件位置：`05_run/answers.csv`
+  根目录，不是 `05_run/results/` 下**（run3 实证：放 results/ 内使 lint 判定
+  缺失）。只记标识符与数值，**不含状态词、判断、理由**（FC-003）
 - **命令日志**：每个主要 pipeline step 的执行命令 + 退出码记入
   `reports/commands.log`（追加式：`ts,step,command,exit_code`），
   使「实际执行了什么」可核验

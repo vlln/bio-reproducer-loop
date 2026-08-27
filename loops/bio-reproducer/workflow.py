@@ -18,6 +18,7 @@ from artifact_checks import (  # noqa: E402
     check_data_phase,
     check_package_phase,
     check_provision_phase,
+    check_reader_phase,
     check_run_phase,
 )
 
@@ -248,6 +249,10 @@ def _execute_sequence(agent, common, log, phases, plan_text=None):
         if name == "Reader":
             # Reader 幻觉完成（返回 complete 但没写 plan.md）立即暴露，停在确认门之前
             if not _require_files(log, "01_plan/plan.md"):
+                return None, plan_text
+            # Questions Mapping 对齐（BL-028）：有 questions.yaml 时 plan.md 必须
+            # 逐字覆盖问题清单键，否则在消耗 Provision/Data 算力前拦截
+            if not _require_parsable(log, check_reader_phase):
                 return None, plan_text
             plan_text = _read_plan_text()
         if name == "Provision" and not _require_parsable(log, check_provision_phase):

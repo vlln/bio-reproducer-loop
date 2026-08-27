@@ -196,27 +196,18 @@ def check_run_phase(workdir="."):
     if not evidence["has_answers"]:
         return False, "05_run/answers.csv 缺失或表头不合规（须含 target_id,value,unit,source_file）"
     # 键对齐：answers target_id ⊆ input/questions.yaml 的 target_id
-    questions_file = Path(workdir) / "input" / "questions.yaml"
-    if not questions_file.is_file():
-        questions_file = Path(workdir).parent / "input" / "questions.yaml"
-    if questions_file.is_file():
-        try:
-            import yaml
-            qdata = yaml.safe_load(questions_file.read_text())
-            qkeys = {q["target_id"] for q in (qdata.get("questions") or [])}
-        except Exception:
-            qkeys = set()
-        if qkeys:
-            import csv as _csv
-            with open(run_dir / "answers.csv", newline="") as f:
-                answer_keys = {row["target_id"] for row in _csv.DictReader(f)}
-            stray = answer_keys - qkeys
-            if stray:
-                return False, (
-                    f"answers.csv 的 target_id 不在公开问题清单 input/questions.yaml 中: "
-                    f"{sorted(stray)}（问题清单键: {sorted(qkeys)}；须用问题清单键，"
-                    f"不能用 plan.md 内部 T 编号——ADR-0011 §4.1）"
-                )
+    qkeys = questions_target_ids(workdir)
+    if qkeys:
+        import csv as _csv
+        with open(run_dir / "answers.csv", newline="") as f:
+            answer_keys = {row["target_id"] for row in _csv.DictReader(f)}
+        stray = answer_keys - qkeys
+        if stray:
+            return False, (
+                f"answers.csv 的 target_id 不在公开问题清单 input/questions.yaml 中: "
+                f"{sorted(stray)}（问题清单键: {sorted(qkeys)}；须用问题清单键，"
+                f"不能用 plan.md 内部 T 编号——ADR-0011 §4.1）"
+            )
     return True, f"results 有 {len(evidence['results_csv'])} 个 CSV/TSV，answers 表头合规且 target_id 对齐问题清单"
 
 
@@ -279,3 +270,45 @@ def routing_events_ok(events):
         if set(ev) != ROUTING_KEYS:
             return False
     return True
+
+
+# ── Reader phase（01_plan）契约：Questions Mapping 强制对齐（BL-028）─────
+def questions_target_ids(workdir="."):
+    """读 input/questions.yaml 的 target_id 集合；文件缺失/不可解析返回空集。"""
+    questions_file = Path(workdir) / "input" / "questions.yaml"
+    if not questions_file.is_file():
+        questions_file = Path(workdir).parent / "input" / "questions.yaml"
+    if not questions_file.is_file():
+        return set()
+    try:
+        import yaml
+        qdata = yaml.safe_load(questions_file.read_text(encoding="utf-8"))
+        return {q["target_id"] for q in (qdata.get("questions") or [])}
+    except Exception:
+        return set()
+
+
+def check_reader_phase(workdir="."):
+    """01_plan 契约：存在 plan.md，且（有 questions.yaml 时）plan.md 含
+    Questions Mapping 表并逐字覆盖问题清单的全部 target_id。
+
+    判据（防 Reader 产出无法被 Run/外部评分消费的 plan——2026-08-27 run3
+    实证：plan 未标注问题清单键 → Run agent 自造 t2_cvd_bpb → 外部评分
+    NO-EVIDENCE）：有 questions.yaml 时每个键必须在 plan.md 中出现，否则
+    Reader 完成门 fail-fast，在消耗 Provision/Data 算力之前拦截。
+    """
+    plan = Path(workdir) / "01_plan" / "plan.md"
+    if not plan.is_file():
+        return False, "01_plan/plan.md 不存在"
+    qkeys = questions_target_ids(workdir)
+    if not qkeys:
+        return True, "plan.md 存在（无 input/questions.yaml，跳过键对齐）"
+    text = plan.read_text(encoding="utf-8", errors="replace")
+    missing = [k for k in sorted(qkeys) if k not in text]
+    if missing:
+        return False, (
+            f"plan.md 未包含公开问题清单 target_id: {missing}——须在 "
+            f"Reproduction Target 后的 Questions Mapping 表中逐字列出（ADR-0011 "
+            f"§4.1，BL-028；2026-08-27 run3 实证自造 ID 致外部评分 NO-EVIDENCE）"
+        )
+    return True, f"plan.md 存在且 Questions Mapping 覆盖全部 {len(qkeys)} 个问题清单键"
