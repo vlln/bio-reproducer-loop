@@ -22,10 +22,12 @@ SKILLS_DIR="${2:-$HOME/.agents/skills}"
 echo "=== harness probe: image=$IMAGE skills=$SKILLS_DIR ts=$(date -Iseconds)"
 
 # 与 bench-v3.sh 一致的安全 flags（不含 docker.sock —— 见 BL-018）
+# MINERU_API_URL 从宿主透传（与 run-entry.sh 一致），使技能前置检查反映真实运行条件
 docker run --rm -i --network bridge --user 1000:1000 \
   --cap-drop ALL --security-opt no-new-privileges \
   --mount "type=bind,src=$SKILLS_DIR,dst=/home/sandbox/.loopflow/skills,readonly" \
   --env HOME=/home/sandbox \
+  ${MINERU_API_URL:+--env MINERU_API_URL="$MINERU_API_URL"} \
   "$IMAGE" bash -s <<'PROBE'
 set -uo pipefail
 fail=0

@@ -12,6 +12,14 @@ skills:
     repository: https://github.com/vlln/mip.git
     commit: 36f4af932443204153691f38951fd817ae243a09
     subpath: skills/image-mirror-skill
+  mineru-api:
+    repository: https://github.com/vlln/mineru-api-skill.git
+    commit: ed06a636f1ed8bc1c40cd8e0d9d63d22141edc72
+    subpath: skills/mineru-api
+  paperutils:
+    repository: https://github.com/vlln/paperutils.git
+    commit: b88e5b7c35e5e465e15333700abfcf0b77b81af8
+    subpath: skills/paperutils
   quay:
     repository: https://github.com/vlln/quay-skill.git
     commit: 63d8622388c11a3094023c18f84586f2fcc42eed

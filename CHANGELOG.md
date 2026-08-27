@@ -43,6 +43,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **死技能声明移除**（BL-019 闭环）：`agents/reader.md` 删除 `paperutils`/`mineru-api`
   声明，标识符解析改直调 Crossref / EuropePMC；PDF 转换不再绑定具体工具；系统 artifact
   skills.lock 收缩 7 → 5，`.skills/` 死目录删除。
+  **修订（2026-08-27）**：人类提供真实来源（paperutils = GitHub vlln/paperutils，
+  mineru = `http://172.16.218.40:8001/`），按 HANDOFF 约定**恢复**两个技能——reader.md
+  声明恢复（技能优先 + 直调 API 兜底）、skills.lock 恢复 7 技能（commit 与源仓库 HEAD
+  一致）；两端 `~/.agents/skills/` 同步为源仓库版本（paperutils 的 `requires.bins` 为
+  旧版过时声明，源版本无）；`MINERU_API_URL` 宿主 export + run-entry.sh 透传，
+  harness-probe.sh 同步补透传；实测 paperutils 解析 DOI 成功、mineru `/health` healthy。
 - 测试：新增 `tests/contract/test_data_phase_contract.py`（18 例，正反例用已归档 run
   真实产物 fixture `tests/fixtures/contract/`：bench-234 传输失败→not_attempted、
   中途失败续传完成→completed、bench-217 无证据）；全量 166 passed / 4 skipped。

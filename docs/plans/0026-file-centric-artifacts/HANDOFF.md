@@ -73,4 +73,10 @@
 
 1. **Spec 001 / Interface 0001+0002 / AC 的修订 promote**（单元 05）：不可委托门禁，改完给简报
 2. qemu 安装：人类已认领，但**只影响可发布正式结果**（ADR-0009/BR-013），不阻塞本容器任何单元
-3. `paperutils` CLI 与 MinerU 端点：已闭环（单元 02，移除声明）；若人类日后提供来源可重新引入
+3. `paperutils` CLI 与 MinerU 端点：**已补齐（2026-08-27，人类提供来源）**——paperutils
+   = GitHub vlln/paperutils（本机 `~/Project/skill_project/paperutils/`），mineru =
+   `http://172.16.218.40:8001/`（/health 200）。两端 `~/.agents/skills/` 已同步为源仓库
+   版本（paperutils 的 requires.bins 为旧版过时声明，已随同步消失）；`MINERU_API_URL`
+   由宿主 export + run-entry.sh 透传（harness-probe.sh 已同步）。新 run 直接可用两个技能。
+   远端同步技能用：`scp -r ~/Project/skill_project/paperutils/skills/paperutils gs@172.16.209.237:~/.agents/skills/`
+   （mineru-api 远端已完整）

@@ -67,3 +67,20 @@ provision/run/validate/package 的契约推广留到单元 03/04（Plan 02 明�
 - 远端 35 个 run 的 04_data 日志中**无 HTTP 4xx 正例**（全部是传输层错误
   `curl: (18)/(92)` 等），故 unavailable 判定用合成日志覆盖（终态信号即 4xx 文本，
   判定逻辑与真实日志一致）
+
+## 修订（2026-08-27）：死技能声明**恢复**（人类提供来源）
+
+本单元原按纪律「默认不存在 → 移除声明」清掉 `paperutils`/`mineru-api`（BL-019 处置 (a)）。
+人类随后提供真实来源，按 HANDOFF 待决策项 3 的约定「若人类提供来源则改为补齐」执行反转：
+
+| 技能 | 来源 | 前置满足方式（全部实测） |
+|------|------|------|
+| paperutils | GitHub `vlln/paperutils`（skills/paperutils，commit `b88e5b7c`）或本机 `~/Project/skill_project/paperutils/` | 工具内嵌 `scripts/paperutils`（`python3` 调用，零依赖）；**已安装版 SKILL.md 的 `requires.bins` 是过时声明**（源仓库版本无此声明）——两端 `~/.agents/skills/paperutils/` 已同步为源版本；实测 `paperutils get 10.1136/bmjebm-2023-112303` 成功 |
+| mineru-api | 端点 `http://172.16.218.40:8001/`（`/health` 200，v3.1.10） | `requires.env MINERU_API_URL`：宿主 export 后由 `run-entry.sh:78` 透传沙箱；`harness-probe.sh` 同步补透传；实测 `/health` healthy |
+
+连带恢复：`agents/reader.md` 的 `skills:` 声明（技能优先 + 直调 API 兜底，
+BL-019 处置 (c) 保留）、`skills.lock.yaml` 两条目（commit 与源仓库 HEAD 一致）、
+`tests/unit/test_system_artifact.py`（7 技能）。
+**教训留档**：BL-019 的「bin paperutils 不存在」诊断针对的是**旧版 SKILL.md 的过时声明**；
+移除声明解决了撞墙表象，但真正根因是技能安装区版本滞后于源仓库——补齐时应先对比
+安装区与源仓库的 SKILL.md 差异（本修订即由此发现）。

@@ -2,6 +2,9 @@
 name: reader
 description: Phase 1 — 论文信息提取和复现计划
 extends: _base
+skills:
+- paperutils
+- mineru-api
 input:
   type: object
   properties:
@@ -33,11 +36,10 @@ Decision Record 记录 scope 决策（用户输入原文 + 本 agent 的解读�
 产出语言在此文件中锁定。将启动时的用户决策或保守的 agent 默认值
 （当未询问用户时）记录在文件的 Decision Record 中。
 
-若有论文 PDF 可用，在提取声明之前将其转换为可读文本（若环境提供
-PDF→Markdown 转换工具则使用并记录；否则用任意可用方式直接读取 PDF 文本），
-结果存放在 `01_plan/paper_markdown/` 下（转换/提取图片失败时存放文本与
-失败原因）。将 Markdown、提取的图片清单、标题、表格和链接作为主要论文表示
-形式阅读；仅在转换失败时回退到原始 PDF 文本，并记录失败原因。
+若有论文 PDF 可用，在提取声明之前使用 **mineru-api** 技能将其转换为
+Markdown（含图片提取），结果存放在 `01_plan/paper_markdown/` 下。将
+Markdown、提取的图片清单、标题、表格和链接作为主要论文表示形式阅读；
+仅在转换失败时回退到直接读取 PDF 文本，并记录失败原因。
 
 论文声明、已获取资源和外部标识符记录必须分区记录，不能混为同一来源。
 `plan.md` 还必须包含一段足够详细的论文解读，使未读原文的后续 agent
@@ -57,10 +59,9 @@ P1 不能只读本地 PDF。即使用户只提供单篇论文，也必须寻找�
 
 对每篇论文必须检查并记录：
 
-1. **本地 PDF / HTML 正文**：PDF 转换为可读文本（优先环境提供的转换工具，否则
-   直接读取 PDF 文本），并登记提取出的图片/表格/链接清单；然后提取标题、DOI、
-   版本、Data availability、Code availability、所有 Supplementary
-   Note/Table/Figure/Data 引用。
+1. **本地 PDF / HTML 正文**：PDF 使用 mineru-api 转换为 Markdown，并登记
+   提取出的图片/表格/链接清单；然后提取标题、DOI、版本、Data availability、
+   Code availability、所有 Supplementary Note/Table/Figure/Data 引用。
 2. **预印本或 DOI landing page**：例如 medRxiv/bioRxiv 的 article page。
 3. **Supplementary material 页面或标签页**：对 medRxiv/bioRxiv 必查
    `*.supplementary-material` 或页面中的 `Supplementary material` tab。
@@ -239,10 +240,11 @@ Phase 1 不得做出视觉相似性判断。
 ## 规则
 1. **唯一计划文件** - 所有 P1 发现都回填 `01_plan/plan.md`，不创建并行 metadata/accession 计划文件
 2. **论文声明优先** - `Paper Claims` 只写论文、补充材料、数据可用性页面和已获取 cited resources 的明确陈述
-3. **标识符可解析** - DOI/SRA/ENA/GEO 等论文明确给出的标识符用**直调公开 API**
-   解析：Crossref（api.crossref.org）与 EuropePMC（www.ebi.ac.uk/europepmc/webservices/rest）
-   解析 DOI/PMID，ENA/GEO 按各自公开接口查询；结果写入 `External Identifier Records`，
-   并记录查询用的 API 与时间
+3. **标识符可解析** - DOI/SRA/ENA/GEO 等论文明确给出的标识符优先用 **paperutils**
+   技能（`paperutils get` / `paperutils explain`）查询并记录；技能不可用时
+   **直调公开 API** 兜底：Crossref（api.crossref.org）与 EuropePMC
+   （www.ebi.ac.uk/europepmc/webservices/rest）解析 DOI/PMID，结果写入
+   `External Identifier Records`，并记录所用方式
 4. **获取轻量资源** - 对论文明确链接的代码、补充材料、协议和小型表格，应获取到 `01_plan/resources/` 或记录本地已有路径
 5. **记录获取状态** - 每个资源必须记录 URL/identifier、本地路径、状态和访问备注；不只列出"可获得"
 6. **写清论文解读** - `Paper Understanding` 用 prose 写出论文内容，但不得加入论文外判断或复现可行性评估
@@ -253,9 +255,10 @@ Phase 1 不得做出视觉相似性判断。
 11. **引用位置** - 注明章节/图表/URL/文件路径
 12. **不估算** - 不估算下载规模、资源需求、复现可行性或替代策略
 13. **大资源暂停** - 遇到大文件、原始数据、容器、环境或受限资源，只登记位置和访问要求，留给后续 phase
-14. **PDF 先转文本** - 本地 PDF 优先用环境提供的转换工具转成 Markdown 并提取图片
-    （无工具则直接读取 PDF 文本），结果放入 `01_plan/paper_markdown/`；`Source Files Reviewed`
-    必须记录 PDF、转换/读取方式、目录和转换状态。
+14. **PDF 先转 Markdown** - 本地 PDF 使用 mineru-api 解析为 Markdown 并
+    提取图片，结果放入 `01_plan/paper_markdown/`；`Source Files Reviewed`
+    必须记录 PDF、Markdown、图片目录和转换状态。mineru-api 不可用时
+    直读 PDF 文本并记录 fallback 原因。
 15. **Figure inventory 必填** - 对复现目标中的关键 figure/panel 必须记录
     original extracted image、caption/source、source data、作者绘图代码、
     notebook、图类型和期望科学模式；缺失则写 "Not specified" 或
@@ -277,7 +280,8 @@ P1 完成前必须在工作区或网页内容中完成一次资源完整性检�
 
 - `Supplementary Materials Inventory` 已覆盖所有 Supplementary Notes/Tables/
   Figures/Data 资源。
-- PDF 已转换为 `01_plan/paper_markdown/` 下的可读文本（或记录了转换失败原因和 fallback）。
+- PDF 已通过 mineru-api 转换为 `01_plan/paper_markdown/` 下的 Markdown 和图片清单，或记录了
+  转换失败原因和 fallback。
 - `Source Files Reviewed` 包含 article landing page 和 supplementary material
   page，或解释为什么无法访问。
 - `Resource Locations` 包含所有论文声明的数据、代码、协议、仓库和小型表格。
@@ -291,12 +295,13 @@ P1 完成前必须在工作区或网页内容中完成一次资源完整性检�
 
 ## 辅助工具
 
-- **Crossref API**（api.crossref.org）— 论文元数据获取与 DOI 解析。对论文或补充材料中
-  已出现的 DOI 用 `https://api.crossref.org/works/{doi}` 查询，结果写入
+- **paperutils** — 论文元数据获取和标识符解析。对论文或补充材料中已出现的
+  DOI/accession 使用 `paperutils get` 和 `paperutils explain`，结果写入
   `External Identifier Records`。不要创建单独的 metadata 文件。
-- **EuropePMC REST API**（www.ebi.ac.uk/europepmc/webservices/rest）— PMID/DOI 解析与
-  全文/补充材料定位。对论文中已出现的标识符按需查询。
-- **PDF→文本**：优先环境提供的转换工具；无则直接读取 PDF 文本并记录方式。
+- **mineru-api** — PDF 转 Markdown（含图片、表格、公式提取）。对本地 PDF
+  使用 mineru-api 技能转换，输出到 `01_plan/paper_markdown/`。
+- **直调 API 兜底**（技能不可用时）：Crossref（api.crossref.org）与 EuropePMC
+  （www.ebi.ac.uk/europepmc/webservices/rest）解析标识符；PDF 直读文本并记录方式。
 
 ## 完成
 - 输出 `01_plan/plan.md`
