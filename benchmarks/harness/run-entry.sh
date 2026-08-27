@@ -10,6 +10,9 @@
 #      —— 这正是 19 个 run 里 Nextflow docker executor 挂载失败、被迫退回
 #      手工 docker run + docker cp 的根因（挂宿主 socket 时路径对宿主 daemon 不存在）
 #   4) 技能前置（requires.bins / requires.env）在启动前由 harness-probe.sh 校验
+#   5) loop 定义（loops/bio-reproducer/）从 $REPO 只读挂载到沙箱
+#      ~/.loopflow/loops/bio-reproducer —— loopflow 从那里加载 agents/workflow.py
+#      （2026-08-27 首跑补齐：selftest 不跑 loop，此路径此前未覆盖）
 #
 # 注意：dind 需要 --privileged，其内核暴露面仍大于 VM。开发/校准可用；
 # **可发布的正式结果仍须按 ADR-0009 / BR-013 走 disposable VM**，两者不可混同。
@@ -73,6 +76,7 @@ sandbox() {  # sandbox <image> <cmd...>：零特权沙箱，容器运行时指�
     ${DOCKER_BIN:+-v "$DOCKER_BIN:/usr/bin/docker:ro"} \
     -v "$RUN/input:/input:ro" -v "$RUN/workspace:/workspace" -v "$RUN/repro-data:/output" \
     -v "$SKILLS_DIR:/home/sandbox/.loopflow/skills:ro" \
+    -v "$REPO/loops/bio-reproducer:/home/sandbox/.loopflow/loops/bio-reproducer:ro" \
     -e HOME=/home/sandbox \
     -e DOCKER_HOST="tcp://$DIND:2375" \
     ${MINERU_API_URL:+-e MINERU_API_URL="$MINERU_API_URL"} \
