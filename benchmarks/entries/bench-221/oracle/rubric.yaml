@@ -8,10 +8,9 @@ verdict_thresholds:
   partial: 30
 checks:
 - id: A1
-  description: "\u6570\u636E\u5F15\u7528\u5B9A\u4F4D/\u53EF\u83B7\u53D6\u5224\u65AD\
-    \u4E0E ground truth \u4E00\u81F4"
+  description: 数据引用定位/可获取判断与 ground truth 一致
   evidence:
-    artifact_role: data_manifest
+    artifact_role: data_evidence
   comparison:
     comparator: python_verify
     module: verify.py
@@ -19,10 +18,9 @@ checks:
     config: {}
   weight: 15
 - id: A2
-  description: "\u4EE3\u7801\u5F15\u7528\u53EF\u7528\u6027\u5224\u65AD\u4E0E ground\
-    \ truth \u4E00\u81F4"
+  description: 代码引用可用性判断与 ground truth 一致
   evidence:
-    artifact_role: provision_report
+    artifact_role: environment
   comparison:
     comparator: python_verify
     module: verify.py
@@ -30,10 +28,9 @@ checks:
     config: {}
   weight: 15
 - id: C1
-  description: "\u590D\u73B0\u58F0\u660E fs_enet all-cause linear HR\uFF08\u8BBA\u6587\
-    \u503C 1.25\uFF09"
+  description: 复现声明 fs_enet all-cause linear HR（论文值 1.25）
   evidence:
-    artifact_role: validate_report
+    artifact_role: answers
   comparison:
     comparator: python_verify
     module: verify.py
@@ -42,10 +39,9 @@ checks:
       claim_id: C1
   weight: 8.75
 - id: C2
-  description: "\u590D\u73B0\u58F0\u660E pc1 all-cause linear HR\uFF08\u8BBA\u6587\
-    \u503C 1.15\uFF09"
+  description: 复现声明 pc1 all-cause linear HR（论文值 1.15）
   evidence:
-    artifact_role: validate_report
+    artifact_role: answers
   comparison:
     comparator: python_verify
     module: verify.py
@@ -54,10 +50,9 @@ checks:
       claim_id: C2
   weight: 8.75
 - id: C3
-  description: "\u590D\u73B0\u58F0\u660E pc2 all-cause linear HR\uFF08\u8BBA\u6587\
-    \u503C 0.88\uFF09"
+  description: 复现声明 pc2 all-cause linear HR（论文值 0.88）
   evidence:
-    artifact_role: validate_report
+    artifact_role: answers
   comparison:
     comparator: python_verify
     module: verify.py
@@ -66,10 +61,9 @@ checks:
       claim_id: C3
   weight: 8.75
 - id: C4
-  description: "\u590D\u73B0\u58F0\u660E hei.2015 all-cause linear HR\uFF08\u8BBA\u6587\
-    \u503C 0.88\uFF09"
+  description: 复现声明 hei.2015 all-cause linear HR（论文值 0.88）
   evidence:
-    artifact_role: validate_report
+    artifact_role: answers
   comparison:
     comparator: python_verify
     module: verify.py
@@ -78,10 +72,9 @@ checks:
       claim_id: C4
   weight: 8.75
 - id: C5
-  description: "\u590D\u73B0\u58F0\u660E fs_enet cancer linear HR\uFF08\u8BBA\u6587\
-    \u503C 1.36\uFF09"
+  description: 复现声明 fs_enet cancer linear HR（论文值 1.36）
   evidence:
-    artifact_role: validate_report
+    artifact_role: answers
   comparison:
     comparator: python_verify
     module: verify.py
@@ -90,10 +83,9 @@ checks:
       claim_id: C5
   weight: 8.75
 - id: C6
-  description: "\u590D\u73B0\u58F0\u660E pc1 cancer linear HR\uFF08\u8BBA\u6587\u503C\
-    \ 1.16\uFF09"
+  description: 复现声明 pc1 cancer linear HR（论文值 1.16）
   evidence:
-    artifact_role: validate_report
+    artifact_role: answers
   comparison:
     comparator: python_verify
     module: verify.py
@@ -102,10 +94,9 @@ checks:
       claim_id: C6
   weight: 8.75
 - id: C7
-  description: "\u590D\u73B0\u58F0\u660E pc2 cancer linear HR\uFF08\u8BBA\u6587\u503C\
-    \ 0.96\uFF09"
+  description: 复现声明 pc2 cancer linear HR（论文值 0.96）
   evidence:
-    artifact_role: validate_report
+    artifact_role: answers
   comparison:
     comparator: python_verify
     module: verify.py
@@ -114,10 +105,9 @@ checks:
       claim_id: C7
   weight: 8.75
 - id: C8
-  description: "\u590D\u73B0\u58F0\u660E hei.2015 cancer linear HR\uFF08\u8BBA\u6587\
-    \u503C 0.83\uFF09"
+  description: 复现声明 hei.2015 cancer linear HR（论文值 0.83）
   evidence:
-    artifact_role: validate_report
+    artifact_role: answers
   comparison:
     comparator: python_verify
     module: verify.py

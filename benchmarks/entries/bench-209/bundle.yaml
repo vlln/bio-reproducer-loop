@@ -52,3 +52,12 @@ resources:
   source: https://github.com/SerranoLab/Golden_etal_2024
   checked_at: '2026-08-04T00:00:00Z'
   access_notes: language=R; not bundled (system must probe from paper)
+- id: questions
+  role: questions
+  authority: benchmark
+  availability: bundled
+  path: questions.yaml
+  source: urn:benchmark:bench-209:questions
+  sha256: 7cd2cbe34c6ed65c28b2bcf202b6862136ef67833f5c59232734033acef115af
+  media_type: text/yaml
+  license: CC-BY-4.0

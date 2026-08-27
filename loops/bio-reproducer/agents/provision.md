@@ -58,7 +58,15 @@ skills:
 |------|---------|
 | `provision.nf` | 拉取/构建环境的 workflow |
 | `nextflow.config` | 可选，仅在需要 Phase 3 覆盖配置时创建；可 include `../02_bootstrap/nextflow.base.config` |
-| `provision.md` | 部署报告 |
+| `provision.md` | 部署报告（散文摘要，从标准格式证据渲染） |
+| `digests.txt` | **`docker images --digests` 的原始输出**（标准格式，外部评估证据；任何人可重算核对） |
+
+## 标准格式证据（ADR-0011 §2）
+
+- 环境部署完成后，执行 `docker images --digests`，**原始输出**保存到
+  `03_provision/digests.txt`（含 REPOSITORY/TAG/DIGEST 各列，不改写、不摘要）
+- `provision.md` 是散文摘要，从 digests.txt 与决策记录渲染；不得包含证据中
+  不存在的状态结论
 
 ## provision.md 模板
 

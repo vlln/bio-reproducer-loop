@@ -29,3 +29,12 @@ resources:
   checked_at: '2026-08-04T00:00:00Z'
   access_notes: repository=GEO, primary=True; not bundled (system must probe from
     paper)
+- id: questions
+  role: questions
+  authority: benchmark
+  availability: bundled
+  path: questions.yaml
+  source: urn:benchmark:bench-234:questions
+  sha256: 0c54b67c84c3b6376829ac7d1e1c21f350c3fc4eff7470dd3dffb291b54dc77b
+  media_type: text/yaml
+  license: CC-BY-4.0

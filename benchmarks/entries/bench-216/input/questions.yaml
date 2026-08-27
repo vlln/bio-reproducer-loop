@@ -1,0 +1,5 @@
+schema: questions/v1
+questions:
+- target_id: calibrated-sepsis-csmf
+  question: 复现论文报告的 calibrated_sepsis_csmf 数值
+  unit: count

@@ -59,3 +59,12 @@ resources:
   source: https://github.com/FrederickHuangLin/ANCOM-BC
   checked_at: '2026-08-04T00:00:00Z'
   access_notes: language=None; not bundled (system must probe from paper)
+- id: questions
+  role: questions
+  authority: benchmark
+  availability: bundled
+  path: questions.yaml
+  source: urn:benchmark:bench-201:questions
+  sha256: 5be62856721e2e39452877cc554067bd2bb4fa0aee165859753e236e61bb1919
+  media_type: text/yaml
+  license: CC-BY-4.0

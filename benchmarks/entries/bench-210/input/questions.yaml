@@ -1,0 +1,8 @@
+schema: questions/v1
+questions:
+- target_id: nuclei
+  question: 复现论文报告的 nuclei 数值
+  unit: count
+- target_id: donors
+  question: 复现论文报告的 donors 数值
+  unit: count

@@ -47,7 +47,9 @@ def test_protocol_v2_entry_layout_is_minimal():
         assert names <= {"bundle.yaml", "input", "metadata.yaml", "oracle"}
         # Interface 0001 OracleBundle allows optional verify.py alongside the two
         # required oracle files (used by the python_verify comparator).
-        oracle_names = {path.name for path in (entry / "oracle").iterdir()}
+        # __pycache__ 是运行 verify.py 测试的副作用，不属于 entry 结构。
+        oracle_names = {path.name for path in (entry / "oracle").iterdir()
+                        if path.name != "__pycache__"}
         assert oracle_names >= {"claims.yaml", "rubric.yaml"}
         assert oracle_names <= {"claims.yaml", "rubric.yaml", "verify.py"}
 

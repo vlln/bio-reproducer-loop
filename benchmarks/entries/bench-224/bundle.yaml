@@ -21,3 +21,12 @@ resources:
   sha256: 2d7734713b523977edca3c670ccb23372f52128c20ee357ad17d2e7df4c4d499
   media_type: text/markdown
   license: CC-BY-4.0
+- id: questions
+  role: questions
+  authority: benchmark
+  availability: bundled
+  path: questions.yaml
+  source: urn:benchmark:bench-224:questions
+  sha256: 0c54b67c84c3b6376829ac7d1e1c21f350c3fc4eff7470dd3dffb291b54dc77b
+  media_type: text/yaml
+  license: CC-BY-4.0

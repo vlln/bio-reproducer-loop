@@ -1,9 +1,11 @@
 id: bench-209
-paper_title: Nuclear Histone 3 Post-Translational Modification Profiling in Whole Cells using Spectral Flow Cytometry (EpiFlow)
+paper_title: Nuclear Histone 3 Post-Translational Modification Profiling in Whole
+  Cells using Spectral Flow Cytometry (EpiFlow)
 paper_doi: 10.1101/2024.10.03.616268
 pmid: '41676480'
 reproduction_target: result_verification
-task: 复现该论文报告的关键定量结果（H3K4me1 genotype Mann-Whitney U statistic、H3K4me1 genotype p-value、H3K9ac vs PAX6 Pearson correlation、H3K27ac vs PAX6 Pearson correlation），并与论文发表的数值核对；同时核实论文引用的数据可定位、可下载，以及代码仓库是否可用。不需要复现论文的全部图表与分析。
+task: 复现该论文报告的关键定量结果（H3K4me1 genotype Mann-Whitney U statistic、H3K4me1 genotype p-value、H3K9ac
+  vs PAX6 Pearson correlation、H3K27ac vs PAX6 Pearson correlation），并与论文发表的数值核对；同时核实论文引用的数据可定位、可下载，以及代码仓库是否可用。不需要复现论文的全部图表与分析。
 data_references:
 - accession: RRID:CVCL_C1W7
   repository: other
@@ -39,7 +41,9 @@ claims:
   source: paper_10/reproduction_report.md §6（论文正文：W = 9.35 x 10^6，对应 Table 40）
   author_match: exact
   author_repr: 9346573
-  notes: 论文正文报告 WTC11 vs KMT2D10.4 比较 H3K4me1 的 Mann-Whitney W = 9.35 x 10^6；作者复现 U = 9,346,573，偏差 0.04%
+  notes: 论文正文报告 WTC11 vs KMT2D10.4 比较 H3K4me1 的 Mann-Whitney W = 9.35 x 10^6；作者复现
+    U = 9,346,573，偏差 0.04%
+  target_id: h3k4me1-genotype-mann-whitney-u-statistic
 - id: C2
   metric: H3K4me1 genotype p-value
   paper_value: 1.83e-09
@@ -51,6 +55,7 @@ claims:
   author_match: exact
   author_repr: 1.83e-09
   notes: 论文正文报告 H3K4me1 基因型比较 p = 1.83 x 10^-9；作者复现 p = 1.83e-09，精确匹配
+  target_id: h3k4me1-genotype-p-value
 - id: C3
   metric: H3K9ac vs PAX6 Pearson correlation
   paper_value: 0.41
@@ -58,10 +63,12 @@ claims:
   tolerance:
     type: relative
     value: 0.05
-  source: paper_10/reproduction_report.md §1（论文 Figure 10，overall histone marks vs PAX6）
+  source: paper_10/reproduction_report.md §1（论文 Figure 10，overall histone marks vs
+    PAX6）
   author_match: exact
   author_repr: 0.41
   notes: 论文 Figure 10 报告 H3K9ac 与 PAX6 的总体 Pearson 相关 r = 0.41；作者复现完全一致
+  target_id: h3k9ac-vs-pax6-pearson-correlation
 - id: C4
   metric: H3K27ac vs PAX6 Pearson correlation
   paper_value: 0.42
@@ -69,10 +76,12 @@ claims:
   tolerance:
     type: relative
     value: 0.05
-  source: paper_10/reproduction_report.md §1（论文 Figure 10，overall histone marks vs PAX6）
+  source: paper_10/reproduction_report.md §1（论文 Figure 10，overall histone marks vs
+    PAX6）
   author_match: exact
   author_repr: 0.42
   notes: 论文 Figure 10 报告 H3K27ac 与 PAX6 的总体 Pearson 相关 r = 0.42；作者复现完全一致
+  target_id: h3k27ac-vs-pax6-pearson-correlation
 calibration:
   d1: 2
   d2: 2

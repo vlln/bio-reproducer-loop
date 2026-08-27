@@ -68,6 +68,13 @@ def write_data_evidence(base):
     p.write_text("0" * 64 + "  sample.fastq.gz\n")
 
 
+def write_provision_evidence(base):
+    """03_provision 标准格式证据（ADR-0011 §2）：docker images --digests 输出。"""
+    p = Path(base) / "03_provision" / "digests.txt"
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text("REPOSITORY  TAG  DIGEST\nbio/x  latest  sha256:" + "a" * 64 + "\n")
+
+
 def write_run_evidence(base):
     """05_run 标准格式证据（ADR-0011 §2）：结果 CSV + answers。"""
     results = Path(base) / "05_run" / "results"
@@ -79,6 +86,7 @@ def write_run_evidence(base):
 
 def write_full_evidence(base):
     write_files(base, *REQUIRED_FILES)
+    write_provision_evidence(base)
     write_data_evidence(base)
     write_run_evidence(base)
 
@@ -146,6 +154,7 @@ def test_failed_verdict_skips_package(tmp_path):
 
 def test_missing_data_manifest_stops_before_run(tmp_path):
     write_files(tmp_path, "01_plan/plan.md", "03_provision/provision.md")
+    write_provision_evidence(tmp_path)
     write_data_evidence(tmp_path)
     agent, intervene = FakeAgent(), FakeIntervene()
     result, logs = run_workflow(tmp_path, agent, intervene)

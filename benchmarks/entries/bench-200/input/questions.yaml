@@ -1,0 +1,8 @@
+schema: questions/v1
+questions:
+- target_id: fig4a-tumor
+  question: 复现论文报告的 Fig4A tumor 数值
+  unit: count
+- target_id: fig4a-normal
+  question: 复现论文报告的 Fig4A normal 数值
+  unit: count

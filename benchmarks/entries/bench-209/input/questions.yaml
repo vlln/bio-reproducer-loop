@@ -1,0 +1,14 @@
+schema: questions/v1
+questions:
+- target_id: h3k4me1-genotype-mann-whitney-u-statistic
+  question: 复现论文报告的 H3K4me1 genotype Mann-Whitney U statistic 数值
+  unit: count
+- target_id: h3k4me1-genotype-p-value
+  question: 复现论文报告的 H3K4me1 genotype p-value 数值
+  unit: value
+- target_id: h3k9ac-vs-pax6-pearson-correlation
+  question: 复现论文报告的 H3K9ac vs PAX6 Pearson correlation 数值
+  unit: value
+- target_id: h3k27ac-vs-pax6-pearson-correlation
+  question: 复现论文报告的 H3K27ac vs PAX6 Pearson correlation 数值
+  unit: value

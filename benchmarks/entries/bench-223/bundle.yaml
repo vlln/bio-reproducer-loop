@@ -85,3 +85,12 @@ resources:
   checked_at: '2026-08-04T00:00:00Z'
   access_notes: repository=PyPI, primary=False; not bundled (system must probe from
     paper)
+- id: questions
+  role: questions
+  authority: benchmark
+  availability: bundled
+  path: questions.yaml
+  source: urn:benchmark:bench-223:questions
+  sha256: ba9dfabdf512f4ff0ce0f7ba857de772cb269b5c5e4afef7b41c1323bece92ce
+  media_type: text/yaml
+  license: CC-BY-4.0

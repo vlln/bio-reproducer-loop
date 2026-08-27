@@ -44,3 +44,12 @@ resources:
   source: https://github.com/mahmoodlab/UNI
   checked_at: '2026-08-04T00:00:00Z'
   access_notes: language=Python; not bundled (system must probe from paper)
+- id: questions
+  role: questions
+  authority: benchmark
+  availability: bundled
+  path: questions.yaml
+  source: urn:benchmark:bench-231:questions
+  sha256: 2903a54cb2d7291e12ccfb6b303843ec77c160f9e9ff5b02374b3a635b3c6343
+  media_type: text/yaml
+  license: CC-BY-4.0

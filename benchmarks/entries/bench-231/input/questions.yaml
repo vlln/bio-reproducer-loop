@@ -1,0 +1,8 @@
+schema: questions/v1
+questions:
+- target_id: knn-5-accuracy-tcga-luad-lusc-patch-classification
+  question: 复现论文报告的 KNN-5 accuracy (TCGA LUAD/LUSC patch classification) 数值
+  unit: percent
+- target_id: linear-probe-accuracy-tcga-luad-lusc-patch-classification
+  question: 复现论文报告的 Linear probe accuracy (TCGA LUAD/LUSC patch classification) 数值
+  unit: percent

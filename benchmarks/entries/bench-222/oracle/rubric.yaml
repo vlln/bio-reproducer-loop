@@ -10,7 +10,7 @@ checks:
 - id: A1
   description: 数据引用定位/可获取判断与 ground truth 一致
   evidence:
-    artifact_role: data_manifest
+    artifact_role: data_evidence
   comparison:
     comparator: python_verify
     module: verify.py
@@ -20,7 +20,7 @@ checks:
 - id: A2
   description: 代码引用可用性判断与 ground truth 一致
   evidence:
-    artifact_role: provision_report
+    artifact_role: environment
   comparison:
     comparator: python_verify
     module: verify.py
@@ -30,7 +30,7 @@ checks:
 - id: C1
   description: 复现声明 DenseNet121 parameter count（论文值 6966034）
   evidence:
-    artifact_role: validate_report
+    artifact_role: answers
   comparison:
     comparator: python_verify
     module: verify.py
@@ -41,7 +41,7 @@ checks:
 - id: C2
   description: 复现声明 ResNet50 parameter count（论文值 23538642）
   evidence:
-    artifact_role: validate_report
+    artifact_role: answers
   comparison:
     comparator: python_verify
     module: verify.py
@@ -52,7 +52,7 @@ checks:
 - id: C3
   description: 复现声明 NIH ChestXray14 DenseNet121 Cardiomegaly AUROC（论文值 0.88）
   evidence:
-    artifact_role: validate_report
+    artifact_role: answers
   comparison:
     comparator: python_verify
     module: verify.py
@@ -63,7 +63,7 @@ checks:
 - id: C4
   description: 复现声明 NIH ChestXray14 DenseNet121 Hernia AUROC（论文值 0.91）
   evidence:
-    artifact_role: validate_report
+    artifact_role: answers
   comparison:
     comparator: python_verify
     module: verify.py
@@ -74,7 +74,7 @@ checks:
 - id: C5
   description: 复现声明 CheXpert DenseNet121 Effusion AUROC（论文值 0.94）
   evidence:
-    artifact_role: validate_report
+    artifact_role: answers
   comparison:
     comparator: python_verify
     module: verify.py

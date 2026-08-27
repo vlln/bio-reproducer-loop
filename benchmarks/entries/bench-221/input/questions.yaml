@@ -1,0 +1,26 @@
+schema: questions/v1
+questions:
+- target_id: fs-enet-all-cause-linear-hr
+  question: 复现论文报告的 fs_enet all-cause linear HR 数值
+  unit: value
+- target_id: pc1-all-cause-linear-hr
+  question: 复现论文报告的 pc1 all-cause linear HR 数值
+  unit: value
+- target_id: pc2-all-cause-linear-hr
+  question: 复现论文报告的 pc2 all-cause linear HR 数值
+  unit: value
+- target_id: hei-2015-all-cause-linear-hr
+  question: 复现论文报告的 hei.2015 all-cause linear HR 数值
+  unit: value
+- target_id: fs-enet-cancer-linear-hr
+  question: 复现论文报告的 fs_enet cancer linear HR 数值
+  unit: value
+- target_id: pc1-cancer-linear-hr
+  question: 复现论文报告的 pc1 cancer linear HR 数值
+  unit: value
+- target_id: pc2-cancer-linear-hr
+  question: 复现论文报告的 pc2 cancer linear HR 数值
+  unit: value
+- target_id: hei-2015-cancer-linear-hr
+  question: 复现论文报告的 hei.2015 cancer linear HR 数值
+  unit: value

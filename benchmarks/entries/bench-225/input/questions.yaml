@@ -1,0 +1,8 @@
+schema: questions/v1
+questions:
+- target_id: any-condition-eight-input-ensemble-auroc
+  question: 复现论文报告的 Any-condition eight-input ensemble AUROC 数值
+  unit: percent
+- target_id: bmi-only-any-condition-auroc
+  question: 复现论文报告的 BMI-only any-condition AUROC 数值
+  unit: percent

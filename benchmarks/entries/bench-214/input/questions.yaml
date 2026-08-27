@@ -1,0 +1,8 @@
+schema: questions/v1
+questions:
+- target_id: hirid-graph-spa
+  question: 复现论文报告的 HiRID Graph-spa 数值
+  unit: value
+- target_id: hirid-baseline
+  question: 复现论文报告的 HiRID Baseline 数值
+  unit: value

@@ -3,7 +3,8 @@ paper_title: Modeling health risks using neural network ensembles
 paper_doi: 10.1371/journal.pone.0308922
 pmid: '39383158'
 reproduction_target: result_verification
-task: 复现该论文报告的关键定量结果（Any-condition eight-input ensemble AUROC、BMI-only any-condition AUROC），并与论文发表的数值核对；同时核实论文引用的数据可定位、可下载，以及代码仓库是否可用。不需要复现论文的全部图表与分析。
+task: 复现该论文报告的关键定量结果（Any-condition eight-input ensemble AUROC、BMI-only any-condition
+  AUROC），并与论文发表的数值核对；同时核实论文引用的数据可定位、可下载，以及代码仓库是否可用。不需要复现论文的全部图表与分析。
 data_references:
 - accession: NHANES
   repository: other
@@ -24,6 +25,7 @@ claims:
   author_match: unknown
   author_repr: null
   notes: 论文报告 8 输入神经网络集成模型预测任意健康状况的 AUROC 75.1%；作者 D5 复现未能在时限内完成（需重建 5 个插补分区与 16 网络集成），无复现值
+  target_id: any-condition-eight-input-ensemble-auroc
 - id: C2
   metric: BMI-only any-condition AUROC
   paper_value: 64.2
@@ -35,6 +37,7 @@ claims:
   author_match: exact
   author_repr: 64.13
   notes: 论文报告仅用 BMI 预测任意健康状况的基线 AUROC 64.2%；作者在论文测试划分上复现 64.13%，偏差 0.1%
+  target_id: bmi-only-any-condition-auroc
 calibration:
   d1: 2
   d2: 0

@@ -125,7 +125,7 @@ def test_metadata_task_is_natural_language_no_dimension_codes(snapshot, tmp_path
         assert "d1_d3_audit" not in metadata["task"]
 
 
-# ── Plan 0025: 生成的 verify.py check_claim 容差比较 ──────────────────────────
+# ── 单元 04: 生成的 verify.py check_claim（answers + 交叉核对）──────────────
 def test_claim_check_tolerance(snapshot, tmp_path):
     out = tmp_path / "entries"
     result = _run_converter(snapshot, out)
@@ -135,23 +135,61 @@ def test_claim_check_tolerance(snapshot, tmp_path):
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
 
-    art_ok = tmp_path / "claims_ok.json"
-    art_ok.write_text(json.dumps({"claims": [
-        {"metric": "Fig4A tumor", "actual": 599},
-        {"metric": "Fig4A normal", "actual": 1386}]}))
+    results = tmp_path / "results"
+    results.mkdir()
+    # source 文件必须含复现值本身（交叉核对要在其中定位 599/1386）
+    (results / "fig4a_deg.csv").write_text(
+        "gene,padj\nn_deg_tumor,599\nn_deg_normal,1386\nA,0.01\n"
+    )
+
+    def _answers(path, rows):
+        path.write_text("target_id,value,unit,source_file\n" + rows)
+
+    # 正常：值可在 source_file 定位且与论文值在容差内
+    art_ok = tmp_path / "answers_ok.csv"
+    _answers(art_ok, (
+        "fig4a-tumor,599,count,results/fig4a_deg.csv\n"
+        "fig4a-normal,1386,count,results/fig4a_deg.csv\n"))
     assert mod.check_claim(str(art_ok), {"claim_id": "C1"})["passed"]
     assert mod.check_claim(str(art_ok), {"claim_id": "C1"})["actual"] == 599.0
     assert mod.check_claim(str(art_ok), {"claim_id": "C2"})["passed"]
 
-    art_bad = tmp_path / "claims_bad.json"
-    art_bad.write_text(json.dumps({"claims": [
-        {"metric": "Fig4A tumor", "actual": 900}]}))
+    # 超容差 → 判错
+    art_bad = tmp_path / "answers_bad.csv"
+    _answers(art_bad, "fig4a-tumor,900,count,results/fig4a_deg.csv\n")
     assert not mod.check_claim(str(art_bad), {"claim_id": "C1"})["passed"]
 
-    art_missing = tmp_path / "claims_missing.json"
-    art_missing.write_text(json.dumps({"claims": []}))
+    # 交叉核对失败（值真实但标错 source_file）→ NO-EVIDENCE，不计分（FC-005）
+    art_misloc = tmp_path / "answers_misloc.csv"
+    _answers(art_misloc, "fig4a-tumor,599,count,results/other.csv\n")
+    r = mod.check_claim(str(art_misloc), {"claim_id": "C1"})
+    assert not r["passed"] and r.get("no_evidence")
+
+    # target_id 缺失 → NO-EVIDENCE
+    art_missing = tmp_path / "answers_missing.csv"
+    _answers(art_missing, "other-target,599,count,results/fig4a_deg.csv\n")
     r = mod.check_claim(str(art_missing), {"claim_id": "C1"})
-    assert not r["passed"] and "no reproduced value" in r["note"]
+    assert not r["passed"] and r.get("no_evidence") and "无 target_id" in r["note"]
+
+
+# ── 单元 04: 公开问题清单与 rubric 证据面（FC-004）───────────────────────────
+def test_questions_and_rubric_evidence_switch(snapshot, tmp_path):
+    out = tmp_path / "entries"
+    result = _run_converter(snapshot, out)
+    entry_dir = out / result["mapping"]["paper_01"]
+    questions = yaml.safe_load((entry_dir / "input" / "questions.yaml").read_text())
+    claims = yaml.safe_load((entry_dir / "oracle" / "claims.yaml").read_text())
+    assert questions["schema"] == "questions/v1"
+    assert {q["target_id"] for q in questions["questions"]} == {
+        c["target_id"] for c in claims["claims"]
+    }
+    assert all("paper_value" not in q for q in questions["questions"])  # 无期望值
+    rubric = yaml.safe_load((entry_dir / "oracle" / "rubric.yaml").read_text())
+    roles = {check["evidence"]["artifact_role"] for check in rubric["checks"]}
+    assert "validate_report" not in roles  # FC-004
+    assert "answers" in roles
+    bundle = yaml.safe_load((entry_dir / "bundle.yaml").read_text())
+    assert any(r["id"] == "questions" for r in bundle["resources"])
 
 
 # ── AC-0009-B-2: 湿实验论文正常生成 ──────────────────────────────────────────

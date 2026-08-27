@@ -1,0 +1,11 @@
+schema: questions/v1
+questions:
+- target_id: flu-vaccination
+  question: 复现论文报告的 Flu vaccination 数值
+  unit: value
+- target_id: breast-mammogram
+  question: 复现论文报告的 Breast (mammogram) 数值
+  unit: value
+- target_id: pap-smear
+  question: 复现论文报告的 Pap smear 数值
+  unit: value

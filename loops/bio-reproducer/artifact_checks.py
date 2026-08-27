@@ -194,6 +194,26 @@ def check_run_phase(workdir="."):
     return True, f"results 有 {len(evidence['results_csv'])} 个 CSV/TSV，answers 表头合规"
 
 
+# ── Provision phase（03_provision）契约 ──────────────────────────────
+def check_provision_phase(workdir="."):
+    """03_provision 契约检查：「存在 + 可被标准工具解析」（digests 输出）。
+
+    判据（防 Provision 幻觉 complete）：`03_provision/digests.txt` 存在且
+    含可解析的 digest 行（`sha256:...` 或 64 hex 摘要）。docker images
+    --digests 的输出即标准格式，任何人可重算核对。
+    """
+    digests = Path(workdir) / "03_provision" / "digests.txt"
+    if not digests.is_file():
+        return False, "03_provision/digests.txt 不存在（docker images --digests 原始输出）"
+    text = digests.read_text(encoding="utf-8", errors="replace")
+    has_digest = bool(re.search(r"sha256:[0-9a-f]{64}", text, re.I)) or bool(
+        re.search(r"^[0-9a-f]{64}\s+\S+", text, re.M)
+    )
+    if not has_digest:
+        return False, "03_provision/digests.txt 无可解析的 digest 行"
+    return True, "digests.txt 存在且含 digest 行"
+
+
 # ── routing.jsonl 键名白名单（FC-003）──────────────────────────────────
 ROUTING_KEYS = {"ts", "target", "decision", "route_to", "reason"}
 

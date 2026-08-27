@@ -52,6 +52,20 @@ def evaluate_submission(entry_path: str | Path, submission_path: str | Path) -> 
         weight = float(check.get("weight", 0))
         total_weight += weight
         passed, actual, note = _evaluate_check(check, artifacts, oracle_dir)
+        if passed is None:
+            # NO-EVIDENCE（ADR-0011 §4，FC-005）：证据缺失不计分也不扣分，
+            # 该 check 从评分权重中排除；不是判错
+            total_weight -= weight
+            check_results.append({
+                "check_id": check["id"],
+                "passed": None,
+                "no_evidence": True,
+                "weight": weight,
+                "earned": 0.0,
+                "actual": actual,
+                "note": note,
+            })
+            continue
         if passed:
             earned_weight += weight
         check_results.append({
@@ -64,7 +78,27 @@ def evaluate_submission(entry_path: str | Path, submission_path: str | Path) -> 
         })
 
     if total_weight <= 0:
-        raise EvaluationError("INVALID_ORACLE", "Rubric check weights must total above zero")
+        # 全部 check 均为 NO-EVIDENCE（FC-005）：证据缺失不可评分，
+        # 不是 oracle 错误——返回 BLOCKED 且 score 不构成复现率
+        return {
+            "run_id": submission["submission_id"],
+            "bench_id": submission["bench_id"],
+            "benchmark_version": str(rubric.get("benchmark_version", "2.0.0")),
+            "submission_id": submission["submission_id"],
+            "verdict": "BLOCKED",
+            "score": 0.0,
+            "checks": check_results,
+            "no_evidence": True,
+            "calibration": {
+                "claimed_verdict": submission.get("claimed_verdict"),
+                "matches": None,
+            },
+            "provenance": {
+                "evaluator_version": "2.0.0",
+                "oracle_version": str(rubric.get("oracle_version", "1.0.0")),
+                "evaluated_at": datetime.now(timezone.utc).isoformat(),
+            },
+        }
 
     score = round(100 * earned_weight / total_weight, 2)
     verdict = _verdict(score, submission, rubric)
@@ -306,6 +340,9 @@ def _run_python_verifier(oracle_dir: Path, artifact: Path, comparison: dict) -> 
     result = function(artifact, comparison.get("config", {}))
     if not isinstance(result, dict) or "passed" not in result:
         raise EvaluationError("INVALID_ORACLE", "Verifier must return a dict containing passed")
+    if result.get("no_evidence"):
+        # NO-EVIDENCE（FC-005）：passed=None 表示不计分不扣分
+        return None, result.get("actual"), str(result.get("note", "no evidence"))
     return bool(result["passed"]), result.get("actual"), str(result.get("note", "custom verifier"))
 
 

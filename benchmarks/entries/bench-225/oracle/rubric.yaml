@@ -10,7 +10,7 @@ checks:
 - id: A1
   description: 数据引用定位/可获取判断与 ground truth 一致
   evidence:
-    artifact_role: data_manifest
+    artifact_role: data_evidence
   comparison:
     comparator: python_verify
     module: verify.py
@@ -20,7 +20,7 @@ checks:
 - id: A2
   description: 代码引用可用性判断与 ground truth 一致
   evidence:
-    artifact_role: provision_report
+    artifact_role: environment
   comparison:
     comparator: python_verify
     module: verify.py
@@ -30,7 +30,7 @@ checks:
 - id: C1
   description: 复现声明 Any-condition eight-input ensemble AUROC（论文值 75.1）
   evidence:
-    artifact_role: validate_report
+    artifact_role: answers
   comparison:
     comparator: python_verify
     module: verify.py
@@ -41,7 +41,7 @@ checks:
 - id: C2
   description: 复现声明 BMI-only any-condition AUROC（论文值 64.2）
   evidence:
-    artifact_role: validate_report
+    artifact_role: answers
   comparison:
     comparator: python_verify
     module: verify.py

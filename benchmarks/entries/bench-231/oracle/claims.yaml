@@ -37,6 +37,7 @@ claims:
   author_repr: 98.3
   notes: hand-curated threshold claim; author reproduction KNN-5 98.3%, linear probe
     96.7%
+  target_id: knn-5-accuracy-tcga-luad-lusc-patch-classification
 - id: C2
   metric: Linear probe accuracy (TCGA LUAD/LUSC patch classification)
   paper_value: 90.0
@@ -50,6 +51,7 @@ claims:
   author_match: exact
   author_repr: 96.7
   notes: hand-curated threshold claim
+  target_id: linear-probe-accuracy-tcga-luad-lusc-patch-classification
 calibration:
   d1: 1
   d2: 1

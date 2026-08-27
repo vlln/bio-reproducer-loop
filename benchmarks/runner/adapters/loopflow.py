@@ -60,11 +60,15 @@ def run(entry_path: str, run_dir: Optional[str] = None, sandbox=None) -> dict:
     paper_path = _resolve_primary_paper(input_dir, bundle)
 
     # 4. Launch loopflow with the runner-owned sandbox deadline
+    executor = sandbox or DockerSandbox.from_environment()
     args = {
         "language": metadata.get("language", "en"),
         "confirm_plan": False,
         "consent": "auto",
     }
+    # 回环预算（ADR-0011 §3，FC-007）：上限来自调用方（执行器 deadline 派生），
+    # 系统内不写死数字；公式见 _derive_routing_budget
+    args["routing_budget"] = _derive_routing_budget(executor)
     if paper_path is not None:
         paper_relative = paper_path.relative_to(input_dir).as_posix()
         args["paper_path"] = f"/input/{paper_relative}"
@@ -84,7 +88,6 @@ def run(entry_path: str, run_dir: Optional[str] = None, sandbox=None) -> dict:
     start_time = time.time()
 
     try:
-        executor = sandbox or DockerSandbox.from_environment()
         launcher = getattr(executor, "system_launcher", "/system/run-system")
         workspace = run_root / "workspace"
         workspace.mkdir(parents=True, exist_ok=True)
@@ -319,6 +322,7 @@ def _artifact_candidates(entry_id: str, repro_dir: Path) -> list[tuple[str, str 
             results / "cleaned_counts.csv",
         ]),
         ("environment", None, [
+            repro_dir / "03_provision" / "digests.txt",
             results / "sessionInfo.txt",
             results / "session_info.txt",
             results / "results" / "session_info.txt",
@@ -366,6 +370,16 @@ def _artifact_candidates(entry_id: str, repro_dir: Path) -> list[tuple[str, str 
         ]),
         ("run_log", None, [
             run / "reports" / "run_analysis.log",
+        ]),
+        # 证据面切换（ADR-0011 §4，单元 04）：标准格式证据——answers（复现值
+        # 声明 + 交叉核对源）、04_data sha256sums（数据完整性）；06_validate/
+        # 整目录不在证据面
+        ("answers", None, [
+            run / "answers.csv",
+        ]),
+        ("data_evidence", None, [
+            repro_dir / "04_data" / "sha256sums.txt",
+            repro_dir / "04_data" / "sha256sum.txt",
         ]),
     ]
 
@@ -447,10 +461,11 @@ def _read_stages(repro_dir: Path) -> list[dict]:
 
 
 def _read_verdict_and_score(repro_dir: Path) -> tuple:
-    """Read verdict and score from the validate agent's metrics.json.
+    """Read the validate agent's claimed verdict from metrics.json.
 
-    The validate agent writes structured JSON — the adapter reads it directly
-    instead of parsing Markdown tables. Handles both flat and nested formats.
+    ADR-0011 §4 / FC-006：这只作 **claimed_* 观测记录**（校准用），不参与任何
+    check 打分；`06_validate/` 整目录不在外部评分证据面。report.md 散文回退
+    已退役（单元 04）——系统自评文本不再被程序解析。
     """
     metrics_path = repro_dir / "06_validate" / "metrics.json"
     if not metrics_path.exists():
@@ -459,29 +474,33 @@ def _read_verdict_and_score(repro_dir: Path) -> tuple:
     with open(metrics_path) as f:
         metrics = json.load(f)
 
-    # Format 1 (flat): {"verdict": "REPRODUCED", "total_score": 88, ...}
     verdict = metrics.get("verdict")
     score = metrics.get("total_score")
 
     if verdict is not None and score is not None:
         return verdict, int(score)
-
-    # Format 2 (nested): dimensions contain scores, extract from report.md
-    report_path = repro_dir / "06_validate" / "report.md"
-    if report_path.exists():
-        report = report_path.read_text()
-        import re
-        # Extract verdict from "| Status | REPRODUCED |"
-        v_match = re.search(r"Status\s*\|\s*(\w+)", report)
-        if v_match:
-            verdict = v_match.group(1)
-        # Extract total score from "| **Total** | **90.0** | **100** |"
-        s_match = re.search(r"\*\*Total\*\*\s*\|\s*\*{0,2}([\d.]+)\*{0,2}\s*\|\s*\*{0,2}\d+\*{0,2}", report)
-        if s_match:
-            score = int(float(s_match.group(1)))
-            return verdict or "BLOCKED", score
-
     return "BLOCKED", 0
+
+
+def _derive_routing_budget(executor) -> int:
+    """从执行器 deadline 派生 Validate 回环预算（FC-007：上限来自调用方）。
+
+    公式：deadline 小时数 − 1（线性执行保底 1 小时），最少 0。预算来源是
+    调用方的 deadline 参数（runner 配置），不是系统内拍脑袋的数字。
+    """
+    deadline_seconds = 0
+    envelope = getattr(executor, "execution_envelope", None)
+    if callable(envelope):
+        try:
+            envelope_data = envelope()
+        except Exception:
+            envelope_data = None
+        if isinstance(envelope_data, dict):
+            deadline_seconds = int(envelope_data.get("deadline_seconds") or 0)
+    if not deadline_seconds:
+        config = getattr(executor, "config", None)
+        deadline_seconds = int(getattr(config, "timeout_seconds", 0) or 0)
+    return max(0, deadline_seconds // 3600 - 1)
 
 
 def _execution_envelope(executor) -> dict | None:

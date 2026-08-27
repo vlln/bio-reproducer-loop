@@ -75,6 +75,7 @@ claims:
   author_repr: 0.992
   notes: hand-curated threshold claim; paper states AUROC >0.95, author reproduction
     best=0.992 (ours) / 0.987 (notebook)
+  target_id: auroc-best-e2-vs-vehicle-rna-classification
 calibration:
   d1: 2
   d2: 2

@@ -12,7 +12,8 @@ import yaml
 
 
 RESOURCE_ROLES = {
-    "paper", "supplementary", "code", "data", "metadata", "environment", "resource_page"
+    "paper", "supplementary", "code", "data", "metadata", "environment",
+    "resource_page", "questions"
 }
 AVAILABILITIES = {"bundled", "external", "restricted", "unavailable", "not_applicable"}
 FORBIDDEN_KEYS = {
@@ -80,7 +81,7 @@ def validate_entry(entry_dir: str | Path) -> dict[str, Any]:
         by_id[resource_id] = resource
         _require(resource["role"] in RESOURCE_ROLES, f"Invalid role for {resource_id}")
         _require(
-            resource["authority"] in {"original", "derived"},
+            resource["authority"] in {"original", "derived", "benchmark"},
             f"Invalid authority for {resource_id}",
         )
         availability = resource["availability"]
@@ -91,7 +92,7 @@ def validate_entry(entry_dir: str | Path) -> dict[str, Any]:
                 _nonempty_string(resource.get("source")),
                 f"Original resource {resource_id} requires source",
             )
-        else:
+        elif resource["authority"] == "derived":
             parents = resource.get("derived_from")
             _require(
                 isinstance(parents, list)
@@ -100,6 +101,8 @@ def validate_entry(entry_dir: str | Path) -> dict[str, Any]:
                 f"Derived resource {resource_id} requires derived_from",
             )
             _validate_transform(resource.get("transform"), resource_id)
+        # authority=benchmark：benchmark 自身声明的资源（如 questions.yaml），
+        # 由 converter 确定性生成，不要求 derived_from/transform
 
         if availability == "bundled":
             relative = _validate_resource_path(resource.get("path"), resource_id)

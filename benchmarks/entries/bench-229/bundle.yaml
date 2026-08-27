@@ -115,3 +115,12 @@ resources:
   source: https://hub.docker.com/r/p4rkerw/sctools
   checked_at: '2026-08-04T00:00:00Z'
   access_notes: language=R; not bundled (system must probe from paper)
+- id: questions
+  role: questions
+  authority: benchmark
+  availability: bundled
+  path: questions.yaml
+  source: urn:benchmark:bench-229:questions
+  sha256: 7112c4191698bf26560bc15b7f175184f2499136fc5d4f78b8e2dad50cc16096
+  media_type: text/yaml
+  license: CC-BY-4.0

@@ -1,0 +1,5 @@
+schema: questions/v1
+questions:
+- target_id: lme
+  question: 复现论文报告的 LME 数值
+  unit: count

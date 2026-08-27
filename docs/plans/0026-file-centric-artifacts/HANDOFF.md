@@ -1,7 +1,7 @@
 # 交接说明（0026 容器）
 
 > 写给接手的 agent。**只凭文件即可恢复状态**，不要依赖任何对话历史。
-> 最后更新：2026-08-27（单元 03 完成后）
+> 最后更新：2026-08-27（单元 04 完成后）
 
 ## 先读这些（按序）
 
@@ -9,28 +9,33 @@
 2. `docs/backlog.md` —— BL-014~BL-026 是本轮全部工程债；**文件末尾有防返工排序（S0-S5）与人类已作决策**
 3. `docs/adr/0011-verifiable-self-assessment.md` —— accepted，本容器的唯一设计依据；
    **文末「被废弃的第一稿」记录了三类必须避免的思维惯性**
-4. 本容器 `README.md`（单元表 + 状态）→ `01-report-harness-fixes.md`（单元 01）→
-   `02-report-artifact-contract.md`（单元 02，Data 契约）→
-   `03-report-validate-internalization.md`（单元 03，Validate 内部化 + 回环）
+4. 本容器 `README.md`（单元表 + 状态）→ `01-report-harness-fixes.md` → `02-report-artifact-contract.md`
+   → `03-report-validate-internalization.md` → `04-report-evidence-switch.md`（单元 04，证据面切换）
 5. `benchmarks/calibration-failure-taxonomy.md`、`benchmarks/package-executability-probe.md` —— 35 run 的实测事实基础
 
-## 立刻可以开始的下一步：单元 04
+## 立刻可以开始的下一步：单元 05（人类 promote 门禁）
 
-证据面切换（BL-023/BL-015，Plan 04 未写，先读 ADR-0011 §4/§4.1/§5 与 BL-023 再写 Plan）：
+下游文档同步（Spec 001、Interface 0001/0002、AC），**改完给简报、需人类再次 promote**：
 
-1. **46 个 rubric check 重挂证据源**：把 `artifact_role: validate_report`（46 次）重挂到
-   `result_table` + `answers`；converter 生成 rubric 时禁用 validate_report（FC-004）
-2. **adapter 停读 metrics.json**：`benchmarks/runner/adapters/loopflow.py:450-470` 的
-   verdict/score 回退路径删除（FC-006）；`06_validate/` 整目录移出证据面
-3. **answers 交叉核对实现（FC-005）**：以 `benchmarks/harness/crosscheck-prototype.py`
-   为基础（容差由书写精度导出，无魔数），补「值真实但标错 source_file」反例
-   （ADR-0011 验证 6 已标记未覆盖）
-4. **`oracle/verify.py` 301 行散文解析退役标记**：随证据面切换自然退役
-5. **benchmark adapter 透传 `routing_budget`**：从 envelope deadline 派生传入
-   （单元 03 已就绪，只差调用方）
-6. 系统侧已就绪的输入：`05_run/answers.csv`（表头白名单）、`05_run/results/`、
-   `06_validate/routing.jsonl`（键名白名单）——新契约的 fixture 与 lint 在
-   `tests/contract/`，直接复用
+1. **`input/questions.*` 公开问题清单**写入 Interface 0002 / Spec 001：target_id 生成
+   规则（metric slug）、系统 answers.csv 对应关系、无期望值（ADR §4.1 的 limitation
+   声明也在此补）
+2. **新产物契约写入 Interface 0001**：04_data（sha256sums + 每资源日志）、03_provision
+   （digests.txt）、05_run（results/ + answers.csv + commands.log）、routing.jsonl
+   （键名白名单 ts/target/decision/route_to/reason）
+3. **AC 补场景**：FC-001~FC-008 每条对应检出手段（单元 02-04 已实现大部分，AC 需同步）
+4. **FC-003 措辞修订**：routing.jsonl 的 reason 字段与 FC-003 字面「不得含理由字段」
+   冲突——§3 明示含 reason，以 §3 为准；修订 FC-003 为「键名白名单」
+5. **NO-EVIDENCE 语义**写入 AC（不计分不扣分、全无证据 → BLOCKED）
+
+## 系统侧与 benchmark 侧现状（单元 02-04 全部落地）
+
+- 系统侧：04_data/05_run/03_provision 标准格式契约 + `_require_parsable` fail-fast +
+  goal 从 plan.md 派生 + Validate 内部路由（routing.jsonl）+ 回环预算（调用方给定）
+- benchmark 侧：42 entry 已迁移（claims target_id + questions.yaml + rubric 重挂 +
+  新 verify.py），**评分只读 answers/sha256sums/digests**，NO-EVIDENCE 三态
+- `evaluate_run.py` 只接受新契约 run（旧 pilot run 不可重评——报错，勿绕行）
+- 技能（paperutils/mineru-api）已恢复并补齐前置（2026-08-27）
 
 ## 远端与脚本部署（必读，否则会白跑）
 
@@ -61,13 +66,15 @@
 
 ## 已完成但未部署 / 未验证的部分
 
-- `run-entry.sh` **只跑过 selftest，没跑过完整 entry**。首次实跑安排在单元 04 证据面
-  切换之后（单元 02/03 已改产物契约，新 run 直接产出新契约产物）
+- `run-entry.sh` **只跑过 selftest，没跑过完整 entry**。首次实跑安排在单元 05 文档
+  同步之后（新契约产物端到端验证：answers/routing/digests 实跑；宿主先 export
+  `MINERU_API_URL=http://172.16.218.40:8001/`）
 - 远端 `bench-v3.sh` 暂留，等 `run-entry.sh` 跑通完整 entry 后再删
-- `benchmarks/harness/crosscheck-prototype.py` 是 ADR-0011 验证 6 的原型（容差由书写精度导出，
-  无魔数），单元 04 实现 evaluator 交叉核对时以它为基础；同目录 `answers.csv` +
-  `table2_q91_results.csv` 是可直接复跑的样例：`python3 crosscheck-prototype.py answers.csv .`
-  应得 3 PASS / 2 NO-EVIDENCE
+- `benchmarks/harness/crosscheck-prototype.py` 是交叉核对原型，其 locate 逻辑已内嵌
+  `VERIFY_TEMPLATE`（单元 04）；原型与样例（3 PASS / 2 NO-EVIDENCE）保留可复跑
+- **单元 04 迁移教训**：backfill 初次运行误改 7 个手写 entry（bench-001~006/100）的
+  verify.py 并生成空 questions.yaml——已 git 恢复并加结构保护；迁移脚本必须幂等 +
+  只处理目标结构（`backfill_evidence_switch.py` 已含保护）
 
 ## 待人类决策（不要自己拍）
 

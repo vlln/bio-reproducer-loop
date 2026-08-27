@@ -60,3 +60,12 @@ resources:
   source: www.nitrc.org/projects/csaodf-hough
   checked_at: '2026-08-04T00:00:00Z'
   access_notes: language=MATLAB; not bundled (system must probe from paper)
+- id: questions
+  role: questions
+  authority: benchmark
+  availability: bundled
+  path: questions.yaml
+  source: urn:benchmark:bench-203:questions
+  sha256: c1b4f30e4c3b17ea584bd740027f9275b3a3ca32b4d50e1dd40c26c8b91a9ae2
+  media_type: text/yaml
+  license: CC-BY-4.0

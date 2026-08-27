@@ -1,0 +1,11 @@
+schema: questions/v1
+questions:
+- target_id: blood-lead-cvd-hr
+  question: 复现论文报告的 Blood lead CVD HR 数值
+  unit: value
+- target_id: tibia-lead-cvd-hr
+  question: 复现论文报告的 Tibia lead CVD HR 数值
+  unit: value
+- target_id: patella-lead-cvd-hr
+  question: 复现论文报告的 Patella lead CVD HR 数值
+  unit: value

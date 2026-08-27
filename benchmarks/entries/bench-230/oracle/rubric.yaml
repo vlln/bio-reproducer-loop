@@ -8,10 +8,9 @@ verdict_thresholds:
   partial: 30
 checks:
 - id: A1
-  description: "\u6570\u636E\u5F15\u7528\u5B9A\u4F4D/\u53EF\u83B7\u53D6\u5224\u65AD\
-    \u4E0E ground truth \u4E00\u81F4"
+  description: 数据引用定位/可获取判断与 ground truth 一致
   evidence:
-    artifact_role: data_manifest
+    artifact_role: data_evidence
   comparison:
     comparator: python_verify
     module: verify.py
@@ -19,10 +18,9 @@ checks:
     config: {}
   weight: 50
 - id: A2
-  description: "\u4EE3\u7801\u5F15\u7528\u53EF\u7528\u6027\u5224\u65AD\u4E0E ground\
-    \ truth \u4E00\u81F4"
+  description: 代码引用可用性判断与 ground truth 一致
   evidence:
-    artifact_role: provision_report
+    artifact_role: environment
   comparison:
     comparator: python_verify
     module: verify.py

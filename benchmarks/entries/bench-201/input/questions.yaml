@@ -1,0 +1,11 @@
+schema: questions/v1
+questions:
+- target_id: fig2-n80
+  question: 复现论文报告的 Fig2_n80 数值
+  unit: value
+- target_id: fig2-n1000
+  question: 复现论文报告的 Fig2_n1000 数值
+  unit: value
+- target_id: power-selection
+  question: 复现论文报告的 power_selection 数值
+  unit: value

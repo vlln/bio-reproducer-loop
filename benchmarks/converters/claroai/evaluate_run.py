@@ -1,23 +1,15 @@
-"""Evaluate a completed calibration run against its entry oracle (BL-013 / Plan 0025).
+"""Evaluate a completed calibration run against its entry oracle（新证据面，单元 04）。
 
 Usage:
     PYTHONPATH=. python3.12 benchmarks/converters/claroai/evaluate_run.py \\
         /storeData/gs/claroai-calibration/runs/bench-220 benchmarks/entries/bench-220
-    # with a hand-curated claims-evidence mapping for legacy runs:
-    PYTHONPATH=. python3.12 benchmarks/converters/claroai/evaluate_run.py \\
-        /storeData/gs/claroai-calibration/runs/bench-221 benchmarks/entries/bench-221 \\
-        --claims-evidence claims_evidence_bench-221.json
 
-Reads the run's repro-data/04_data/data_manifest.md + 03_provision/provision.md as
-D1-D3 evidence and 06_validate/report.md as D5 claims evidence (role=validate_report),
-runs the entry's oracle verify.py via the independent evaluator, and prints
-evaluator verdict/score/checks alongside the author calibration
-(claims.yaml calibration section — author scores are calibration-only).
+Reads only the new-contract evidence: 05_run/answers.csv + 04_data sha256sums +
+03_provision digests（ADR-0011 §4：06_validate/ 不在证据面），runs the entry's
+oracle verify.py via the independent evaluator, and prints evaluator verdict/
+score/checks alongside the author calibration（calibration-only）。
 
-`--claims-evidence` stages a JSON file of the form
-{"claims": [{"metric": "<claim metric>", "actual": <value>, ...}, ...]}
-as the validate_report artifact — used to feed legacy runs whose validate report
-metrics cannot be matched to claims automatically (cross-language names).
+旧协议 run（pilot，无 answers/digests）不可用新口径重评——直接报错。
 """
 from __future__ import annotations
 
@@ -29,7 +21,7 @@ import tempfile
 from pathlib import Path
 
 
-def main(run_dir: str, entry_dir: str, claims_evidence: str | None = None) -> dict:
+def main(run_dir: str, entry_dir: str) -> dict:
     run, entry = Path(run_dir), Path(entry_dir)
     eid = entry.name
     tmp = Path(tempfile.mkdtemp(prefix=f"cal-{eid}-"))
@@ -39,26 +31,28 @@ def main(run_dir: str, entry_dir: str, claims_evidence: str | None = None) -> di
 
     art = tmp / eid / "artifacts"
     art.mkdir()
-    dm = run / "repro-data" / "04_data" / "data_manifest.md"
-    prov = run / "repro-data" / "03_provision" / "provision.md"
-    vr = run / "repro-data" / "06_validate" / "report.md"
+    # 证据面切换（ADR-0011 §4，单元 04）：只读标准格式真实产物；
+    # 06_validate/ 不在证据面。旧 run（pilot）无 answers/digests → NO-EVIDENCE
+    answers = run / "repro-data" / "05_run" / "answers.csv"
+    digests = run / "repro-data" / "03_provision" / "digests.txt"
+    checksums = run / "repro-data" / "04_data" / "sha256sums.txt"
     found = []
-    if dm.exists():
-        shutil.copy(dm, art / "data_manifest.md")
-        found.append("data_manifest")
-    if prov.exists():
-        shutil.copy(prov, art / "provision_report.md")
-        found.append("provision_report")
-    artifacts = [{"role": "data_manifest", "path": "artifacts/data_manifest.md"},
-                 {"role": "provision_report", "path": "artifacts/provision_report.md"}]
-    if claims_evidence:
-        shutil.copy(claims_evidence, art / "validate_report.md")
-        found.append("claims_evidence")
-        artifacts.append({"role": "validate_report", "path": "artifacts/validate_report.md"})
-    elif vr.exists():
-        shutil.copy(vr, art / "validate_report.md")
-        found.append("validate_report")
-        artifacts.append({"role": "validate_report", "path": "artifacts/validate_report.md"})
+    artifacts = []
+    if answers.exists():
+        shutil.copy(answers, art / "answers.csv")
+        found.append("answers")
+        artifacts.append({"role": "answers", "path": "artifacts/answers.csv"})
+    if checksums.exists():
+        shutil.copy(checksums, art / "sha256sums.txt")
+        found.append("data_evidence")
+        artifacts.append({"role": "data_evidence", "path": "artifacts/sha256sums.txt"})
+    if digests.exists():
+        shutil.copy(digests, art / "digests.txt")
+        found.append("environment")
+        artifacts.append({"role": "environment", "path": "artifacts/digests.txt"})
+    if not artifacts:
+        raise SystemExit(f"error: {eid} run 无新契约证据（answers/sha256sums/digests 均缺失）；"
+                         f"该 run 属旧协议（pilot），不可用新口径重评")
 
     import yaml
     from benchmarks.runner.independent_evaluator import evaluate_submission
@@ -95,6 +89,5 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("run_dir")
     ap.add_argument("entry_dir")
-    ap.add_argument("--claims-evidence", default=None)
     args = ap.parse_args()
-    main(args.run_dir, args.entry_dir, args.claims_evidence)
+    main(args.run_dir, args.entry_dir)

@@ -88,3 +88,12 @@ resources:
   source: https://github.com/AlexandrovLab/SigProfilerMatrixGenerator
   checked_at: '2026-08-04T00:00:00Z'
   access_notes: language=None; not bundled (system must probe from paper)
+- id: questions
+  role: questions
+  authority: benchmark
+  availability: bundled
+  path: questions.yaml
+  source: urn:benchmark:bench-200:questions
+  sha256: d8636c745a8de8576c14ffa1952f4bbb3092c638662f91f16bdb6de0f44d318a
+  media_type: text/yaml
+  license: CC-BY-4.0

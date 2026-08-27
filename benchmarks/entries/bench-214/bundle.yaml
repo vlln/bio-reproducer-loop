@@ -52,3 +52,12 @@ resources:
   source: https://github.com/vsubbian/Graph-spa
   checked_at: '2026-08-04T00:00:00Z'
   access_notes: language=None; not bundled (system must probe from paper)
+- id: questions
+  role: questions
+  authority: benchmark
+  availability: bundled
+  path: questions.yaml
+  source: urn:benchmark:bench-214:questions
+  sha256: 58fd3bc1204ac9063d9b086baa2218a7e179ecbc34a7ddcd2cf323ca92f82048
+  media_type: text/yaml
+  license: CC-BY-4.0

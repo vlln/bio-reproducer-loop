@@ -8,10 +8,9 @@ verdict_thresholds:
   partial: 30
 checks:
 - id: A1
-  description: "\u6570\u636E\u5F15\u7528\u5B9A\u4F4D/\u53EF\u83B7\u53D6\u5224\u65AD\
-    \u4E0E ground truth \u4E00\u81F4"
+  description: 数据引用定位/可获取判断与 ground truth 一致
   evidence:
-    artifact_role: data_manifest
+    artifact_role: data_evidence
   comparison:
     comparator: python_verify
     module: verify.py
@@ -19,10 +18,9 @@ checks:
     config: {}
   weight: 15
 - id: A2
-  description: "\u4EE3\u7801\u5F15\u7528\u53EF\u7528\u6027\u5224\u65AD\u4E0E ground\
-    \ truth \u4E00\u81F4"
+  description: 代码引用可用性判断与 ground truth 一致
   evidence:
-    artifact_role: provision_report
+    artifact_role: environment
   comparison:
     comparator: python_verify
     module: verify.py
@@ -30,9 +28,9 @@ checks:
     config: {}
   weight: 15
 - id: C1
-  description: "\u590D\u73B0\u58F0\u660E HiRID Graph-spa\uFF08\u8BBA\u6587\u503C 50.02\uFF09"
+  description: 复现声明 HiRID Graph-spa（论文值 50.02）
   evidence:
-    artifact_role: validate_report
+    artifact_role: answers
   comparison:
     comparator: python_verify
     module: verify.py
@@ -41,9 +39,9 @@ checks:
       claim_id: C1
   weight: 35.0
 - id: C2
-  description: "\u590D\u73B0\u58F0\u660E HiRID Baseline\uFF08\u8BBA\u6587\u503C 45.61\uFF09"
+  description: 复现声明 HiRID Baseline（论文值 45.61）
   evidence:
-    artifact_role: validate_report
+    artifact_role: answers
   comparison:
     comparator: python_verify
     module: verify.py

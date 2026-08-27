@@ -1,0 +1,11 @@
+schema: questions/v1
+questions:
+- target_id: vdac1-isoform-proportion
+  question: 复现论文报告的 VDAC1 isoform proportion 数值
+  unit: percent
+- target_id: vdac2-isoform-proportion
+  question: 复现论文报告的 VDAC2 isoform proportion 数值
+  unit: percent
+- target_id: vdac3-isoform-proportion
+  question: 复现论文报告的 VDAC3 isoform proportion 数值
+  unit: percent

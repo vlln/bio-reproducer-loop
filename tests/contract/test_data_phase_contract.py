@@ -213,6 +213,10 @@ def test_workflow_data_hallucination_fail_fast(tmp_path):
         p = tmp_path / rel
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text("x")
+    # Provision/Data 通过契约检查所需的 digests 与 04_data 空目录（无证据）
+    (tmp_path / "03_provision" / "digests.txt").write_text(
+        "REPO TAG DIGEST\nbio/x latest sha256:" + "b" * 64 + "\n"
+    )
     # 04_data 只有散文 manifest，无日志/校验文件 → 模拟旧契约产物
     agent, intervene = FakeAgent(), FakeIntervene()
     logs = []

@@ -1,0 +1,17 @@
+schema: questions/v1
+questions:
+- target_id: densenet121-parameter-count
+  question: 复现论文报告的 DenseNet121 parameter count 数值
+  unit: count
+- target_id: resnet50-parameter-count
+  question: 复现论文报告的 ResNet50 parameter count 数值
+  unit: count
+- target_id: nih-chestxray14-densenet121-cardiomegaly-auroc
+  question: 复现论文报告的 NIH ChestXray14 DenseNet121 Cardiomegaly AUROC 数值
+  unit: value
+- target_id: nih-chestxray14-densenet121-hernia-auroc
+  question: 复现论文报告的 NIH ChestXray14 DenseNet121 Hernia AUROC 数值
+  unit: value
+- target_id: chexpert-densenet121-effusion-auroc
+  question: 复现论文报告的 CheXpert DenseNet121 Effusion AUROC 数值
+  unit: value

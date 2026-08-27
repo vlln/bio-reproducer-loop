@@ -1,9 +1,11 @@
 id: bench-208
-paper_title: Three mammalian VDAC isoforms distinctly regulate mitochondrial function and proteome to maintain cell metabolism
+paper_title: Three mammalian VDAC isoforms distinctly regulate mitochondrial function
+  and proteome to maintain cell metabolism
 paper_doi: 10.1016/j.jbc.2025.111009
 pmid: '41354339'
 reproduction_target: result_verification
-task: 复现该论文报告的关键定量结果（VDAC1 isoform proportion、VDAC2 isoform proportion、VDAC3 isoform proportion），并与论文发表的数值核对；同时核实论文引用的数据可定位、可下载，以及代码仓库是否可用。不需要复现论文的全部图表与分析。
+task: 复现该论文报告的关键定量结果（VDAC1 isoform proportion、VDAC2 isoform proportion、VDAC3 isoform
+  proportion），并与论文发表的数值核对；同时核实论文引用的数据可定位、可下载，以及代码仓库是否可用。不需要复现论文的全部图表与分析。
 data_references:
 - accession: MSV000097150
   repository: MassIVE
@@ -20,10 +22,12 @@ claims:
   tolerance:
     type: absolute
     value: 10
-  source: paper_09/extraction.json key_results.Fig1A（论文 Fig. 1A，图中读取的近似值）；作者复现值见 paper_09/reproduction_results.json fig1a_vdac_proportions
+  source: paper_09/extraction.json key_results.Fig1A（论文 Fig. 1A，图中读取的近似值）；作者复现值见 paper_09/reproduction_results.json
+    fig1a_vdac_proportions
   author_match: partial
   author_repr: 57.6
   notes: 论文 Fig 1A 报告 HeLa 细胞中 VDAC1 占比约 50%（近似值）；作者从 LFQ 数据复现 57.6%，相差 7.6 个百分点
+  target_id: vdac1-isoform-proportion
 - id: C2
   metric: VDAC2 isoform proportion
   paper_value: 30
@@ -31,10 +35,12 @@ claims:
   tolerance:
     type: relative
     value: 0.05
-  source: paper_09/extraction.json key_results.Fig1A（论文 Fig. 1A）；作者复现值见 paper_09/reproduction_results.json fig1a_vdac_proportions
+  source: paper_09/extraction.json key_results.Fig1A（论文 Fig. 1A）；作者复现值见 paper_09/reproduction_results.json
+    fig1a_vdac_proportions
   author_match: exact
   author_repr: 30.9
   notes: 论文 Fig 1A 报告 VDAC2 占比约 30%；作者复现 30.9%，精确匹配
+  target_id: vdac2-isoform-proportion
 - id: C3
   metric: VDAC3 isoform proportion
   paper_value: 18
@@ -42,10 +48,13 @@ claims:
   tolerance:
     type: absolute
     value: 7
-  source: paper_09/extraction.json key_results.Fig1A（论文 Fig. 1A）；作者复现值见 paper_09/reproduction_results.json fig1a_vdac_proportions
+  source: paper_09/extraction.json key_results.Fig1A（论文 Fig. 1A）；作者复现值见 paper_09/reproduction_results.json
+    fig1a_vdac_proportions
   author_match: partial
   author_repr: 11.5
-  notes: 论文 Fig 1A 报告 VDAC3 占比约 18%（近似值）；作者复现 11.5%，相差 6.5 个百分点；三异构体排序 VDAC1>VDAC2>VDAC3 得到确认
+  notes: 论文 Fig 1A 报告 VDAC3 占比约 18%（近似值）；作者复现 11.5%，相差 6.5 个百分点；三异构体排序 VDAC1>VDAC2>VDAC3
+    得到确认
+  target_id: vdac3-isoform-proportion
 calibration:
   d1: 2
   d2: 1

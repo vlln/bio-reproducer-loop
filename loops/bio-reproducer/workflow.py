@@ -14,7 +14,11 @@ from pathlib import Path
 
 # 同目录模块：workflow 可能以任意 CWD 被加载（loopflow runtime / pytest importlib）
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from artifact_checks import check_data_phase, check_run_phase  # noqa: E402
+from artifact_checks import (  # noqa: E402
+    check_data_phase,
+    check_provision_phase,
+    check_run_phase,
+)
 
 # ── Phase agent 调用注册表（唯一事实来源）───────────────────────────────
 # workflow run() 按序执行；eval harness 从同一注册表取单 agent 调用的
@@ -245,6 +249,8 @@ def _execute_sequence(agent, common, log, phases, plan_text=None):
             if not _require_files(log, "01_plan/plan.md"):
                 return None, plan_text
             plan_text = _read_plan_text()
+        if name == "Provision" and not _require_parsable(log, check_provision_phase):
+            return None, plan_text
         if name == "Data" and not _require_parsable(log, check_data_phase):
             return None, plan_text
         if name == "Run" and not _require_parsable(log, check_run_phase):

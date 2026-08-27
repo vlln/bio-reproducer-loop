@@ -1,0 +1,5 @@
+schema: questions/v1
+questions:
+- target_id: auroc-best-e2-vs-vehicle-rna-classification
+  question: 复现论文报告的 AUROC best (E2 vs Vehicle RNA classification) 数值
+  unit: value

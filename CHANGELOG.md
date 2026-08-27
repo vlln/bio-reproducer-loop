@@ -71,6 +71,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 测试：+24 用例（goal 派生、回环 6 态、routing/answers lint、check_run_phase 四态、
   prompt 契约断言）；全量 190 passed / 4 skipped。
 
+### Changed (Plan 0026-04 — 证据面切换：评分只读真实产物，BL-023/BL-015)
+
+- **外部评分不再读系统自评**（FC-004/FC-006）：converter 生成 rubric 时禁用
+  validate_report（C 类 claim 证据 → `05_run/answers.csv`，A1 → 04_data sha256sums+
+  日志终态，A2 → 03_provision digests）；adapter 删除 report.md 散文解析回退，
+  metrics.json 仅作 claimed_verdict 观测；`06_validate/` 整目录移出证据面。
+- **公开问题清单**（ADR §4.1）：converter 生成 `input/questions.yaml`（target_id+
+  question+unit，无期望值）；claims.yaml 加 `target_id`（metric slug）；系统按
+  target_id 填 answers.csv。
+- **answers 强制交叉核对**（FC-005）：值须能在自述 source_file 中定位（容差由书写
+  精度导出，无魔数），失败 → NO-EVIDENCE（不计分不扣分，非判错）；全部 check 无
+  证据 → BLOCKED。evaluator 三态落地。
+- **provision 契约推广**：`03_provision/digests.txt`（docker images --digests 原始
+  输出）+ `check_provision_phase` + workflow fail-fast（A2 证据）。
+- **verify.py 退役散文解析**：VERIFY_TEMPLATE 重写（301 → 178 行，无
+  `_parse_data_manifest` 等）；42 entry 迁移（backfill 幂等脚本，含手写 entry 保护）；
+  `evaluate_run.py` 只接受新契约 run（旧 pilot 不可重评）。
+- **routing_budget 透传**（FC-007）：adapter 从执行器 deadline 派生（5h→4、1h→0）。
+- 测试：新增 `tests/contract/test_evidence_switch.py`（8 例：交叉核对四态、A1/A2 推导、
+  evaluator 三态、provision 契约）；全量 199 passed / 4 skipped；42 entry bundle gate 全过。
+
 ### Docs
 - ADR-0010 修订块、Interface 0002 v2（claims 评分协议）、Spec 0001（接入段/BR-018/
   术语）、AC-0005、Plan 0025（plan+report+README）。

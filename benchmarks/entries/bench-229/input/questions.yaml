@@ -1,0 +1,14 @@
+schema: questions/v1
+questions:
+- target_id: multi
+  question: 复现论文报告的 multi 数值
+  unit: count
+- target_id: atac
+  question: 复现论文报告的 ATAC 数值
+  unit: count
+- target_id: rna
+  question: 复现论文报告的 RNA 数值
+  unit: count
+- target_id: spatial
+  question: 复现论文报告的 spatial 数值
+  unit: count

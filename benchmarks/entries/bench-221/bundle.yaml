@@ -60,3 +60,12 @@ resources:
   source: https://github.com/cmainov/nhanes-fi-ca-mortality-mirror
   checked_at: '2026-08-04T00:00:00Z'
   access_notes: language=R; not bundled (system must probe from paper)
+- id: questions
+  role: questions
+  authority: benchmark
+  availability: bundled
+  path: questions.yaml
+  source: urn:benchmark:bench-221:questions
+  sha256: 109693bd77f42fc8023eec8fda46a725f74db70c9f0e6ba0cac572ca92a7c606
+  media_type: text/yaml
+  license: CC-BY-4.0

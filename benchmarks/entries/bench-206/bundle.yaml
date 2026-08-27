@@ -37,3 +37,12 @@ resources:
   checked_at: '2026-08-04T00:00:00Z'
   access_notes: repository=other, primary=True; not bundled (system must probe from
     paper)
+- id: questions
+  role: questions
+  authority: benchmark
+  availability: bundled
+  path: questions.yaml
+  source: urn:benchmark:bench-206:questions
+  sha256: 66df1455e03fcf9c61ce37e9df86ec498758bc2e4c40a3e79df8b74f78b760e8
+  media_type: text/yaml
+  license: CC-BY-4.0
