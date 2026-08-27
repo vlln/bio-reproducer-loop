@@ -1,4 +1,4 @@
-"""Phase 产物契约检查（ADR-0011 §2/§5，单元 02 范围：Data phase）。
+"""Phase 产物契约检查（ADR-0011 §2/§5，单元 02/03 范围：Data + Run phase）。
 
 事实以标准格式文件持久化；本模块只做「存在 + 可被标准工具解析」的检查，
 不校验自定义字段、不含任何评分阈值（FC-001/FC-002 的检出手段）。
@@ -8,6 +8,7 @@
 属未完成获取；HTTP 404/403/451 与注册墙/DUA 属外部不可得；`Download complete`
 + 文件存在属已获取。系统内不写死任何重试次数/比例常量。
 """
+import csv
 import re
 from pathlib import Path
 
@@ -131,3 +132,79 @@ def check_data_phase(workdir="."):
     if evidence["logs"]:
         return True, f"有获取日志 {len(evidence['logs'])} 份（逐份终态：{', '.join(f'{k}={v}' for k, v in evidence['logs'].items())}）"
     return False, "04_data/ 无任何标准格式证据（无 sha256sum 输出、无获取日志）；阻塞也须落尝试日志"
+
+
+# ── Run phase（05_run）契约 ──────────────────────────────────────────
+# answers 表头白名单（FC-003：只记标识符与数值，无状态词/判断/理由）
+ANSWERS_COLUMNS = ["target_id", "value", "unit", "source_file"]
+
+
+def answers_parseable(path):
+    """answers.csv 表头必须精确等于 target_id/value/unit/source_file（FC-003 白名单）。
+
+    含额外列（状态词/判断/理由）或缺列都算违规；列顺序不限。
+    """
+    try:
+        with open(path, newline="", encoding="utf-8") as f:
+            header = next(csv.reader(f))
+    except (OSError, StopIteration, csv.Error):
+        return False
+    cols = {h.strip().lower() for h in header}
+    return cols == set(ANSWERS_COLUMNS)
+
+
+def run_phase_evidence(run_dir):
+    """收集 05_run 证据（workflow 检查 / 契约测试共用，非落盘契约）。
+
+    返回 dict：
+      results_csv: results/ 下非空 CSV/TSV 文件名列表（可被标准 csv 解析的前提）
+      has_answers: answers.csv 存在且表头合规
+    """
+    run_dir = Path(run_dir)
+    results_csv = []
+    if run_dir.is_dir():
+        results_dir = run_dir / "results"
+        if results_dir.is_dir():
+            for p in sorted(results_dir.iterdir()):
+                if p.is_file() and p.suffix.lower() in (".csv", ".tsv") and p.stat().st_size > 0:
+                    results_csv.append(p.name)
+    has_answers = (run_dir / "answers.csv").is_file() and answers_parseable(run_dir / "answers.csv")
+    return {"results_csv": results_csv, "has_answers": has_answers}
+
+
+def check_run_phase(workdir="."):
+    """05_run 契约检查：「存在 + 可被标准工具解析」（ADR-0011 §2 契约表）。
+
+    判据（防 Run 幻觉 complete——返回 complete 却无结果文件）：
+    - `05_run/` 目录存在
+    - `results/` 至少一个非空 CSV/TSV（结果本体，可被标准 csv 解析）
+    - `answers.csv` 存在且表头合规（target_id,value,unit,source_file）
+
+    返回 (ok: bool, detail: str)。answers 的**值定位交叉核对**（FC-005）由
+    单元 04 的 evaluator 实现，本检查只验格式。
+    """
+    run_dir = Path(workdir) / "05_run"
+    if not run_dir.is_dir():
+        return False, "05_run/ 目录不存在"
+    evidence = run_phase_evidence(run_dir)
+    if not evidence["results_csv"]:
+        return False, "05_run/results/ 无任何非空 CSV/TSV 结果文件"
+    if not evidence["has_answers"]:
+        return False, "05_run/answers.csv 缺失或表头不合规（须含 target_id,value,unit,source_file）"
+    return True, f"results 有 {len(evidence['results_csv'])} 个 CSV/TSV，answers 表头合规"
+
+
+# ── routing.jsonl 键名白名单（FC-003）──────────────────────────────────
+ROUTING_KEYS = {"ts", "target", "decision", "route_to", "reason"}
+
+
+def routing_events_ok(events):
+    """routing.jsonl 事件键名白名单（FC-003）：只允许 ts/target/decision/
+    route_to/reason，不得含额外字段（状态词/评分/阈值）；缺键也算违规。
+    """
+    for ev in events:
+        if not isinstance(ev, dict):
+            return False
+        if set(ev) != ROUTING_KEYS:
+            return False
+    return True

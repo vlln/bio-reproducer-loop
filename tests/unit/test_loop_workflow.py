@@ -4,8 +4,11 @@
 - 前置产物 fail-fast（幻觉完成的 phase 没写文件时立即停止）
 - confirm_plan 确认门（继续/终止/无人值守跳过）
 - Package 的 verdict 门控
+- goal 从 plan.md 派生（BL-016）
+- Validate 内部路由回环与预算（ADR-0011 §3，FC-007）
 """
 import importlib.util
+import json
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -65,6 +68,21 @@ def write_data_evidence(base):
     p.write_text("0" * 64 + "  sample.fastq.gz\n")
 
 
+def write_run_evidence(base):
+    """05_run 标准格式证据（ADR-0011 §2）：结果 CSV + answers。"""
+    results = Path(base) / "05_run" / "results"
+    results.mkdir(parents=True, exist_ok=True)
+    (results / "table1.csv").write_text("a,b\n1,2\n")
+    answers = Path(base) / "05_run" / "answers.csv"
+    answers.write_text("target_id,value,unit,source_file\nT1,1.63,HR,results/table1.csv\n")
+
+
+def write_full_evidence(base):
+    write_files(base, *REQUIRED_FILES)
+    write_data_evidence(base)
+    write_run_evidence(base)
+
+
 def run_workflow(tmp_path, agent, intervene, args=None):
     logs = []
     base_args = {"paper_path": "paper.pdf"}
@@ -82,8 +100,7 @@ def run_workflow(tmp_path, agent, intervene, args=None):
 
 
 def test_happy_path(tmp_path):
-    write_files(tmp_path, *REQUIRED_FILES)
-    write_data_evidence(tmp_path)
+    write_full_evidence(tmp_path)
     agent, intervene = FakeAgent(), FakeIntervene()
     result, _ = run_workflow(tmp_path, agent, intervene)
     assert agent.calls == ALL_PHASES
@@ -111,8 +128,7 @@ def test_confirm_plan_abort(tmp_path):
 
 
 def test_confirm_plan_false_skips_intervene(tmp_path):
-    write_files(tmp_path, *REQUIRED_FILES)
-    write_data_evidence(tmp_path)
+    write_full_evidence(tmp_path)
     agent, intervene = FakeAgent(), FakeIntervene()
     result, _ = run_workflow(tmp_path, agent, intervene, {"confirm_plan": False})
     assert intervene.calls == []
@@ -120,8 +136,7 @@ def test_confirm_plan_false_skips_intervene(tmp_path):
 
 
 def test_failed_verdict_skips_package(tmp_path):
-    write_files(tmp_path, *REQUIRED_FILES)
-    write_data_evidence(tmp_path)
+    write_full_evidence(tmp_path)
     agent = FakeAgent(results={"Validate": make_result(verdict="FAILED")})
     result, logs = run_workflow(tmp_path, agent, FakeIntervene())
     assert "Package" not in agent.calls
@@ -165,8 +180,7 @@ def test_phases_registry_is_complete_and_consistent():
 
 def test_phases_registry_drives_agent_calls(tmp_path):
     """workflow 的 agent 调用完全由 PHASES 注册表驱动（单一事实来源）。"""
-    write_files(tmp_path, *REQUIRED_FILES)
-    write_data_evidence(tmp_path)
+    write_full_evidence(tmp_path)
     agent, intervene = FakeAgent(), FakeIntervene()
     result, _ = run_workflow(tmp_path, agent, intervene)
     assert agent.calls == list(wf.PHASES)
@@ -184,8 +198,7 @@ class ScopeCapturingAgent(FakeAgent):
 
 
 def test_scope_arg_passes_through_to_all_agents(tmp_path):
-    write_files(tmp_path, *REQUIRED_FILES)
-    write_data_evidence(tmp_path)
+    write_full_evidence(tmp_path)
     agent, intervene = ScopeCapturingAgent(), FakeIntervene()
     run_workflow(tmp_path, agent, intervene, {"scope": "figures=figure4,figure5"})
     assert len(agent.kwargs) == len(ALL_PHASES)
@@ -193,8 +206,7 @@ def test_scope_arg_passes_through_to_all_agents(tmp_path):
 
 
 def test_scope_defaults_to_empty(tmp_path):
-    write_files(tmp_path, *REQUIRED_FILES)
-    write_data_evidence(tmp_path)
+    write_full_evidence(tmp_path)
     agent, intervene = ScopeCapturingAgent(), FakeIntervene()
     run_workflow(tmp_path, agent, intervene)
     assert len(agent.kwargs) == len(ALL_PHASES)
@@ -209,3 +221,158 @@ def test_provision_prompt_contains_reuse_and_skill_rules():
     base = (WORKFLOW_PATH.parent / "agents" / "_base.md").read_text()
     for marker in ("工具与技能纪律", "复用优先"):
         assert marker in base, f"_base.md missing: {marker}"
+
+
+# ── 单元 03：goal 从 plan.md 派生（BL-016）──────────────────────────────
+
+PLAN_WITH_TARGETS = """# Paper: NHANES lead mortality
+
+## Paper Understanding
+
+### Reproduction Target
+
+| id | target | priority | source |
+|----|--------|----------|--------|
+| T1 | 血铅与全因死亡率的 Cox HR | high | Table 2 |
+| T2 | 胫骨铅 HR | high | Table 2 |
+
+### Data Requirements
+
+| Database | Accession | Samples | Type |
+|----------|-----------|---------|------|
+| NHANES | nhanes-1999-2018 | 14847 | 流行病学调查数据 |
+"""
+
+
+def test_goal_derived_from_plan_for_data_and_run(tmp_path):
+    write_full_evidence(tmp_path)
+    (tmp_path / "01_plan" / "plan.md").write_text(PLAN_WITH_TARGETS)
+    agent, intervene = ScopeCapturingAgent(), FakeIntervene()
+    run_workflow(tmp_path, agent, intervene, {"confirm_plan": False})
+    goals = {kw["label"]: kw.get("goal") for kw in agent.kwargs}
+    # 派生 goal 必须包含该论文的实际内容，而非 RNA-seq 硬编码
+    assert "NHANES" in goals["Data"]  # Data Requirements 段
+    assert "血铅" in goals["Run"] and "T1" in goals["Run"]  # Reproduction Target 段
+    assert "RNA-Seq" not in goals["Data"] and "RNA-Seq" not in goals["Run"]
+
+
+def test_goal_falls_back_to_default_without_section(tmp_path):
+    write_full_evidence(tmp_path)
+    (tmp_path / "01_plan" / "plan.md").write_text("# Paper: X\n\nno targets here\n")
+    agent, intervene = ScopeCapturingAgent(), FakeIntervene()
+    run_workflow(tmp_path, agent, intervene, {"confirm_plan": False})
+    goals = {kw["label"]: kw.get("goal") for kw in agent.kwargs}
+    assert goals["Data"] == wf.PHASES["Data"]["goal"]
+    assert goals["Run"] == wf.PHASES["Run"]["goal"]
+
+
+def test_registry_goals_have_no_rnaseq_hardcode():
+    """注册表默认 goal 无 RNA-seq/FASTQ 硬编码（BL-016）。"""
+    assert "RNA-Seq" not in wf.PHASES["Data"]["goal"]
+    assert "RNA-Seq" not in wf.PHASES["Run"]["goal"]
+    assert "FASTQ" not in wf.PHASES["Data"]["goal"]
+
+
+# ── 单元 03：Validate 内部路由回环（ADR-0011 §3，FC-007）────────────────
+
+class RoutingAgent(FakeAgent):
+    """Validate 调用时按预定序列写 routing.jsonl（None = 该轮写 route_to=null）。"""
+
+    def __init__(self, routes):
+        super().__init__()
+        self.routes = list(routes)
+        self.validate_calls = 0
+
+    def __call__(self, prompt, **kwargs):
+        label = kwargs.get("label")
+        if label == "Validate":
+            self.validate_calls += 1
+            if self.routes:
+                route = self.routes.pop(0)
+                d = Path("06_validate")
+                d.mkdir(exist_ok=True)
+                with open(d / "routing.jsonl", "a", encoding="utf-8") as f:
+                    f.write(json.dumps(
+                        {"ts": "t", "target": "T1", "decision": "deviation" if route else "reproduced",
+                         "route_to": route, "reason": "" if route is None else "test"}) + "\n")
+        return super().__call__(prompt, **kwargs)
+
+
+def test_routing_loop_reruns_run_chain(tmp_path):
+    """route_to=Run → 重跑 Run+Validate 一次，预算 1 耗尽后线性收尾。"""
+    write_full_evidence(tmp_path)
+    agent, intervene = RoutingAgent(["Run", None]), FakeIntervene()
+    result, logs = run_workflow(tmp_path, agent, intervene, {"confirm_plan": False, "routing_budget": 1})
+    assert agent.validate_calls == 2
+    # 初始链 + 回环链（Run, Validate）
+    assert agent.calls == ["Reader", "Bootstrap", "Provision", "Data", "Run", "Validate",
+                           "Run", "Validate", "Package"]
+    assert any("路由回 Run" in line for line in logs)
+    assert result["payload"]["verdict"] == "REPRODUCED"
+
+
+def test_routing_loop_routes_to_data(tmp_path):
+    write_full_evidence(tmp_path)
+    agent, intervene = RoutingAgent(["Data", None]), FakeIntervene()
+    result, logs = run_workflow(tmp_path, agent, intervene, {"confirm_plan": False, "routing_budget": 2})
+    # 初始链 + 回环链（Data, Run, Validate）
+    assert agent.calls == ["Reader", "Bootstrap", "Provision", "Data", "Run", "Validate",
+                           "Data", "Run", "Validate", "Package"]
+    assert any("路由回 Data" in line for line in logs)
+    assert result is not None
+
+
+def test_routing_budget_zero_is_linear(tmp_path):
+    """默认 budget=0（调用方未给）→ 不回环，保持现行为。"""
+    write_full_evidence(tmp_path)
+    agent, intervene = RoutingAgent(["Run", None]), FakeIntervene()
+    result, _ = run_workflow(tmp_path, agent, intervene, {"confirm_plan": False})
+    assert agent.validate_calls == 1
+    assert agent.calls == ALL_PHASES
+
+
+def test_routing_budget_exhausted_stops_loop(tmp_path):
+    """预算耗尽即终止（FC-007：上限来自调用方，耗尽如实结束）。"""
+    write_full_evidence(tmp_path)
+    agent, intervene = RoutingAgent(["Run", "Run", "Run", "Run", None]), FakeIntervene()
+    result, logs = run_workflow(tmp_path, agent, intervene, {"confirm_plan": False, "routing_budget": 2})
+    assert agent.validate_calls == 3  # 初始 + 2 轮回环
+    assert agent.calls == ["Reader", "Bootstrap", "Provision", "Data", "Run", "Validate",
+                           "Run", "Validate", "Run", "Validate", "Package"]
+    assert result is not None
+
+
+def test_routing_unknown_target_stops_loop(tmp_path):
+    write_full_evidence(tmp_path)
+    agent, intervene = RoutingAgent(["bogus"]), FakeIntervene()
+    result, logs = run_workflow(tmp_path, agent, intervene, {"confirm_plan": False, "routing_budget": 3})
+    assert agent.validate_calls == 1
+    assert any("路由目标未知" in line for line in logs)
+    assert result is not None
+
+
+def test_routing_reader_chain_skips_confirm(tmp_path):
+    """Reader 回环重跑全链，但不重新触发 confirm 门。"""
+    write_full_evidence(tmp_path)
+    agent, intervene = RoutingAgent(["Reader", None]), FakeIntervene()
+    result, _ = run_workflow(tmp_path, agent, intervene, {"confirm_plan": False, "routing_budget": 1})
+    assert agent.validate_calls == 2
+    assert agent.calls == ["Reader", "Bootstrap", "Provision", "Data", "Run", "Validate",
+                           "Reader", "Bootstrap", "Provision", "Data", "Run", "Validate", "Package"]
+    assert intervene.calls == []  # confirm_plan=False 全程跳过；Reader 回环也不重触发
+    assert result is not None
+
+
+def test_validate_prompt_contains_routing_rules():
+    """validate.md 必须含内部路由契约（routing.jsonl / 不对外 / 通用信号）。"""
+    validate = (WORKFLOW_PATH.parent / "agents" / "validate.md").read_text()
+    for marker in ("routing.jsonl", "route_to", "不对外", "内部自评"):
+        assert marker in validate, f"validate.md missing: {marker}"
+
+
+def test_run_prompt_contains_result_contract():
+    """run.md 必须含结果契约（results/ + answers 表头 + 命令日志）。"""
+    run = (WORKFLOW_PATH.parent / "agents" / "run.md").read_text()
+    for marker in ("answers.csv", "target_id,value,unit,source_file", "results/"):
+        assert marker in run, f"run.md missing: {marker}"
+    assert "commands.log" in run or "命令日志" in run

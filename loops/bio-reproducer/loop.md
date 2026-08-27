@@ -44,6 +44,10 @@ args:
     description: 复现范围（可选）。空 = 全论文复现；非空 = 只复现指定目标，如 "figures=figure4,figure5,figure6"、目标 ID（如 "T1,T2"）或自由文本（如 "仅复现 RNA-seq 差异表达与通路富集"）。Reader 的 Reproduction Target 表、后续阶段的下载/部署/运行/验证只覆盖范围内目标
     default: ""
     required: false
+  - name: routing_budget
+    description: Validate 内部路由允许的回环轮数上限（0 = 线性执行不回环，默认）。上限由调用方给定（benchmark envelope 按 deadline 派生），系统内不写死
+    default: 0
+    required: false
 ---
 
 # bio-reproducer

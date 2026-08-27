@@ -20,8 +20,8 @@ benchmark 侧证据面。系统行为改动一律成对跑（同子集 before/af
 | 单元 | 内容 | 关联 backlog | 状态 |
 |------|------|-------------|------|
 | 01 | harness 修复：dind sidecar 架构（去 docker.sock）、Nextflow executor 修复、`curl -C -` 续传、前置探针 | BL-018 BL-019 BL-021 BL-024 | **done**，见 [Report 01](01-report-harness-fixes.md) |
-| 02 | phase 产物契约改标准格式文件；`_require_files` 升级为「存在 + 可被标准工具解析」；阻塞时也落尝试日志 | BL-014 BL-021 | **done（Data phase 实物）**，见 [Report 02](02-report-artifact-contract.md)；死技能声明已清（BL-019 未闭项闭环），`_require_parsable` 已加 |
-| 03 | Validate 内部化 + `routing.jsonl` + goal 从 plan.md 派生（删 RNA-seq 硬编码） | BL-016 BL-022 | pending |
+| 02 | phase 产物契约改标准格式文件；`_require_files` 升级为「存在 + 可被标准工具解析」；阻塞时也落尝试日志 | BL-014 BL-021 | **done（Data phase 实物）**，见 [Report 02](02-report-artifact-contract.md)；死技能声明已清（BL-019 未闭项闭环） |
+| 03 | Validate 内部化 + `routing.jsonl` + goal 从 plan.md 派生（删 RNA-seq 硬编码） | BL-016 BL-022 | **done**，见 [Report 03](03-report-validate-internalization.md)；回环预算 `routing_budget` 来自调用方参数（FC-007）；Run 结果契约（results/ + answers.csv）已推广 |
 | 04 | 证据面切换：46 个 check 重挂 `result_table`+`answers`、converter 禁用 validate_report、adapter 停读 metrics.json、交叉核对实现 | BL-023 BL-015 | pending |
 | 05 | 下游文档同步：Spec 001、Interface 0001/0002、AC 补场景（需人类再次 promote） | — | pending |
 | 06 | 交付包自包含：Package 出口以干净容器 `run.sh check` 通过为准 | BL-025 | pending |

@@ -47,6 +47,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   真实产物 fixture `tests/fixtures/contract/`：bench-234 传输失败→not_attempted、
   中途失败续传完成→completed、bench-217 无证据）；全量 166 passed / 4 skipped。
 
+### Changed (Plan 0026-03 — Validate 内部化 + 动态路由 + goal 派生，BL-016/BL-022)
+
+- **Validate 改为内部自反馈路由**：不产出对外 verdict（内部自评仅供 Package 门控与
+  路由参考）；新增 `06_validate/routing.jsonl` 追加式路由输出（键名白名单
+  ts/target/decision/route_to/reason，FC-003 lint）；触发条件用通用信号（实际执行与
+  声明不一致且未声明即路由，如 `*_patched.py`）；report/metrics 降级为内部草稿。
+- **动态回环**：workflow 按 routing.jsonl 重跑 Data/Provision/Run/Reader 及下游，
+  预算 `routing_budget` 只来自调用方参数（默认 0 = 线性，FC-007 无系统内硬编码）；
+  Reader 回环不重触发 confirm 门。
+- **goal 从 plan.md 派生**（BL-016）：Data/Run goal 由 Reproduction Target /
+  Data Requirements / Analysis Steps 段落生成（只搬运不判断），删 RNA-seq 硬编码；
+  无段落回退注册表默认 goal。
+- **Run 结果契约**：`05_run/results/`（CSV/TSV）+ `answers.csv`（target_id,value,unit,
+  source_file 表头精确白名单）+ `reports/commands.log`（命令+退出码）；修改作者代码
+  必须声明（防 BL-022 类未声明缩减）；workflow 加 `check_run_phase` fail-fast。
+- 测试：+24 用例（goal 派生、回环 6 态、routing/answers lint、check_run_phase 四态、
+  prompt 契约断言）；全量 190 passed / 4 skipped。
+
 ### Docs
 - ADR-0010 修订块、Interface 0002 v2（claims 评分协议）、Spec 0001（接入段/BR-018/
   术语）、AC-0005、Plan 0025（plan+report+README）。

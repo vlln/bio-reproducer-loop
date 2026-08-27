@@ -1,6 +1,6 @@
 ---
 name: validate
-description: Phase 6 — 验证复现结果
+description: Phase 6 — 对比复现结果与论文声称，判定内部路由（不产出对外评分）
 extends: _base
 output:
   type: object
@@ -11,32 +11,53 @@ output:
         verdict:
           type: string
           enum: [REPRODUCED, PARTIAL, FAILED, BLOCKED]
-          description: 唯一被 workflow 程序消费的字段，用于 Package 门控
+          description: 内部自评（仅供 workflow 内部 Package 门控与路由参考，不对外发布；对外 verdict 只能由外部独立 evaluator 给出）
       required: [verdict]
   required: [payload]
 ---
 # Phase 6: Validate
 
 ## 目标
-结构化、量化地对比复现结果与论文声称，生成可追溯的验证报告和综合评分。
+对比复现结果与论文声称，**判定不达标目标应回到哪个 phase**，并追加记录到
+`06_validate/routing.jsonl`。本阶段是系统内部的自反馈路由，**不产出对外评分**：
+对外 verdict 只能由外部独立 evaluator 给出（ADR-0011 §3）；本阶段输出仅用于
+workflow 内部回环与 Package 门控。
 复现范围非空时，检查项只从范围内目标（`01_plan/plan.md` Reproduction Target
-表，见 `_base.md`「复现范围」）推导，report.md 明示本次验证的 scored scope
-（含 out-of-scope 说明），避免对未复现的范围外内容评分或声称完成。
+表，见 `_base.md`「复现范围」）推导，避免对未复现的范围外内容评分或声称完成。
 
 ## 输入
-- `01_plan/plan.md` — 论文声称的 Expected Results
+- `01_plan/plan.md` — 论文声称的 Expected Results 与复现目标
 - `05_run/run_results.md` — 实际运行结果和指标
 - `05_run/results/` — 输出文件
+- `05_run/answers.csv` — 复现值声明（target_id,value,unit,source_file）
 - `05_run/figures/` — 生成图表和绘图输入
 - `05_run/reports/` — Nextflow 执行报告
 
-## 验证方法
+## 路由判定（本阶段核心职责）
 
-验证分三层：
+逐复现目标对比后，每个不达标目标必须给出**路由去向**（route_to），追加一行到
+`06_validate/routing.jsonl`：
 
-1. **定义检查项** — 从 plan.md 的 Expected Results 和 Paper Claims 推导该论文的验证检查项，归入四个通用维度
+| route_to | 触发信号（通用，非论文特定判断） |
+|----------|------|
+| `data` | 数据不符：plan 声明的数据与 04_data 实际产物不一致（缺失、版本/范围错误） |
+| `provision` | 环境/版本不符：实际运行环境或工具版本与 plan 声明不一致 |
+| `run` | 参数或步骤不符：**实际执行的代码/参数与声明不一致**——如作者原始代码被修改（存在 `*_patched.py`、diff 未在 plan 声明）、声明执行的脚本与实际不一致 |
+| `reader` | 论文理解错误：复现目标、数据声明或方法步骤在 plan.md 中被错误解读 |
+
+要点：
+- 触发条件用**通用信号**（实际执行与声明不一致、且未声明），不做论文语义判断
+  （如不试图自动判定「某参数是否属缩减」——只需「改了必须声明，未声明即路由」）
+- 达标目标 route_to 留空或写 `null`；只有不达标目标才写去向
+- 不得因「尝试次数」「耗时」等拍阈值；判定依据是产物事实
+
+## 对比方法
+
+对比分三层：
+
+1. **定义检查项** — 从 plan.md 的 Expected Results 和 Paper Claims 推导该论文的验证检查项，归入四个通用维度（见下）
 2. **执行对比** — 尽可能自动化提取实际值并与期望值对比；无法自动化的由 agent 审查
-3. **综合评分** — 加权汇总各检查项得分，输出 Reproducibility Score 和 Verdict
+3. **综合自评** — 加权汇总各检查项得分，输出内部自评（`metrics.json`）与路由记录（`routing.jsonl`）
 4. **Figure-level validation** — 对关键 figure/panel 做图像到图像视觉比较
 
 ## 定义验证检查项
@@ -148,7 +169,26 @@ BLOCKED 在评分前判定：当数据受限、代码缺失、权限不足或外
 
 优先为标记 Auto 的检查编写提取/对比脚本。脚本可以是独立的 Python/R/shell 片段，从 `05_run/results/` 提取数值、计数、文件列表等。
 
-自动化结果写入 `06_validate/metrics.json`，Manual 检查由 agent 审查后填入同一结构。`metrics.json` 保留机器可读的评分数据（`verdict`、`total_score`、`dimension_scores`、checks 计数、`figure_validation_status`、`deviations`），供 workflow 兜底读取 verdict 和后续 audit。
+自动化结果写入 `06_validate/metrics.json`，Manual 检查由 agent 审查后填入同一结构。`metrics.json` 保留机器可读的自评数据（`verdict`、`total_score`、`dimension_scores`、checks 计数、`figure_validation_status`、`deviations`），供 workflow 内部兜底读取 verdict。**本文件是内部自评记录，不是对外评分证据**（对外评分只读真实产物，见 ADR-0011 §4）。
+
+## 路由输出：06_validate/routing.jsonl
+
+本阶段唯一被 workflow 程序消费的路由输出。**追加式**写入，一行一个 JSON 事件，
+键名白名单（FC-003，不得加额外字段）：
+
+| 键 | 含义 | 取值 |
+|----|------|------|
+| `ts` | 时间戳 | ISO 8601 |
+| `target` | 复现目标 ID | plan.md 的 T1/T2/…（通用检查用 `-`） |
+| `decision` | 该目标的对比结论 | 如 `reproduced` / `deviation` / `blocked`（如实记录） |
+| `route_to` | 路由去向 | `data` / `provision` / `run` / `reader` / `null`（达标目标写 `null`） |
+| `reason` | 触发该路由的事实 | 具体证据（如「实际执行脚本为 *_patched.py 且 plan 未声明」），不写评分/猜测 |
+
+示例：
+```json
+{"ts": "2026-08-27T10:00:00Z", "target": "T1", "decision": "deviation", "route_to": "run", "reason": "实际执行脚本 DiscRisk_1_train_patched.py，plan 未声明该修改"}
+{"ts": "2026-08-27T10:00:01Z", "target": "T2", "decision": "reproduced", "route_to": null, "reason": ""}
+```
 
 ## 图表比较输出
 
@@ -177,6 +217,11 @@ BLOCKED 在评分前判定：当数据受限、代码缺失、权限不足或外
 ```
 
 ## 输出：06_validate/report.md
+
+> **内部草稿**：本报告是自评过程的散文记录（含自评 Status/Score），供人审阅与
+> 内部路由参考；**不进入外部评分证据面**（ADR-0011 §4：外部评分只读
+> Data/Provision/Run/Package 的标准格式产物与 `05_run/answers.*`）。对外结论
+> 由外部独立 evaluator 给出。
 
 ```markdown
 # Validation Report
@@ -240,12 +285,14 @@ BLOCKED 在评分前判定：当数据受限、代码缺失、权限不足或外
 - **Score < 40 (FAILED)**：使用记录的数据和环境运行后，结果与论文核心结论不一致。
 - **BLOCKED**：受限数据、缺失代码、权限、资源或外部服务阻止验证执行，不适用评分。
 
-## Next Action
+## Next Action（内部路由）
 
-- **REPRODUCED**：归档报告，复现完成。
-- **PARTIAL**：记录偏差原因；如偏差可修正，考虑 rollback 到对应 phase。
+- **全部目标达标**：route_to 全为 null，复现完成，进入 Package。
+- **存在不达标目标**：已在 routing.jsonl 为每个不达标目标记录 route_to；
+  workflow 按预算（`routing_budget`）重跑对应 phase 及下游；预算耗尽后如实
+  留在 routing.jsonl（不掩盖）。
 - **BLOCKED**：记录阻塞项；等待条件满足或标记为不可复现。
-- **FAILED**：记录失败分析；如根因明确且可修正，rollback 到最早出错 phase；否则标记为不可复现。
+- **FAILED**：记录失败分析；如根因明确且可修正，路由回最早出错 phase；否则标记为不可复现。
 ```
 
 ## 注意事项
@@ -254,10 +301,14 @@ BLOCKED 在评分前判定：当数据受限、代码缺失、权限不足或外
 - Figure validation 是必须步骤。
 - 关键 figure check 的主证据必须是 original image vs generated image 的 panel-level visual comparison。
 - 维度权重为默认值；如有调整，在 Score Breakdown 的 Notes 列记录理由。
-- 验证失败时在 report.md 记录问题分析，并给出 rollback 建议（rollback 由用户或 workflow 决定，本阶段不自行执行）。
-- Rollback 时指出最早可能出错的 phase 和对应 check ID。
-- Interpretation Guide 必须包含在 report.md 中，使读者无需参考本文件即可理解判定。
+- 每个不达标目标**必须**在 routing.jsonl 落一行（含 route_to 与 reason）；达标目标也落一行（route_to=null），保证回环决策可追溯。
+- 触发路由只用通用信号（实际执行与声明不一致且未声明），不做论文特定判断、不拍阈值。
+- 回环重跑由 workflow 执行（覆盖旧产物）；本阶段只记录路由，不自行重跑。
+- Interpretation Guide 必须包含在 report.md 中，使读者无需参考本文件即可理解自评。
 
 ## 返回
 
-返回 JSON，必须包含 `payload.verdict`（`REPRODUCED` / `PARTIAL` / `FAILED` / `BLOCKED`）——这是 workflow 唯一程序消费的字段，用于决定是否进入 Package。完整验证报告写入 `06_validate/report.md` 和 `metrics.json`，不要塞进返回值。
+返回 JSON，必须包含 `payload.verdict`（`REPRODUCED` / `PARTIAL` / `FAILED` / `BLOCKED`）——
+**内部自评**，仅供 workflow 内部 Package 门控与路由参考，不对外发布（对外 verdict 由
+外部独立 evaluator 给出）。路由记录写入 `06_validate/routing.jsonl`，完整自评写入
+`06_validate/report.md` 和 `metrics.json`，不要塞进返回值。
