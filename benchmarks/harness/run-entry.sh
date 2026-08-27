@@ -70,11 +70,16 @@ DOCKER_BIN="${HARNESS_DOCKER_BIN:-$(command -v docker)}"
 
 sandbox() {  # sandbox <image> <cmd...>：零特权沙箱，容器运行时指向 dind
   local img="$1"; shift
+  # ~/.loopflow 挂载为可写目录（uid 1000 需要写 runs/ 等）；skills 作为
+  # 嵌套子挂载只读覆盖（首跑实测：docker 自动创建的 /home/sandbox/.loopflow
+  # 属主 root，沙箱 uid 1000 无法写 runs/ —— 2026-08-27）
+  mkdir -p "$RUN/lf" && chmod 777 "$RUN/lf"
   docker run --rm -i --network "$NET" \
     --user 1000:1000 --cap-drop ALL --security-opt no-new-privileges \
     --workdir /workspace \
     ${DOCKER_BIN:+-v "$DOCKER_BIN:/usr/bin/docker:ro"} \
     -v "$RUN/input:/input:ro" -v "$RUN/workspace:/workspace" -v "$RUN/repro-data:/output" \
+    -v "$RUN/lf:/home/sandbox/.loopflow" \
     -v "$SKILLS_DIR:/home/sandbox/.loopflow/skills:ro" \
     -v "$REPO/loops/bio-reproducer:/home/sandbox/.loopflow/loops/bio-reproducer:ro" \
     -e HOME=/home/sandbox \
