@@ -1,5 +1,7 @@
 # 0026 — 文件为核心的产物契约落地
 
+> **接手请先读 [HANDOFF.md](HANDOFF.md)**（下一步、远端部署方式、已付代价的纪律、待人类决策项）。
+
 依据：[ADR-0011](../../adr/0011-verifiable-self-assessment.md)（accepted，六项验证全部回填）
 分支：`refactor/0026-file-centric-artifacts`（待创建）
 定级：DESIGN 设计缺陷退回后的实现容器
