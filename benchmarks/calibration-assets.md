@@ -33,10 +33,13 @@ bench-221 的 8 项 HR 中 7 项精确复现。作者 D5=2 的评分在 bench-20
 
 ## 批量校准脚本（远端）
 
-- `bench-v3.sh`：docker 模拟 VM 边界跑 loopflow 全链路（时间戳目录，`bash bench-v3.sh <entry>`）
-  （Plan 0025：不再硬编码 `scope=d1_d3_audit`，改读 entry `metadata.task` 自然语言任务作为
-  loop scope 参数——评分维度代码不再进入被测系统）
-- `watch.sh`：run 完成检测（写 run-done.txt）
+- ~~`bench-v3.sh`~~：**已删除（2026-08-27）**，被 `harness/run-entry.sh` 取代
+  （dind sidecar 隔离 + 不挂宿主 socket + registry-mirror 透传，见下文资产表）。
+  原实现：docker 模拟 VM 边界跑 loopflow 全链路（时间戳目录，`bash bench-v3.sh <entry>`），
+  挂载 `/var/run/docker.sock` 违反 ADR-0009，废弃；备份在
+  `/storeData/gs/claroai-calibration/scripts/archive-bench-v3-20260827/`
+- ~~`watch.sh` / `run-with-watchdog.sh`~~：**已删除（2026-08-27）**，bench-v3.sh 体系的
+  完成检测/看门狗，随之上移除；备份同上
 - `evaluate_run.py`（本文件所在仓库）：评估已完成 run
 
 ## 已完成校准（第一批，D2=2&D3=2 六篇）
