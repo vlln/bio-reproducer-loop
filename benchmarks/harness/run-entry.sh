@@ -68,6 +68,25 @@ done
 # DOCKER_HOST 指向 dind，宿主 daemon 全程不可达。
 DOCKER_BIN="${HARNESS_DOCKER_BIN:-$(command -v docker)}"
 
+# Claude Code backend（远端 dashscope proxy，见 ~/.claude/settings.json 的 env 块）：
+# 只注入 env（--env-file），不挂载整个 ~/.claude（含 session 历史）。
+# 首跑实测：沙箱 HOME 无 settings.json、env 未传 → agent 无法连接后端，
+# Reader 无产物 → 前置产物缺失 fail-fast（2026-08-27）。
+BACKEND_ENV="$RUN/backend.env"
+CLAUDE_SETTINGS="${HARNESS_CLAUDE_SETTINGS:-$HOME/.claude/settings.json}"
+ENVFILE_ARG=""
+if [ -f "$CLAUDE_SETTINGS" ]; then
+  python3 - "$CLAUDE_SETTINGS" "$BACKEND_ENV" <<'PY' 2>/dev/null || true
+import json, sys
+settings, out = sys.argv[1], sys.argv[2]
+d = json.load(open(settings))
+with open(out, "w") as f:
+    for k, v in (d.get("env") or {}).items():
+        f.write(f"{k}={v}\n")
+PY
+  [ -s "$BACKEND_ENV" ] && ENVFILE_ARG="--env-file $BACKEND_ENV"
+fi
+
 sandbox() {  # sandbox <image> <cmd...>：零特权沙箱，容器运行时指向 dind
   local img="$1"; shift
   # ~/.loopflow 挂载为可写目录（uid 1000 需要写 runs/ 等）；skills 作为
@@ -85,6 +104,7 @@ sandbox() {  # sandbox <image> <cmd...>：零特权沙箱，容器运行时指�
     -e HOME=/home/sandbox \
     -e DOCKER_HOST="tcp://$DIND:2375" \
     ${MINERU_API_URL:+-e MINERU_API_URL="$MINERU_API_URL"} \
+    ${ENVFILE_ARG} \
     "$img" "$@"
 }
 
