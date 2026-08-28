@@ -88,14 +88,6 @@ def test_check_run_phase_missing_answers(tmp_path):
 
 
 # ── answers target_id 与公开问题清单键对齐（ADR-0011 §4.1，0026 验收补）──
-def _write_questions(base, keys):
-    (base / "input").mkdir(parents=True, exist_ok=True)
-    import yaml
-    (base / "input" / "questions.yaml").write_text(yaml.safe_dump({
-        "schema": "questions/v1",
-        "questions": [{"target_id": k, "question": f"Q {k}", "unit": "value"} for k in keys],
-    }))
-
 
 def _write_run_with_answers(base, target_ids):
     results = base / "05_run" / "results"
@@ -107,18 +99,19 @@ def _write_run_with_answers(base, target_ids):
 
 
 def test_check_run_phase_answers_aligned_with_questions(tmp_path):
-    _write_questions(tmp_path, ["blood-lead-cvd-hr", "tibia-lead-cvd-hr"])
+    # 问题清单键由评测方经 question_keys 参数传入
     _write_run_with_answers(tmp_path, ["blood-lead-cvd-hr", "tibia-lead-cvd-hr"])
-    ok, detail = ac.check_run_phase(tmp_path)
+    ok, detail = ac.check_run_phase(
+        tmp_path, ["blood-lead-cvd-hr", "tibia-lead-cvd-hr"])
     assert ok is True
     assert "target_id 对齐问题清单" in detail
 
 
 def test_check_run_phase_answers_stray_target_id_rejected(tmp_path):
     # 用 plan.md 内部 T 编号而非问题清单键 → 拦截（2026-08-27 端到端实证）
-    _write_questions(tmp_path, ["blood-lead-cvd-hr", "tibia-lead-cvd-hr"])
     _write_run_with_answers(tmp_path, ["T1", "T2"])
-    ok, detail = ac.check_run_phase(tmp_path)
+    ok, detail = ac.check_run_phase(
+        tmp_path, ["blood-lead-cvd-hr", "tibia-lead-cvd-hr"])
     assert ok is False
     assert "target_id" in detail and "问题清单" in detail
 
@@ -154,37 +147,38 @@ def test_check_reader_phase_missing_plan(tmp_path):
 
 
 def test_check_reader_phase_mapping_covers_all_keys(tmp_path):
-    _write_questions(tmp_path, ["blood-lead-cvd-hr", "tibia-lead-cvd-hr"])
+    # 问题清单键由评测方经 question_keys 参数传入（系统侧不读文件、不写文件名）
     _write_plan(tmp_path, (
         "# Paper\n\n## Reproduction Target\nT1: xxx\n\n"
         "## Questions Mapping\n"
         "| target_id | 复现目标 |\n|-----------|----------|\n"
         "| blood-lead-cvd-hr | T1 |\n| tibia-lead-cvd-hr | T2 |\n"
     ))
-    ok, detail = ac.check_reader_phase(tmp_path)
+    ok, detail = ac.check_reader_phase(
+        tmp_path, ["blood-lead-cvd-hr", "tibia-lead-cvd-hr"])
     assert ok is True
     assert "覆盖全部 2 个问题清单键" in detail
 
 
 def test_check_reader_phase_missing_key_rejected(tmp_path):
     # plan 未列出问题清单键（run3 实证：Reader 产出无映射 → Run 自造 ID）
-    _write_questions(tmp_path, ["blood-lead-cvd-hr", "tibia-lead-cvd-hr"])
     _write_plan(tmp_path, (
         "# Paper\n\n## Reproduction Target\nT1: blood lead HR\nT2: tibia HR\n"
     ))
-    ok, detail = ac.check_reader_phase(tmp_path)
+    ok, detail = ac.check_reader_phase(
+        tmp_path, ["blood-lead-cvd-hr", "tibia-lead-cvd-hr"])
     assert ok is False
     assert "blood-lead-cvd-hr" in detail and "tibia-lead-cvd-hr" in detail
 
 
 def test_check_reader_phase_partial_mapping_rejected(tmp_path):
     # 只映射部分键 → 拦截（缺 tibia-lead-cvd-hr）
-    _write_questions(tmp_path, ["blood-lead-cvd-hr", "tibia-lead-cvd-hr"])
     _write_plan(tmp_path, (
         "# Paper\n\n## Questions Mapping\n"
         "| blood-lead-cvd-hr | T1 |\n"
     ))
-    ok, detail = ac.check_reader_phase(tmp_path)
+    ok, detail = ac.check_reader_phase(
+        tmp_path, ["blood-lead-cvd-hr", "tibia-lead-cvd-hr"])
     assert ok is False
     assert "tibia-lead-cvd-hr" in detail
 

@@ -172,17 +172,17 @@ def run_phase_evidence(run_dir):
     return {"results_csv": results_csv, "has_answers": has_answers}
 
 
-def check_run_phase(workdir="."):
+def check_run_phase(workdir=".", question_keys=None):
     """05_run 契约检查：「存在 + 可被标准工具解析」（ADR-0011 §2 契约表）。
 
     判据（防 Run 幻觉 complete——返回 complete 却无结果文件）：
     - `05_run/` 目录存在
     - `results/` 至少一个非空 CSV/TSV（结果本体，可被标准 csv 解析）
     - `answers.csv` 存在且表头合规（target_id,value,unit,source_file）
-    - 存在 `input/questions.yaml` 时，answers 的 target_id 必须 ⊆ 问题清单键
-      （ADR-0011 §4.1 / Interface 0002 §2.1：公开问题清单键是外部 evaluator
-      与 oracle claims 匹配的唯一键；用 plan.md 内部 T 编号会让所有 claim
-      变成 NO-EVIDENCE——2026-08-27 端到端验收实证）
+    - 任务注入段提供问题清单（question_keys 非空）时，answers 的 target_id
+      必须 ⊆ 问题清单键（ADR-0011 §4.1 / Interface 0002 §2.1：公开问题清单键
+      是外部 evaluator 与 oracle claims 匹配的唯一键；用 plan.md 内部 T 编号
+      会让所有 claim 变成 NO-EVIDENCE——2026-08-27 端到端验收实证）
 
     返回 (ok: bool, detail: str)。answers 的**值定位交叉核对**（FC-005）由
     单元 04 的 evaluator 实现，本检查只验格式与键对齐。
@@ -195,8 +195,8 @@ def check_run_phase(workdir="."):
         return False, "05_run/results/ 无任何非空 CSV/TSV 结果文件"
     if not evidence["has_answers"]:
         return False, "05_run/answers.csv 缺失或表头不合规（须含 target_id,value,unit,source_file）"
-    # 键对齐：answers target_id ⊆ input/questions.yaml 的 target_id
-    qkeys = questions_target_ids(workdir)
+    # 键对齐：answers target_id ⊆ 任务问题清单键（question_keys 由评测方传入）
+    qkeys = _as_key_set(question_keys)
     if qkeys:
         import csv as _csv
         with open(run_dir / "answers.csv", newline="") as f:
@@ -204,7 +204,7 @@ def check_run_phase(workdir="."):
         stray = answer_keys - qkeys
         if stray:
             return False, (
-                f"answers.csv 的 target_id 不在公开问题清单 input/questions.yaml 中: "
+                f"answers.csv 的 target_id 不在任务公开问题清单中: "
                 f"{sorted(stray)}（问题清单键: {sorted(qkeys)}；须用问题清单键，"
                 f"不能用 plan.md 内部 T 编号——ADR-0011 §4.1）"
             )
@@ -272,42 +272,41 @@ def routing_events_ok(events):
     return True
 
 
-# ── Reader phase（01_plan）契约：Questions Mapping 强制对齐（BL-028）─────
-def questions_target_ids(workdir="."):
-    """读 input/questions.yaml 的 target_id 集合；文件缺失/不可解析返回空集。"""
-    questions_file = Path(workdir) / "input" / "questions.yaml"
-    if not questions_file.is_file():
-        questions_file = Path(workdir).parent / "input" / "questions.yaml"
-    if not questions_file.is_file():
+# ── Reader phase（01_plan）契约：Questions Mapping 对齐（BL-028）──────
+def _as_key_set(question_keys):
+    """question_keys（list[str] | set[str] | None）→ 规范化 set；空/None → set()。
+
+    键集合由评测方经 workflow args（question_keys）传入，本模块**不读文件、
+    不写文件名**——公开问题清单的具体位置是评测方（adapter/run-entry.sh）
+    的职责，系统侧对任务注入通道无知。
+    """
+    if not question_keys:
         return set()
-    try:
-        import yaml
-        qdata = yaml.safe_load(questions_file.read_text(encoding="utf-8"))
-        return {q["target_id"] for q in (qdata.get("questions") or [])}
-    except Exception:
-        return set()
+    if isinstance(question_keys, set):
+        return set(question_keys)
+    return {str(k) for k in question_keys if str(k)}
 
 
-def check_reader_phase(workdir="."):
-    """01_plan 契约：存在 plan.md，且（有 questions.yaml 时）plan.md 含
-    Questions Mapping 表并逐字覆盖问题清单的全部 target_id。
+def check_reader_phase(workdir=".", question_keys=None):
+    """01_plan 契约：存在 plan.md，且（任务注入段提供问题清单时）plan.md 含
+    Questions Mapping 表并逐字覆盖全部 target_id。
 
     判据（防 Reader 产出无法被 Run/外部评分消费的 plan——2026-08-27 run3
     实证：plan 未标注问题清单键 → Run agent 自造 t2_cvd_bpb → 外部评分
-    NO-EVIDENCE）：有 questions.yaml 时每个键必须在 plan.md 中出现，否则
+    NO-EVIDENCE）：question_keys 非空时每个键必须在 plan.md 中出现，否则
     Reader 完成门 fail-fast，在消耗 Provision/Data 算力之前拦截。
     """
     plan = Path(workdir) / "01_plan" / "plan.md"
     if not plan.is_file():
         return False, "01_plan/plan.md 不存在"
-    qkeys = questions_target_ids(workdir)
+    qkeys = _as_key_set(question_keys)
     if not qkeys:
-        return True, "plan.md 存在（无 input/questions.yaml，跳过键对齐）"
+        return True, "plan.md 存在（任务注入段未提供问题清单，跳过键对齐）"
     text = plan.read_text(encoding="utf-8", errors="replace")
     missing = [k for k in sorted(qkeys) if k not in text]
     if missing:
         return False, (
-            f"plan.md 未包含公开问题清单 target_id: {missing}——须在 "
+            f"plan.md 未包含任务公开问题清单 target_id: {missing}——须在 "
             f"Reproduction Target 后的 Questions Mapping 表中逐字列出（ADR-0011 "
             f"§4.1，BL-028；2026-08-27 run3 实证自造 ID 致外部评分 NO-EVIDENCE）"
         )

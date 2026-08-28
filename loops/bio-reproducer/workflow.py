@@ -214,22 +214,24 @@ def _require_files(log, *paths):
     return True
 
 
-def _require_parsable(log, check):
+def _require_parsable(log, check, *args):
     """fail-fast 升级：前置产物必须「存在 + 可被标准工具解析」（ADR-0011 §5）。
 
-    check 为无参可调用，返回 (ok: bool, detail: str)。用于 Data（04_data）与
-    Run（05_run）产物契约。
+    check 为可调用，返回 (ok: bool, detail: str)，*args 透传（如 question_keys）。
+    用于 Reader（01_plan）/Data（04_data）/Run（05_run）产物契约。
     """
-    ok, detail = check()
+    ok, detail = check(*args)
     if not ok:
         log(f"前置产物不可用: {detail}；请排查后开新 run 重跑")
         return False
     return True
 
 
-def _execute_sequence(agent, common, log, phases, plan_text=None):
+def _execute_sequence(agent, common, log, phases, plan_text=None, question_keys=None):
     """顺序执行 phases（前置检查 + Data/Run goal 派生 + 产物契约检查）。
 
+    question_keys：任务公开问题清单的 target_id 列表（由评测方经 args 传入；
+    无问题清单的任务为 None/[]——lint 跳过键对齐，系统走 T 编号路径）。
     返回 (result, plan_text)：result 为最后一个 phase 的 result 或 None（fail-fast）；
     plan_text 在 Reader 完成后刷新（plan.md 可能被重写）。
     """
@@ -250,16 +252,16 @@ def _execute_sequence(agent, common, log, phases, plan_text=None):
             # Reader 幻觉完成（返回 complete 但没写 plan.md）立即暴露，停在确认门之前
             if not _require_files(log, "01_plan/plan.md"):
                 return None, plan_text
-            # Questions Mapping 对齐（BL-028）：有 questions.yaml 时 plan.md 必须
-            # 逐字覆盖问题清单键，否则在消耗 Provision/Data 算力前拦截
-            if not _require_parsable(log, check_reader_phase):
+            # Questions Mapping 对齐（BL-028）：任务注入段提供问题清单时 plan.md
+            # 必须逐字覆盖问题清单键，否则在消耗 Provision/Data 算力前拦截
+            if not _require_parsable(log, check_reader_phase, ".", question_keys):
                 return None, plan_text
             plan_text = _read_plan_text()
-        if name == "Provision" and not _require_parsable(log, check_provision_phase):
+        if name == "Provision" and not _require_parsable(log, check_provision_phase, "."):
             return None, plan_text
-        if name == "Data" and not _require_parsable(log, check_data_phase):
+        if name == "Data" and not _require_parsable(log, check_data_phase, "."):
             return None, plan_text
-        if name == "Run" and not _require_parsable(log, check_run_phase):
+        if name == "Run" and not _require_parsable(log, check_run_phase, ".", question_keys):
             return None, plan_text
     return result, plan_text
 
@@ -282,7 +284,11 @@ def run(agent, parallel, pipeline, log, args, workflow, intervene, state):
     )
 
     # ── Phase 1: Reader ──────────────────────────────────────────────
-    reader_result, plan_text = _execute_sequence(agent, common, log, ["Reader"])
+    # 任务公开问题清单键（评测方经 args 传入，见 benchmarks/harness/questions_inject.py；
+    # 无问题清单的任务为 None/[] → lint 跳过键对齐，系统走 T 编号路径）
+    question_keys = args.get("question_keys") or None
+    reader_result, plan_text = _execute_sequence(
+        agent, common, log, ["Reader"], question_keys=question_keys)
     if reader_result is None:
         return None
 
@@ -304,6 +310,7 @@ def run(agent, parallel, pipeline, log, args, workflow, intervene, state):
         agent, common, log,
         ["Bootstrap", "Provision", "Data", "Run", "Validate"],
         plan_text,
+        question_keys=question_keys,
     )
     if validate_result is None:
         return None

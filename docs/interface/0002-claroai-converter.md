@@ -138,6 +138,12 @@ questions:
 
 - 这是任务的一部分：被测系统按 `target_id` 在 `05_run/answers.csv` 中填写复现值
   （`target_id,value,unit,source_file`）
+- **传入通道（2026-08-27 分层修订）**：问题清单**不要求被测系统自行读文件**——
+  由评测方（`benchmarks/harness/questions_inject.py`）把清单翻译成**任务注入段**，
+  经 loopflow 原生 `--append-prompt` 通道注入每个 agent 的 user prompt 末尾
+  （`<run-append-prompt>` 段），键列表经 `args.question_keys` 传入供系统侧 lint
+  校验。被测系统只认注入段，**不写任何文件名**；无清单的任务（v1 风格 rubric）
+  不注入，系统走 T 编号路径（协议仍是同一套 benchmark_version 2.x）。
 - oracle 判分 = 比对 answers 的 value 与私有期望值（`claims.yaml` paper_value +
   容差），并**强制交叉核对**（FC-005）：value 必须能在 answers 自述的 `source_file`
   中定位（容差由书写精度导出，`0.5×10^-decimals`，无魔数）；交叉核对失败 →

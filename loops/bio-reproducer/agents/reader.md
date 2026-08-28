@@ -183,19 +183,22 @@ DOI: [doi or URL]
 ### Reproduction Target
 [说明复现时最需要重现的 outputs、figures、tables、metrics 或 qualitative findings。每个目标分配稳定 ID（T1、T2、……），以 `id / target / priority / source` 列表形式呈现；Phase 6 的检查项将通过 Target ID 追溯到这些目标。]
 
-**公开问题清单对齐（ADR-0011 §4.1 / Interface 0002 §2.1）——强制**：
-- **第一步（必做）**：读取 `input/questions.yaml`。若存在，**逐字转录**每个
-  `target_id`（小写连字符 slug），不能改写、不能自造、不能换格式。
-- **第二步（必做）**：在 plan.md 中输出 **`Questions Mapping` 表**，把问题清单
-  `target_id` 与复现目标 T 编号一一对应：
-  ```markdown
-  ## Questions Mapping
-  | 问题清单 target_id（逐字） | 复现目标 | 说明 |
-  |---------------------------|----------|------|
-  | blood-lead-cvd-hr          | T1       | 血铅 CVD 死亡率 HR |
-  | tibia-lead-cvd-hr          | T2       | 胫骨铅 CVD 死亡率 HR |
-  ```
-- 问题清单未覆盖的目标（如数据可定位性检查）保持 T 编号且**不写入 answers.csv**。
+**公开问题清单对齐（ADR-0011 §4.1 / Interface 0002 §2.1）——按任务注入段**：
+- 任务 prompt 末尾可能带有 **`<run-append-prompt>` 段**，内含「任务公开问题清单」
+  （target_id + 问题 + 单位）。**若存在**：
+  1. 逐字转录每个 `target_id`（小写连字符 slug），不能改写、不能自造、不能换格式；
+  2. 在 plan.md 中输出 **`Questions Mapping` 表**，把问题清单 `target_id` 与复现目标
+     T 编号一一对应：
+     ```markdown
+     ## Questions Mapping
+     | 问题清单 target_id（逐字） | 复现目标 | 说明 |
+     |---------------------------|----------|------|
+     | blood-lead-cvd-hr          | T1       | 血铅 CVD 死亡率 HR |
+     | tibia-lead-cvd-hr          | T2       | 胫骨铅 CVD 死亡率 HR |
+     ```
+  3. 问题清单未覆盖的目标（如数据可定位性检查）保持 T 编号且**不写入 answers.csv**。
+- **若任务注入段无问题清单**（v1 风格任务）：Target 表只用 T 编号，无需 Questions
+  Mapping，answers 用 T 编号作内部标识。
 - Run 阶段写 answers.csv 时，`target_id` 列必须**逐字使用 Questions Mapping 表
   左列的值**；本阶段不得自造任何 ID（2026-08-27 run3 实证：Run agent 自造
   `t2_cvd_bpb` 而非清单 slug → 外部评分全部 NO-EVIDENCE，run 被 fail-fast 拦截）。

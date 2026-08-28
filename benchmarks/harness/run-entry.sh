@@ -176,8 +176,28 @@ SCOPE_ARG=""
 [ "$TASK" != '""' ] && SCOPE_ARG=",\"scope\":$TASK"
 
 echo "entry=$ENTRY id=$ID run=$RUN"
+
+# 任务公开问题清单（ADR-0011 §4.1）：评测方把 entry 的 input/questions.yaml 翻译成
+# 注入段（--append-prompt，loopflow 原生，注入每个 agent 的 user prompt 末尾）
+# + 键列表（args.question_keys 供系统侧 lint 键对齐校验）。系统侧不读文件——
+# 问题清单的存在/位置是评测方职责（2026-08-27 分层讨论）。
+QUESTIONS_JSON=$(python3 - "$REPO" "$REPO/benchmarks/entries/$ENTRY/input" <<'PY' 2>/dev/null
+import json, sys
+sys.path.insert(0, sys.argv[1] + "/benchmarks/harness")
+from questions_inject import build_questions_injection
+injection, keys = build_questions_injection(sys.argv[2])
+print(json.dumps({"injection": injection, "keys": keys}))
+PY
+)
+Q_INJECTION=$(echo "$QUESTIONS_JSON" | python3 -c "import json,sys;print(json.load(sys.stdin)['injection'] or '')")
+Q_KEYS=$(echo "$QUESTIONS_JSON" | python3 -c "import json,sys;print(json.dumps(json.load(sys.stdin)['keys']))")
+APPEND_ARG=""
+[ -n "$Q_INJECTION" ] && APPEND_ARG=",\"question_keys\":$Q_KEYS"
+
+echo "entry=$ENTRY id=$ID run=$RUN"
 sandbox "$IMAGE" \
   loop run bio-reproducer --work-dir /output \
-  --args "{\"paper_doi\":\"$ID\",\"language\":\"zh\",\"confirm_plan\":false,\"consent\":\"auto\"$SCOPE_ARG}" \
+  --args "{\"paper_doi\":\"$ID\",\"language\":\"zh\",\"confirm_plan\":false,\"consent\":\"auto\"$SCOPE_ARG$APPEND_ARG}" \
+  ${Q_INJECTION:+--append-prompt "$Q_INJECTION"} \
   > "$RUN/container.log" 2>&1
 echo "exit=$? log=$RUN/container.log"

@@ -70,11 +70,12 @@ agent 必须尝试运行作者代码或记录阻止执行的具体不兼容性�
   外部评估者的证据，**不要只写在 run_results.md 散文里**
 - **`answers.csv`**：论文数值声明 → 复现值的对照，每行一条：
   `target_id,value,unit,source_file`。**`target_id` 必须逐字使用
-  `01_plan/plan.md` 的 **`Questions Mapping` 表左列值**（即公开问题清单
-  `input/questions.yaml` 的键，ADR-0011 §4.1 / Interface 0002 §2.1——外部
-  evaluator 与 oracle claims 都按它匹配）。**禁止自造 target_id**（如
-  `t2_cvd_bpb`、`T1`——2026-08-27 run3 实证：自造 ID 使外部评分全部
-  NO-EVIDENCE 且被 check_run_phase fail-fast 拦截）。`source_file` 指向
+  `01_plan/plan.md` 的 **`Questions Mapping` 表左列值**（即任务注入段
+  `<run-append-prompt>` 中公开问题清单的键，ADR-0011 §4.1 / Interface 0002
+  §2.1——外部 evaluator 与 oracle claims 都按它匹配）。**禁止自造 target_id**
+  （如 `t2_cvd_bpb`、`T1`——2026-08-27 run3 实证：自造 ID 使外部评分全部
+  NO-EVIDENCE 且被 check_run_phase fail-fast 拦截）。任务注入段无问题清单时
+  （v1 风格任务），用 plan.md 复现目标的 T 编号作内部标识。`source_file` 指向
   `results/` 下**该值实际所在文件**（相对路径）。**文件位置：`05_run/answers.csv`
   根目录，不是 `05_run/results/` 下**（run3 实证：放 results/ 内使 lint 判定
   缺失）。只记标识符与数值，**不含状态词、判断、理由**（FC-003）

@@ -27,6 +27,7 @@ from ..worker import (
     WorkerTimeout,
     WorkerUnavailable,
 )
+from ...harness.questions_inject import build_questions_injection
 
 
 def run(entry_path: str, run_dir: Optional[str] = None, sandbox=None) -> dict:
@@ -85,25 +86,35 @@ def run(entry_path: str, run_dir: Optional[str] = None, sandbox=None) -> dict:
     task = metadata.get("task")
     if task:
         args["scope"] = str(task)
+    # 任务公开问题清单（ADR-0011 §4.1）：评测方把 input/questions.yaml 翻译成
+    # 注入段（loopflow 原生 --append-prompt，注入每个 agent 的 user prompt 末尾）
+    # + 键列表（经 args.question_keys 供系统侧 lint 校验键对齐）。系统侧不读
+    # 文件、不写文件名——问题清单的存在/位置是本评测方职责（2026-08-27 讨论）。
+    injection, question_keys = build_questions_injection(input_dir)
+    if injection is not None:
+        args["question_keys"] = question_keys
     start_time = time.time()
 
     try:
         launcher = getattr(executor, "system_launcher", "/system/run-system")
         workspace = run_root / "workspace"
         workspace.mkdir(parents=True, exist_ok=True)
+        command = [
+            launcher,
+            "run",
+            "bio-reproducer",
+            # loop 已移除 output_dir（agent 产物直接写当前工作目录）；
+            # loopflow ≥0.23 的 --work-dir 把统一工作目录指向 /output，
+            # 使复现产物落在适配器声明的输出目录 repro-data 下。
+            "--work-dir",
+            "/output",
+            "--args",
+            json.dumps(args),
+        ]
+        if injection is not None:
+            command += ["--append-prompt", injection]
         request = ExecutionRequest(
-            command=[
-                launcher,
-                "run",
-                "bio-reproducer",
-                # loop 已移除 output_dir（agent 产物直接写当前工作目录）；
-                # loopflow ≥0.23 的 --work-dir 把统一工作目录指向 /output，
-                # 使复现产物落在适配器声明的输出目录 repro-data 下。
-                "--work-dir",
-                "/output",
-                "--args",
-                json.dumps(args),
-            ],
+            command=command,
             input_dir=input_dir,
             workspace=workspace,
             output_dir=output_dir,

@@ -153,6 +153,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   另修 evaluate_run.py 打包缺口（answers 引用的 `05_run/results/` 未打包致
   交叉核对失败——run4 首次评估暴露），加 results/ copytree + 端到端测试
   （212 passed/4 skipped）。run2/3/4 归档 `bench-220-0026-run2/3/4`。
+- **系统侧去协议耦合（2026-08-27 分层讨论落地）**：问题清单经**评测方注入通道**
+  传入，系统侧不再写任何文件名——(a) 新增 `benchmarks/harness/questions_inject.py`
+  （清单 → 任务注入段 + 键列表，评测方唯一接触 questions.yaml 处）；(b)
+  adapter（loopflow.py）+ run-entry.sh 生成注入段走 loopflow 原生
+  `--append-prompt`，键经 `args.question_keys` 传入；(c) `agents/reader.md`/
+  `run.md` 改为「任务注入段若提供问题清单则转录，否则 T 编号」（去 `input/
+  questions.yaml` 硬编码）；(d) `artifact_checks.py` 的 `check_reader_phase`/
+  `check_run_phase` 键集合参数化（question_keys 参数，不读文件）；(e) workflow
+  从 args 取 question_keys 传 lint。协议统一：bench-001~006（无清单 → T 编号）
+  与 bench-200+（注入 → 清单键）是同一 benchmark_version 2.x 下的两种 rubric
+  风格，评分差异全在评测方。测试 +6（218 passed/4 skipped）。
 
 ### Docs
 - ADR-0010 修订块、Interface 0002 v2（claims 评分协议）、Spec 0001（接入段/BR-018/
