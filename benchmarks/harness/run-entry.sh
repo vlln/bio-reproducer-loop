@@ -95,7 +95,10 @@ sandbox() {  # sandbox <image> <cmd...>：零特权沙箱，容器运行时指�
   # .loopflow 必须在宿主预建并 777：docker 为嵌套挂载（skills）预建的目录
   # 属主 root，uid 1000 仍不可写 runs/（第二次迭代实测）。
   # skills / loop 定义为嵌套子挂载（只读）。
-  mkdir -p "$RUN/home/.loopflow" && chmod -R 777 "$RUN/home"
+  # .claude/skills：claude 自动发现技能目录（BL-029：loopflow 只把技能注入
+  # prompt 文本，claude 的 Skill 工具查 ~/.claude/skills/ 找不到 → Unknown skill；
+  # 挂到此处让 Skill 工具可用）。
+  mkdir -p "$RUN/home/.loopflow" "$RUN/home/.claude/skills" && chmod -R 777 "$RUN/home"
   docker run --rm -i --network "$NET" \
     --user 1000:1000 --cap-drop ALL --security-opt no-new-privileges \
     --workdir /workspace \
@@ -103,6 +106,7 @@ sandbox() {  # sandbox <image> <cmd...>：零特权沙箱，容器运行时指�
     -v "$RUN/input:/input:ro" -v "$RUN/workspace:/workspace" -v "$RUN/repro-data:/output" \
     -v "$RUN/home:/home/sandbox" \
     -v "$SKILLS_DIR:/home/sandbox/.loopflow/skills:ro" \
+    -v "$SKILLS_DIR:/home/sandbox/.claude/skills:ro" \
     -v "$REPO/loops/bio-reproducer:/home/sandbox/.loopflow/loops/bio-reproducer:ro" \
     -e HOME=/home/sandbox \
     -e DOCKER_HOST="tcp://$DIND:2375" \
