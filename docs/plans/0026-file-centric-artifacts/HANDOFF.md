@@ -95,6 +95,13 @@
   passed=True（交叉核对通过）**，verdict REPRODUCED 100；另修 evaluate_run.py 打包
   缺口（results/ 未打包致交叉核对失败），212 passed/4 skipped。归档
   `bench-220-0026-run4/`（454M）。**端到端新契约闭环达成，容器完成判据 3 满足**。
+- **run5/6（注入通道验证 + 两轮环境修复）**：注入通道在真实 run 验证成功（plan
+  Questions Mapping、注入段进 prompt）；run5 被监控误判 kill（background-task 的
+  sleep 120 轮询误判为挂起——修正为三合一判断）；run6 暴露 BL-029（claude Skill
+  工具 Unknown skill → 直连被墙）。
+- **run7（完整端到端 ✅，2026-08-28）**：注入通道 + BL-029 修复 + 修正监控后重跑
+  ——7 阶段全通、外部评估 C1-C3 passed=True（REPRODUCED 100）、契约 19/19。
+  归档 `bench-220-0026-run7/`（28M）。**系统侧零文件名依赖端到端成立**。
 - 宿主先 export `MINERU_API_URL=http://172.16.218.40:8001/`
 - 远端 `bench-v3.sh` 已删除（2026-08-27，run-entry.sh 跑通完整 entry 后收尾；
   备份在 scripts/archive-bench-v3-20260827/）

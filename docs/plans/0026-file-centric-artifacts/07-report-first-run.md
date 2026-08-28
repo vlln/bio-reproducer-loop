@@ -183,3 +183,27 @@ run5（`/tmp/harness/run-bench-220-20260828-103855`，归档 `bench-220-0026-run
   不能只看 container.log 静默或子进程形态。`sleep N` 子进程在 background-task 轮询
   下是**正常**的（与 mip pull 的 bash 子进程同类）。Provision 阶段 R 环境构建
   可长达数小时（含失败重试），属正常挣扎，应容忍。
+
+## run7（2026-08-28）——注入通道 + BL-029 修复后完整端到端 ✅ REPRODUCED 100
+
+run7（`/tmp/harness/run-bench-220-20260828-144258`，归档 `bench-220-0026-run7/` 28M）
+带全部修复（注入通道 2808ab4 + BL-029 技能挂载 8f233ab + 修正监控纪律）重跑，
+**首个完整端到端成功的 run**（run5/6 分别卡在技能误报/直连被墙）：
+- **注入通道**：plan.md Questions Mapping（3 清单键）+ answers.csv 用清单键
+  （blood-lead-cvd-hr 等，非自造）——系统侧零文件名依赖全程成立
+- **BL-029 修复验证**：`Skills are unavailable` 计数 0；Provision 用技能正常拉取
+  rocker/r-ver:4.2.0 + 增量构建 lead-cvd-r-env:4.2.0（Hmisc 等全装上）
+- **7 阶段全通**：01_plan→07_package + README/run.sh，verdict REPRODUCED
+- **外部评估闭环**：evaluate_run.py C1/C2/C3 **passed=True**
+  （paper=1.63 system=1.63 within tol=0.05 OK），score 100
+- **契约 19/19**（verify-0026-run.sh）；routing.jsonl 6 行 reproduced/route_to=null
+- **耗时**：~3.5h（Provision R 包增量构建为主，v1/v2 全量构建失败后 agent 正确转
+  增量策略——交互安装+commit，纪律正确）
+
+### 本轮三个环境修复串联（run5→run7）
+
+| 修复 | 阻断 | 效果 |
+|------|------|------|
+| 注入通道（2808ab4） | reader/run.md 写死文件名 | 系统侧零文件名，清单走 --append-prompt |
+| BL-029 技能挂载（8f233ab） | Skill 工具 Unknown skill → 直连被墙 | 技能可用，镜像经 mip 拉取 |
+| 修正监控纪律（run5 教训） | 误判 background-task 轮询为挂起 | 三合一判断（session+子进程+CPU） |

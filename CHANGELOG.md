@@ -164,6 +164,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   从 args 取 question_keys 传 lint。协议统一：bench-001~006（无清单 → T 编号）
   与 bench-200+（注入 → 清单键）是同一 benchmark_version 2.x 下的两种 rubric
   风格，评分差异全在评测方。测试 +6（218 passed/4 skipped）。
+- **BL-029 claude Skill 工具 Unknown skill（run5/6 实证）**：loopflow 只把技能
+  注入 prompt 文本（kimi 风格），claude 的 Skill 工具查 `~/.claude/skills/` 找
+  不到 → `Unknown skill` → Provision agent 误报 skills unavailable → 直连 Docker
+  Hub 被墙卡死。修复：run-entry.sh sandbox 把 `$SKILLS_DIR` 额外挂到
+  `/home/sandbox/.claude/skills`（claude 自动发现路径）；实测 Skill 调用
+  biocontainers 成功（Unknown skill=0）。
+- **run7 完整端到端（2026-08-28）**：注入通道 + BL-029 + 修正监控纪律（三合一
+  判断，run5 误判教训）后重跑——7 阶段全通、外部评估 C1-C3 passed=True
+  （REPRODUCED 100）、契约 19/19、归档 `bench-220-0026-run7/`（28M）。**系统侧
+  零文件名依赖端到端成立**。run5/6 归档 `bench-220-0026-run5/6`（45M/3.3M）。
 
 ### Docs
 - ADR-0010 修订块、Interface 0002 v2（claims 评分协议）、Spec 0001（接入段/BR-018/
