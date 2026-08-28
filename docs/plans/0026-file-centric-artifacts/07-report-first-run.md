@@ -207,3 +207,15 @@ run7（`/tmp/harness/run-bench-220-20260828-144258`，归档 `bench-220-0026-run
 | 注入通道（2808ab4） | reader/run.md 写死文件名 | 系统侧零文件名，清单走 --append-prompt |
 | BL-029 技能挂载（8f233ab） | Skill 工具 Unknown skill → 直连被墙 | 技能可用，镜像经 mip 拉取 |
 | 修正监控纪律（run5 教训） | 误判 background-task 轮询为挂起 | 三合一判断（session+子进程+CPU） |
+
+## S2/BL-015：claim 策展完成 + oracle v2.0.0 冻结（2026-08-28）
+
+用户指示「bench-220 run 正常则推进 S2」——run7 确认正常后执行：
+- **17 个零 claims entry 数值 claims 落盘**（101 条，subagent 并行读 PMC/EuropePMC
+  全文提取，每篇 3-6 条含出处/容差）；bench-207 剔除无效 C5（定性无数值）；
+  bench-218/232 摘要级（paper_found=false），bench-232 付费墙跳过待人工
+- **A1/A2 转诊断**（10/10）+ C1-Cn 平分 80；questions.yaml 同步公开清单键
+- **oracle 全部升 v2.0.0** 并打 tag `oracle-v2.0.0` 冻结（S2 完成）
+- 42/42 bundle 通过、218 tests 无回归、claims-rubric-questions 一致
+- 工具：`benchmarks/converters/claroai/s2_apply_claims.py`（幂等落盘脚本）
+- 冻结后跑批的 verdict 方构成可发布的复现率（S5 前置达成）
