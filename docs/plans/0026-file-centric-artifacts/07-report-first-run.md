@@ -160,3 +160,26 @@ container.log 无新行 ≠ 挂起：需用 `docker top` 看 claude 子进程树
 （无子进程 + 会话文件停滞 + loop CPU 不增长 = 挂起）。两次误判：
 mip pull 慢曾误判为挂起（有子进程实为正常）；此后用进程树判断才准确。
 
+
+## run5（2026-08-28）——注入通道验证 ✅（端到端未完成，监控误判教训）
+
+run5（`/tmp/harness/run-bench-220-20260828-103855`，归档 `bench-220-0026-run5/` 45M）
+验证**问题清单注入通道**（commit 2808ab4 分层重构）：
+- **注入段进入 agent prompt** ✅：claude 进程命令行含 `<run-append-prompt>` 段 +
+  「任务公开问题清单」（288 字符，含 blood-lead-cvd-hr 等 3 键）——注入通道真实生效
+- **plan.md Questions Mapping** ✅：含映射表 + 3 个清单键（注入驱动，非 reader.md 硬编码）
+- **端到端未完成**：Provision 阶段 R 包构建反复失败重试（v1→v4，2.5h：p3m.dev
+  网络抖动致 `withr`/`bit` 下载失败 + agent 生成的 R tryCatch 脚本语法 bug），
+  未进入 Data 阶段
+
+### 监控误判教训（重要——第三次）
+
+本次把**正常工作的 Provision agent 误判为挂起并 kill**：
+- 现象：container.log 2.5h 无新行 + claude 子进程只有 `sleep 120`
+- 真相：agent 走 background-task 异步构建（R 包编译），主循环用 `sleep 120`
+  轮询等待——`sleep 120` 是**轮询间隔**不是挂起；claude 会话文件持续写入
+  （最后事件 05:17:45 UTC = 13:17:45 北京时间，我们 kill 前一刻仍在 thinking→Bash）
+- 教训：**判断挂起的权威信号是 claude 会话文件停滞 + 无子进程 + CPU 平坦三合一**，
+  不能只看 container.log 静默或子进程形态。`sleep N` 子进程在 background-task 轮询
+  下是**正常**的（与 mip pull 的 bash 子进程同类）。Provision 阶段 R 环境构建
+  可长达数小时（含失败重试），属正常挣扎，应容忍。
