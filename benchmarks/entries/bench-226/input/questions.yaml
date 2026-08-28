@@ -1,2 +1,20 @@
 schema: questions/v1
-questions: []
+questions:
+- target_id: nhans-exwas-cohort-n-4982
+  question: 复现论文报告的 分析样本量（至少有一种化学物测量的参与者） 数值
+  unit: participants
+- target_id: exwas-mean-dsst-score
+  question: 复现论文报告的 DSST 平均分（连续结局主分析） 数值
+  unit: DSST score points (mean)
+- target_id: exwas-cotinine-dsst-beta
+  question: 复现论文报告的 血清可替宁每 1-SD log2 浓度增量与 DSST 的关联（主分析） 数值
+  unit: DSST points per SD of log2-scaled cotinine
+- target_id: exwas-tungsten-dsst-beta
+  question: 复现论文报告的 尿钨每 1-SD log2 浓度增量与 DSST 的关联（主分析） 数值
+  unit: DSST points per SD of log2-scaled urinary tungsten
+- target_id: exwas-five-significant-exposures
+  question: 复现论文报告的 主分析中 P<0.01 显著关联的化学物数量 数值
+  unit: exposures out of 147
+- target_id: exwas-cotinine-mci-prevalence-ratio
+  question: 复现论文报告的 血清可替宁每 1-SD log2 浓度增量与 MCI 的患病率比（modified Poisson） 数值
+  unit: prevalence ratio (RR)

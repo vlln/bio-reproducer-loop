@@ -4,10 +4,7 @@ paper_title: Quantifying the time-varying association between objectively measur
 paper_doi: 10.1136/bmjebm-2023-112303
 pmid: '38471753'
 reproduction_target: result_verification
-task: "\u6838\u5B9E\u8BE5\u8BBA\u6587\u5F15\u7528\u7684\u6570\u636E\u80FD\u5426\u5B9A\
-  \u4F4D\u5E76\u5B9E\u9645\u4E0B\u8F7D\u3001\u4EE3\u7801\u4ED3\u5E93\u662F\u5426\u5B8C\
-  \u6574\u53EF\u7528\uFF1B\u590D\u73B0\u8BBA\u6587\u62A5\u544A\u7684\u5173\u952E\u5B9A\
-  \u91CF\u7ED3\u679C\uFF08\u5982\u6709\uFF09\u3002"
+task: 核实该论文引用的数据能否定位并实际下载、代码仓库是否完整可用；复现论文报告的关键定量结果（如有）。
 data_references:
 - accession: NHANES 2003-2006
   repository: other
@@ -16,13 +13,91 @@ data_references:
   downloadable: 'false'
   notes: transcribed from scores.json evidence
 code_references: []
-claims: []
+claims:
+- id: C1
+  metric: TACq time-varying HR at baseline
+  paper_value: 0.974
+  unit: hazard ratio per 1-percentile increase in population-quantile TAC
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results (second model); Table 2 row TACq
+  author_match: unknown
+  author_repr: null
+  notes: 'Fully adjusted survey-weighted Cox model linear time-varying TACq effect:
+    HR=0.974 95%CI(0.965,0.984) p<0.001, immediately after measurement'
+  target_id: tacq-hr-at-baseline
+- id: C2
+  metric: TACq time-varying HR at 12 years
+  paper_value: 0.991
+  unit: hazard ratio per 1-percentile increase in population-quantile TAC
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results (second model)
+  author_match: unknown
+  author_repr: null
+  notes: 'Same model at 12 years: HR=0.991 95%CI(0.985,0.997) p=0.002; association
+    attenuates but significant'
+  target_id: tacq-hr-12yr
+- id: C3
+  metric: TACq fixed time-invariant effect HR
+  paper_value: 0.98
+  unit: hazard ratio per 1-percentile increase in population-quantile TAC
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results (first model)
+  author_match: unknown
+  author_repr: null
+  notes: 'First model fully adjusted linear non-varying TACq: HR=0.98 (95%CI 0.98-0.99
+    p<0.001); proportionality tests rejected'
+  target_id: tacq-hr-fixed-effect
+- id: C4
+  metric: Final cohort sample size
+  paper_value: 3218
+  unit: participants
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results (first paragraph)
+  author_match: unknown
+  author_repr: null
+  notes: 3772 aged 50-84 with accelerometry+mortality; 507 excluded <3 valid days,
+    47 missing covariates -> 3218; 867 events/30927 person-years
+  target_id: cohort-n-participants
+- id: C5
+  metric: Age HR per additional year
+  paper_value: 1.069
+  unit: hazard ratio per year
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Table 2 row Age
+  author_match: unknown
+  author_repr: null
+  notes: 'Fully adjusted varying-coefficient model: age HR=1.069 95%CI(1.057,1.082)
+    p<0.001 per year (text reports 1.07 CI 1.06-1.09)'
+  target_id: age-hr-per-year
+- id: C6
+  metric: Female vs male all-cause mortality HR
+  paper_value: 0.565
+  unit: hazard ratio (female vs male)
+  tolerance:
+    type: relative
+    value: 0.05
+  source: 'paper Table 2 row Gender: Female'
+  author_match: unknown
+  author_repr: null
+  notes: 'Female lower mortality: HR=0.565 95%CI(0.467,0.684) p<0.001 (text reports
+    0.57 CI 0.47-0.68)'
+  target_id: female-hr-mortality
 calibration:
   d1: 2
   d2: 0
   d3: 0
-  d4: 0
-  d5: 0
+  d4: 1
+  d5: 2
   confidence:
     d1: 0.85
     d2: 0.8

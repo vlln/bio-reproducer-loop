@@ -4,10 +4,7 @@ paper_title: Distinct senotypes in p16- and p21-positive cells across human and 
 paper_doi: 10.1038/s44318-025-00601-2
 pmid: '41162753'
 reproduction_target: result_verification
-task: "\u6838\u5B9E\u8BE5\u8BBA\u6587\u5F15\u7528\u7684\u6570\u636E\u80FD\u5426\u5B9A\
-  \u4F4D\u5E76\u5B9E\u9645\u4E0B\u8F7D\u3001\u4EE3\u7801\u4ED3\u5E93\u662F\u5426\u5B8C\
-  \u6574\u53EF\u7528\uFF1B\u590D\u73B0\u8BBA\u6587\u62A5\u544A\u7684\u5173\u952E\u5B9A\
-  \u91CF\u7ED3\u679C\uFF08\u5982\u6709\uFF09\u3002"
+task: 核实该论文引用的数据能否定位并实际下载、代码仓库是否完整可用；复现论文报告的关键定量结果（如有）。
 data_references:
 - accession: multiple
   repository: GEO
@@ -26,13 +23,95 @@ code_references:
   language: R
   ground_truth: unknown
   notes: transcribed from scores.json evidence
-claims: []
+claims:
+- id: C1
+  metric: SenMayo SASP 基因集规模（及扩展分泌蛋白面板）
+  paper_value: 125
+  unit: genes (SenMayo gene set)
+  tolerance:
+    type: relative
+    value: 0.05
+  source: 'paper Methods (Single-cell analysis: SenMayo gene set (n=125) or secreted
+    proteins ... (n=1989))'
+  author_match: unknown
+  author_repr: null
+  notes: 扩展面板：Human Protein Atlas 分泌蛋白 + SenMayo 分泌因子 n=1989。SenMayo 约 73% 为分泌基因；SenSig
+    265 个分泌基因（约15%）、CellAge 78 个（约15%）。
+  target_id: senmayo-gene-set-size-125
+- id: C2
+  metric: 小鼠海马中 p16+ 与 p21+ 细胞共表达的 SenMayo 基因数
+  paper_value: 2
+  unit: shared genes (Cxcl16, Plaur)
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results (Unraveling the p16- vs. p21-associated secretome in the murine
+    brain); Figure 1G
+  author_match: unknown
+  author_repr: null
+  notes: 扩展分泌面板（1989 基因）仅 4 个共享：Col8a2, Plaur, Cxcl16, Fbln5。青年 (4m) vs 老年 (24m) 海马
+    scRNA-seq（GSE161340）。
+  target_id: brain-p16-p21-shared-senmayo-genes
+- id: C3
+  metric: 人皮肤衰老 scRNA-seq 数据集中鉴定的细胞群数
+  paper_value: 16
+  unit: cell populations (human skin)
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results (Comparing the p16- and p21-associated secretome in human
+    tissues during aging); Figure 3A
+  author_match: unknown
+  author_repr: null
+  notes: 眼睑皮肤样本年龄 18–76 岁（Zou et al. 2021）；人肺为 18 个细胞群（21–78 岁, Jia et al. 2023），p21+
+    细胞占衰老细胞大多数。SenMayo 层面人皮肤 p16+/p21+ 无重叠基因。
+  target_id: human-skin-cell-populations-16
+- id: C4
+  metric: p21+ 细胞中 Icam1 持续表达的受检组织数
+  paper_value: 6
+  unit: analyzed tissues (of 6)
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results (Common p16 and p21-associated secretomes across murine and
+    human tissues); Figure 4D
+  author_match: unknown
+  author_repr: null
+  notes: 另有 Jun, Edn1, Igfbp6, Tnfrsf1a, Cxcl16, Ets2, Fas, Igfbp4, Plaur, Ccl2 等
+    10 个因子在 14 个分析数据集中 ≥8 个表达；core SASP 含 Icam1, Jun, Igfbp6, Tnfrsf1a, Edn1, Cxcl16,
+    Igfbp4, Fas, Plaur。
+  target_id: icam1-p21-tissues-6
+- id: C5
+  metric: SenSig 中 p16+ 细胞一致表达（≥4 组织）的基因数
+  paper_value: 29
+  unit: genes
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results (Common p16 and p21-associated secretomes...); Figure 4F-G
+  author_match: unknown
+  author_repr: null
+  notes: p21+ 细胞：24 个基因在 ≥11 个组织表达，且 Cdkn1a 在所有分析组织中表达。p16+ 侧 Cdkn2b 在 4/5 组织表达。
+  target_id: sensig-p16-shared-genes-29
+- id: C6
+  metric: CellAge 基因集中 p21 相关基因（除 Cdkn1a 外）出现的数据集数
+  paper_value: 12
+  unit: datasets (of 14)
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results (Common p16 and p21-associated secretomes...); Figure 4J
+  author_match: unknown
+  author_repr: null
+  notes: p21 相关基因：Btg2, Icam1, Mdm2, Pnrc1, Tap1, Tspan13；p16 相关（除 Cdkn2a 外）：Cdkn2b,
+    Lum 在 6/14 数据集；core 表型 Btg2, Stx12, Tmbim1 在 13/14 数据集。
+  target_id: cellage-p21-datasets-12
 calibration:
   d1: 2
   d2: 0
   d3: 1
   d4: 0
-  d5: 0
+  d5: 2
   confidence:
     d1: 0.85
     d2: 0.8

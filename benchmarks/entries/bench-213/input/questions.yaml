@@ -1,2 +1,17 @@
 schema: questions/v1
-questions: []
+questions:
+- target_id: ucr-dmn-rsfc-state-anxiety-correlation
+  question: 复现论文报告的 预扫描状态焦虑与 DMN 内 rs-FC 的偏相关（UCR 社区样本） 数值
+  unit: r
+- target_id: ucr-salience-rsfc-nonsignificant
+  question: 复现论文报告的 预扫描状态焦虑与突显网络内 rs-FC 的偏相关（UCR，非显著） 数值
+  unit: r
+- target_id: nimh-dmn-rsfc-null-replication
+  question: 复现论文报告的 预扫描状态焦虑与 DMN 内 rs-FC 的偏相关（NIMH 对照样本，非显著） 数值
+  unit: r
+- target_id: final-sample-sizes-87
+  question: 复现论文报告的 质量控制后最终纳入样本量（UCR / NIMH） 数值
+  unit: participants (UCR; NIMH=45)
+- target_id: ucr-state-anxiety-in-scanner-fear
+  question: 复现论文报告的 UCR 样本状态焦虑与扫描中恐惧的相关（事后分析） 数值
+  unit: r

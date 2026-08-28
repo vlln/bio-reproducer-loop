@@ -16,7 +16,7 @@ checks:
     module: verify.py
     function: check_data_references
     config: {}
-  weight: 50
+  weight: 10
 - id: A2
   description: 代码引用可用性判断与 ground truth 一致
   evidence:
@@ -26,4 +26,70 @@ checks:
     module: verify.py
     function: check_code_references
     config: {}
-  weight: 50
+  weight: 10
+- id: C1
+  description: 复现声明 AD 相关 SNV 位于内含子/基因间（distal-RE）区域的比例（论文值 91.1）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C1
+  weight: 13.3333
+- id: C2
+  description: 复现声明 DLPFC 中识别的推定性 silencer adSNV 数量（论文值 1457）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C2
+  weight: 13.3333
+- id: C3
+  description: 复现声明 DLPFC TREDNet 模型增强子预测 auROC（论文值 0.985）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C3
+  weight: 13.3333
+- id: C4
+  description: 复现声明 rs636317 保护等位基因 C 在 CTCF ChIP-seq reads 中的占比（论文值 90）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C4
+  weight: 13.3333
+- id: C5
+  description: 复现声明 dMPRA SNV 中 Δactivity 与 dMPRA 方向一致率（DCR）（论文值 63.4）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C5
+  weight: 13.3333
+- id: C6
+  description: 复现声明 SL 位点 radSNV eQTL 中微胶质细胞特异的比例（论文值 70）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C6
+  weight: 13.3333

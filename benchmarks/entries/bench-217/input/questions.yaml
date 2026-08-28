@@ -1,2 +1,20 @@
 schema: questions/v1
-questions: []
+questions:
+- target_id: tb-ct-cohort-288-scans-125-patients
+  question: 复现论文报告的 纳入队列：连续 CT 扫描数与患者数 数值
+  unit: serial CT scans (from 125 PTB patients)
+- target_id: multi-pattern-lesions-success-667
+  question: 复现论文报告的 治疗成功患者中呈现多种病灶轨迹模式的比例 数值
+  unit: '%'
+- target_id: mix-di-lesions-failure-250-vs-14
+  question: 复现论文报告的 Mix-D-I（先减后增）病灶在治疗失败 vs 成功患者的比例 数值
+  unit: '%'
+- target_id: mix-di-or-treatment-failure-1749
+  question: 复现论文报告的 Mix-D-I 病灶存在与治疗失败的关联 OR（多因素 Firth 逻辑回归） 数值
+  unit: OR
+- target_id: active-lesion-volume-or-171
+  question: 复现论文报告的 初始 CT 活动性病灶总体积与治疗失败的关联 OR 数值
+  unit: OR
+- target_id: lesion-pattern-counts-234
+  question: 复现论文报告的 五种纵向体积模式在 234 个追踪病灶中的计数 数值
+  unit: lesions (Decreased; Stable=84, Increased=55, Mix-I-D=5, Mix-D-I=5)

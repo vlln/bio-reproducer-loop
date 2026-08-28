@@ -16,7 +16,7 @@ checks:
     module: verify.py
     function: check_data_references
     config: {}
-  weight: 50
+  weight: 10
 - id: A2
   description: 代码引用可用性判断与 ground truth 一致
   evidence:
@@ -26,4 +26,61 @@ checks:
     module: verify.py
     function: check_code_references
     config: {}
-  weight: 50
+  weight: 10
+- id: C1
+  description: 复现声明 Size of lineage 4.2.1.2 (Ural clade C) MDR clade（论文值 1604）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C1
+  weight: 16.0
+- id: C2
+  description: 复现声明 Proportion of clade isolates that were MDR (INH+RIF resistant)（论文值
+    95）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C2
+  weight: 16.0
+- id: C3
+  description: 复现声明 Time of most recent common ancestor (tMRCA) of lineage 4.2.1.2（论文值
+    1971）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C3
+  weight: 16.0
+- id: C4
+  description: 复现声明 Root-state probability that clade emerged in Russia（论文值 0.98）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C4
+  weight: 16.0
+- id: C6
+  description: 复现声明 Global dataset of lineage 4.2.1/Ural sequences analyzed（论文值 5909）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C6
+  weight: 16.0

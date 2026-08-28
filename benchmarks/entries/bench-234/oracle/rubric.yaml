@@ -16,7 +16,7 @@ checks:
     module: verify.py
     function: check_data_references
     config: {}
-  weight: 50
+  weight: 10
 - id: A2
   description: 代码引用可用性判断与 ground truth 一致
   evidence:
@@ -26,4 +26,70 @@ checks:
     module: verify.py
     function: check_code_references
     config: {}
-  weight: 50
+  weight: 10
+- id: C1
+  description: 复现声明 整合分析的总细胞数（含新生成细胞）（论文值 1576567）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C1
+  weight: 13.3333
+- id: C2
+  description: 复现声明 CLAD 样本数（含公开数据补充）（论文值 8）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C2
+  weight: 13.3333
+- id: C3
+  description: 复现声明 scvi 数据整合质量：批次效应去除 silhouette score（论文值 0.72）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C3
+  weight: 13.3333
+- id: C4
+  description: 复现声明 CLAD 比较分析中充分代表性的细胞类型数（论文值 37）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C4
+  weight: 13.3333
+- id: C5
+  description: 复现声明 KRT17+KRT5− 致病上皮细胞核心基因签名规模（论文值 360）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C5
+  weight: 13.3333
+- id: C6
+  description: 复现声明 COPD 中同种异体排斥基因集显著上调的 q 值（PPI 分析）（论文值 0.018）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C6
+  weight: 13.3333

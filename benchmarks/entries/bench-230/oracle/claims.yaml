@@ -3,10 +3,7 @@ paper_title: Transfer learning enables predictions in network biology
 paper_doi: 10.1038/s41586-023-06139-9
 pmid: '37258680'
 reproduction_target: result_verification
-task: "\u6838\u5B9E\u8BE5\u8BBA\u6587\u5F15\u7528\u7684\u6570\u636E\u80FD\u5426\u5B9A\
-  \u4F4D\u5E76\u5B9E\u9645\u4E0B\u8F7D\u3001\u4EE3\u7801\u4ED3\u5E93\u662F\u5426\u5B8C\
-  \u6574\u53EF\u7528\uFF1B\u590D\u73B0\u8BBA\u6587\u62A5\u544A\u7684\u5173\u952E\u5B9A\
-  \u91CF\u7ED3\u679C\uFF08\u5982\u6709\uFF09\u3002"
+task: 核实该论文引用的数据能否定位并实际下载、代码仓库是否完整可用；复现论文报告的关键定量结果（如有）。
 data_references:
 - accession: ctheodoris/Genecorpus-30M
   repository: HuggingFace
@@ -19,13 +16,89 @@ code_references:
   language: Python
   ground_truth: unknown
   notes: transcribed from scores.json evidence
-claims: []
+claims:
+- id: C1
+  metric: 预训练语料 Genecorpus-30M 的单细胞转录组数量
+  paper_value: 29900531
+  unit: human single-cell transcriptomes
+  tolerance:
+    type: relative
+    value: 0.05
+  source: 'paper Abstract (≈30 million); Methods (Assembly and rank value encoding...:
+    29.9 million (29,900,531))'
+  author_match: unknown
+  author_repr: null
+  notes: 来自公开数据的多组织人单细胞转录组；排除高突变负荷细胞（恶性细胞/永生系）等。
+  target_id: genecorpus-30m-transcriptome-count
+- id: C2
+  metric: 预训练后通过质量过滤的细胞数
+  paper_value: 27406217
+  unit: cells
+  tolerance:
+    type: relative
+    value: 0.05
+  source: 'paper Methods (Assembly and rank value encoding...: 27.4 million (27,406,217)
+    cells passed QC)'
+  author_match: unknown
+  author_repr: null
+  notes: 过滤标准：<7 个检出蛋白编码/miRNA 基因的细胞剔除（15% masking 目标可靠性）。
+  target_id: genecorpus-30m-qc-cell-count
+- id: C3
+  metric: 基因剂量敏感性预测 AUC（fine-tuning 仅 10,000 细胞）
+  paper_value: 0.91
+  unit: AUC (ROC)
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results (Gene dosage sensitivity predictions); Figure 2a
+  author_match: unknown
+  author_repr: null
+  notes: 区分剂量敏感 vs 不敏感转录因子，显著优于 SVM/RF/LR 等替代方法；更大更丰富的预训练语料持续提升下游 AUC。
+  target_id: geneformer-dosage-sensitivity-auc
+- id: C4
+  metric: 染色质动力学预测 AUC（bivalent vs unmethylated 基因）
+  paper_value: 0.93
+  unit: AUC (ROC)
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results (Chromatin dynamics predictions); Figure 3a-b
+  author_match: unknown
+  author_repr: null
+  notes: 同实验 bivalent vs H3K4me3-only 为 AUC 0.88；用 ~15,000 个 ESC、仅 56 个保守位点 fine-tuning，且可泛化到排除的全基因组区域。
+  target_id: geneformer-chromatin-bivalent-auc
+- id: C5
+  metric: 基因网络中心 vs 外周因子预测 AUC（N1 依赖网络）
+  paper_value: 0.81
+  unit: AUC (ROC)
+  tolerance:
+    type: relative
+    value: 0.05
+  source: 'paper Results (Network dynamics predictions: central vs peripheral factors);
+    Figure 4a'
+  author_match: unknown
+  author_repr: null
+  notes: 仅用 ~30,000 个正常内皮细胞（Heart Atlas）的转录组，无任何扰动数据；替代方法预测接近随机。
+  target_id: geneformer-network-central-vs-peripheral-auc
+- id: C6
+  metric: fine-tuned Geneformer 对高置信神经发育疾病基因剂量敏感性的预测一致性
+  paper_value: 96
+  unit: percent concordance
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results (Gene dosage sensitivity predictions); Figure 2c
+  author_match: unknown
+  author_repr: null
+  notes: 对 Collins et al. 753,994 个体 CNV 研究的高置信基因（cutoff >0.85）在胎儿脑细胞中 96% 一致；中等置信基因
+    84% 一致（fetal cerebral 96% vs 其他细胞 95%）。
+  target_id: geneformer-cnv-concordance-high-confidence
 calibration:
   d1: 2
   d2: 0
   d3: 1
   d4: 0
-  d5: 0
+  d5: 2
   confidence:
     d1: 0.85
     d2: 0.8

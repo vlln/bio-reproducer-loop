@@ -16,7 +16,7 @@ checks:
     module: verify.py
     function: check_data_references
     config: {}
-  weight: 50
+  weight: 10
 - id: A2
   description: 代码引用可用性判断与 ground truth 一致
   evidence:
@@ -26,4 +26,70 @@ checks:
     module: verify.py
     function: check_code_references
     config: {}
-  weight: 50
+  weight: 10
+- id: C1
+  description: 复现声明 SenMayo SASP 基因集规模（及扩展分泌蛋白面板）（论文值 125）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C1
+  weight: 13.3333
+- id: C2
+  description: 复现声明 小鼠海马中 p16+ 与 p21+ 细胞共表达的 SenMayo 基因数（论文值 2）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C2
+  weight: 13.3333
+- id: C3
+  description: 复现声明 人皮肤衰老 scRNA-seq 数据集中鉴定的细胞群数（论文值 16）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C3
+  weight: 13.3333
+- id: C4
+  description: 复现声明 p21+ 细胞中 Icam1 持续表达的受检组织数（论文值 6）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C4
+  weight: 13.3333
+- id: C5
+  description: 复现声明 SenSig 中 p16+ 细胞一致表达（≥4 组织）的基因数（论文值 29）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C5
+  weight: 13.3333
+- id: C6
+  description: 复现声明 CellAge 基因集中 p21 相关基因（除 Cdkn1a 外）出现的数据集数（论文值 12）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C6
+  weight: 13.3333

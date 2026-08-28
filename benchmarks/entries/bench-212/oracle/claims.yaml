@@ -3,10 +3,7 @@ paper_title: A generalizable deep learning system for cardiac MRI
 paper_doi: 10.1038/s41551-026-01637-3
 pmid: '41882174'
 reproduction_target: result_verification
-task: "\u6838\u5B9E\u8BE5\u8BBA\u6587\u5F15\u7528\u7684\u6570\u636E\u80FD\u5426\u5B9A\
-  \u4F4D\u5E76\u5B9E\u9645\u4E0B\u8F7D\u3001\u4EE3\u7801\u4ED3\u5E93\u662F\u5426\u5B8C\
-  \u6574\u53EF\u7528\uFF1B\u590D\u73B0\u8BBA\u6587\u62A5\u544A\u7684\u5173\u952E\u5B9A\
-  \u91CF\u7ED3\u679C\uFF08\u5982\u6709\uFF09\u3002"
+task: 核实该论文引用的数据能否定位并实际下载、代码仓库是否完整可用；复现论文报告的关键定量结果（如有）。
 data_references:
 - accession: null
   repository: other
@@ -27,13 +24,94 @@ data_references:
   downloadable: 'false'
   notes: transcribed from scores.json evidence
 code_references: []
-claims: []
+claims:
+- id: C1
+  metric: LVEF regression MAE on UK BioBank hold-out test set (contrastive pre-trained
+    model)
+  paper_value: 3.344
+  unit: LVEF percentage points (MAE)
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Figure 3 caption + Results text (Nature DOI page)
+  author_match: unknown
+  author_repr: null
+  notes: MAE 3.344 (s.d. 3.615), Bland-Altman limits of agreement -9.91% to +9.61%.
+  target_id: cmr-lvef-mae-ukb-3344
+- id: C2
+  metric: LVEF regression MAE of baseline (traditionally trained, Kinetics-400 init)
+    model
+  paper_value: 4.603
+  unit: LVEF percentage points (MAE)
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results text + Figure 3 caption (Nature DOI page)
+  author_match: unknown
+  author_repr: null
+  notes: Baseline MAE 4.603 (s.d. 4.409), Bland-Altman limits -12.15% to +12.8%; same
+    architecture without contrastive pre-training.
+  target_id: cmr-lvef-mae-baseline-4603
+- id: C3
+  metric: LVEF regression MAE on external Kaggle dataset (frozen fine-tuned model)
+  paper_value: 6.88
+  unit: LVEF percentage points (MAE)
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results text + Figure 3 caption (Nature DOI page)
+  author_match: unknown
+  author_repr: null
+  notes: MAE 6.880 (s.d. 5.309), Bland-Altman -18.7% to +8.03%; systematic underprediction
+    5.36% (95% CI 4.86-5.87); bias-corrected MAE 4.861.
+  target_id: cmr-lvef-mae-kaggle-6880
+- id: C4
+  metric: HFrEF (LVEF<40%) diagnosis AUC on UK BioBank test set
+  paper_value: 0.88
+  unit: AUC
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results text + Figure 3 caption (Nature DOI page)
+  author_match: unknown
+  author_repr: null
+  notes: AUC 0.880 (95% CI 0.835-0.925, n=4,259 scans); 0.949 (95% CI 0.907-0.990,
+    n=679 scans) on Kaggle; baseline 0.751 (UKB) / 0.766 (Kaggle).
+  target_id: cmr-hfref-auc-ukb-088
+- id: C5
+  metric: Internal test AUC for cardiac amyloidosis detection
+  paper_value: 0.921
+  unit: AUC
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results 'Diagnostic performance strengths and limitations' (Nature
+    DOI page)
+  author_match: unknown
+  author_repr: null
+  notes: Amyloidosis AUC 0.921 (95% CI 0.879-0.963); hypertrophic cardiomyopathy 0.91
+    (95% CI 0.872-0.948); dilated cardiomyopathy 0.867 (95% CI 0.843-0.890); tetralogy
+    of Fallot 0.966 (95% CI 0.955-0.977).
+  target_id: cmr-amyloidosis-auc-0921
+- id: C6
+  metric: UK BioBank dataset size used for validation
+  paper_value: 45623
+  unit: participants (159,883 cine-CMR scans)
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results 'Validation on the UK BioBank' (Nature DOI page)
+  author_match: unknown
+  author_repr: null
+  notes: 159,883 cine-CMR scans from 45,623 UK BioBank participants; LVEF fine-tuning
+    on 34,488 unique scans, split 31,693 train / 3,938 validation / 3,938 test.
+  target_id: cmr-ukb-dataset-45623
 calibration:
   d1: 0
   d2: 0
   d3: 0
   d4: 0
-  d5: 0
+  d5: 2
   confidence:
     d1: 0.85
     d2: 0.8

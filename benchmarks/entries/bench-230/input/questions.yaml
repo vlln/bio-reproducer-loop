@@ -1,2 +1,20 @@
 schema: questions/v1
-questions: []
+questions:
+- target_id: genecorpus-30m-transcriptome-count
+  question: 复现论文报告的 预训练语料 Genecorpus-30M 的单细胞转录组数量 数值
+  unit: human single-cell transcriptomes
+- target_id: genecorpus-30m-qc-cell-count
+  question: 复现论文报告的 预训练后通过质量过滤的细胞数 数值
+  unit: cells
+- target_id: geneformer-dosage-sensitivity-auc
+  question: 复现论文报告的 基因剂量敏感性预测 AUC（fine-tuning 仅 10,000 细胞） 数值
+  unit: AUC (ROC)
+- target_id: geneformer-chromatin-bivalent-auc
+  question: 复现论文报告的 染色质动力学预测 AUC（bivalent vs unmethylated 基因） 数值
+  unit: AUC (ROC)
+- target_id: geneformer-network-central-vs-peripheral-auc
+  question: 复现论文报告的 基因网络中心 vs 外周因子预测 AUC（N1 依赖网络） 数值
+  unit: AUC (ROC)
+- target_id: geneformer-cnv-concordance-high-confidence
+  question: 复现论文报告的 fine-tuned Geneformer 对高置信神经发育疾病基因剂量敏感性的预测一致性 数值
+  unit: percent concordance

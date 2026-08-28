@@ -16,7 +16,7 @@ checks:
     module: verify.py
     function: check_data_references
     config: {}
-  weight: 50
+  weight: 10
 - id: A2
   description: 代码引用可用性判断与 ground truth 一致
   evidence:
@@ -26,4 +26,72 @@ checks:
     module: verify.py
     function: check_code_references
     config: {}
-  weight: 50
+  weight: 10
+- id: C1
+  description: 复现声明 Total body fat percentage, female CD vs BMI-similar controls（论文值
+    47.8）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C1
+  weight: 13.3333
+- id: C2
+  description: 复现声明 Total body fat percentage, male CD vs BMI-similar controls（论文值
+    46.6）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C2
+  weight: 13.3333
+- id: C3
+  description: 复现声明 Total lean mass percentage, female CD vs controls（论文值 50.3）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C3
+  weight: 13.3333
+- id: C4
+  description: 复现声明 Total bone mass percentage, male CD vs controls（论文值 1.75）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C4
+  weight: 13.3333
+- id: C5
+  description: 复现声明 Height z-score, CD vs BMI-similar controls（论文值 -0.83）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C5
+  weight: 13.3333
+- id: C6
+  description: 复现声明 Correlation of HgbA1c with BMI z-score in CD group（论文值 0.66）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C6
+  weight: 13.3333

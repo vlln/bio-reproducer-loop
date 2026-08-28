@@ -1,2 +1,23 @@
 schema: questions/v1
-questions: []
+questions:
+- target_id: chorea-cases-n-190
+  question: 复现论文报告的 Total non-HD chorea cases analyzed 数值
+  unit: cases
+- target_id: chorea-diagnostic-yield-ssggc
+  question: 复现论文报告的 Diagnostic yield (pathogenic/likely pathogenic findings) in SSGGC
+    cohort 数值
+  unit: '% of cases explained'
+- target_id: chorea-protein-variants-13
+  question: 复现论文报告的 Protein-altering variants identified in chorea-associated genes
+    数值
+  unit: variants (count)
+- target_id: chorea-jph3-cag43
+  question: 复现论文报告的 JPH3 CAG repeat expansion size (HDL2) 数值
+  unit: CAG repeat units
+- target_id: chorea-c9orf72-expansion-170
+  question: 复现论文报告的 c9orf72 hexanucleotide repeat expansion length, first carrier
+    数值
+  unit: repeat units (in silico, ExpansionHunter)
+- target_id: chorea-c9orf72-expansion-451
+  question: 复现论文报告的 c9orf72 repeat expansion length, second carrier 数值
+  unit: repeat units (in silico, ExpansionHunter)

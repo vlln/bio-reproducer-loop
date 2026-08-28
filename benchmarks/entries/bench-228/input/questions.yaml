@@ -1,2 +1,20 @@
 schema: questions/v1
-questions: []
+questions:
+- target_id: mntjulip-dsr-pairwise-f-value
+  question: 复现论文报告的 DSR 两两比较 F-value（MntJULiP 协变量模型 vs 竞争者） 数值
+  unit: F-value (2*Sn*Pr/(Sn+Pr))
+- target_id: mntjulip-dsr-precision
+  question: 复现论文报告的 DSR 两两比较精度（precision） 数值
+  unit: precision (Pr = TP/(TP+FP))
+- target_id: mntjulip-dsa-pairwise-f-value
+  question: 复现论文报告的 DSA 两两比较 F-value（MntJULiP vs DESeq2 两个 cutoff 选项） 数值
+  unit: F-value
+- target_id: gtex-brain-samples-1398
+  question: 复现论文报告的 GTEx 脑 RNA-seq 样本规模 数值
+  unit: RNA-seq samples from 13 brain regions
+- target_id: frontal-cortex-age-covariate-splicing-genes
+  question: 复现论文报告的 frontal cortex 20s vs 40s 比较中协变量调整后差异剪接基因数 数值
+  unit: differentially spliced genes
+- target_id: frontal-cortex-sex-dsr-events-covariate
+  question: 复现论文报告的 男-女 frontal cortex DSR 比较中 age-at-death 协变量调整后事件数 数值
+  unit: differential splicing events (DSR)

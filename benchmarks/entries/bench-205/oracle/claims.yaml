@@ -4,10 +4,7 @@ paper_title: 'Pharmacist-Led Taper with Brief Mindfulness-Informed CBT for Benzo
 paper_doi: 10.1007/s11606-026-10356-z
 pmid: '41840339'
 reproduction_target: result_verification
-task: "\u6838\u5B9E\u8BE5\u8BBA\u6587\u5F15\u7528\u7684\u6570\u636E\u80FD\u5426\u5B9A\
-  \u4F4D\u5E76\u5B9E\u9645\u4E0B\u8F7D\u3001\u4EE3\u7801\u4ED3\u5E93\u662F\u5426\u5B8C\
-  \u6574\u53EF\u7528\uFF1B\u590D\u73B0\u8BBA\u6587\u62A5\u544A\u7684\u5173\u952E\u5B9A\
-  \u91CF\u7ED3\u679C\uFF08\u5982\u6709\uFF09\u3002"
+task: 核实该论文引用的数据能否定位并实际下载、代码仓库是否完整可用；复现论文报告的关键定量结果（如有）。
 data_references:
 - accession: NCT06119308
   repository: ClinicalTrials.gov
@@ -16,13 +13,93 @@ data_references:
   downloadable: 'false'
   notes: transcribed from scores.json evidence
 code_references: []
-claims: []
+claims:
+- id: C1
+  metric: Recruitment rate
+  paper_value: 6.3
+  unit: '% of reachable/eligible invited patients enrolled'
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results 'Feasibility Outcomes' (Figure 1)
+  author_match: unknown
+  author_repr: null
+  notes: 446 contacted; 105 unreachable, 73 ineligible; 17 of remaining 268 enrolled
+    = 6.3%.
+  target_id: bz-taper-recruitment-rate
+- id: C2
+  metric: Intervention fidelity (study completion)
+  paper_value: 100
+  unit: '% participants completing all 6 study visits'
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Abstract (Key Results) + Results 'Feasibility Outcomes'
+  author_match: unknown
+  author_repr: null
+  notes: All 17 participants completed all 6 virtual pharmacist visits (100% fidelity);
+    0 dropouts.
+  target_id: bz-taper-completion-fidelity
+- id: C3
+  metric: Reduction in benzodiazepine dose at week 10
+  paper_value: 60.5
+  unit: percentage-point reduction from baseline dose
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Abstract (Key Results) + Results 'Exploratory Patient-Centered Outcomes'
+    (Table 3)
+  author_match: unknown
+  author_repr: null
+  notes: Mean change -60.5 percentage points (95% CI -69.9 to -51.3; p<.001); participants
+    took mean 39.4% of starting dose; all reduced dose, 3 stopped completely, 8 reduced
+    >=50%.
+  target_id: bz-dose-reduction-pct-change
+- id: C4
+  metric: Absolute decrease in benzodiazepine dose
+  paper_value: 3.5
+  unit: diazepam milligram equivalents (DME)
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results 'Exploratory Patient-Centered Outcomes' (Table 3)
+  author_match: unknown
+  author_repr: null
+  notes: Mean decrease 3.5 DME (95% CI -4.5 to -2.5; p<.001) from baseline mean 9.0
+    (SD 8.6) DME.
+  target_id: bz-dme-decrease
+- id: C5
+  metric: Change in PROMIS Anxiety T-score (week 0 to 10)
+  paper_value: -3.5
+  unit: PROMIS T-score points
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Abstract (Key Results) + Results 'Exploratory Patient-Centered Outcomes'
+  author_match: unknown
+  author_repr: null
+  notes: Mean anxiety 55.2 -> 51.8 (-3.5, 95% CI -6.5 to -0.7; p=0.02); sleep disturbance
+    unchanged (-1.7, 95% CI -4.9 to 1.5; p=0.30).
+  target_id: bz-promis-anxiety-change
+- id: C6
+  metric: Sustainability of dose reduction at 6 months post-intervention
+  paper_value: 82.4
+  unit: '% of participants on same or lower dose'
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results 'Sustainability of Dose Reductions'
+  author_match: unknown
+  author_repr: null
+  notes: 14/17 (82.4%) on same or lower daily dose at 6 months; 2 returned to pre-intervention
+    dose; 1 higher; 2 more tapered off completely.
+  target_id: bz-six-month-sustainability
 calibration:
   d1: 2
   d2: 0
   d3: 0
   d4: 0
-  d5: 1
+  d5: 2
   confidence:
     d1: 0.85
     d2: 0.8

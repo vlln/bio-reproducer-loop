@@ -4,10 +4,7 @@ paper_title: Single-cell dissection of chronic lung allograft dysfunction reveal
 paper_doi: 10.1172/jci.insight.197579
 pmid: '41122970'
 reproduction_target: result_verification
-task: "\u6838\u5B9E\u8BE5\u8BBA\u6587\u5F15\u7528\u7684\u6570\u636E\u80FD\u5426\u5B9A\
-  \u4F4D\u5E76\u5B9E\u9645\u4E0B\u8F7D\u3001\u4EE3\u7801\u4ED3\u5E93\u662F\u5426\u5B8C\
-  \u6574\u53EF\u7528\uFF1B\u590D\u73B0\u8BBA\u6587\u62A5\u544A\u7684\u5173\u952E\u5B9A\
-  \u91CF\u7ED3\u679C\uFF08\u5982\u6709\uFF09\u3002"
+task: 核实该论文引用的数据能否定位并实际下载、代码仓库是否完整可用；复现论文报告的关键定量结果（如有）。
 data_references:
 - accession: GSE289881
   repository: GEO
@@ -20,13 +17,94 @@ code_references:
   language: Python
   ground_truth: unknown
   notes: transcribed from scores.json evidence
-claims: []
+claims:
+- id: C1
+  metric: 整合分析的总细胞数（含新生成细胞）
+  paper_value: 1576567
+  unit: cells
+  tolerance:
+    type: relative
+    value: 0.05
+  source: 'paper Results (Assembly of CLAD transcriptomic datasets...): "Our integrated
+    analysis encompassed 1,576,567 cells total"'
+  author_match: unknown
+  author_repr: null
+  notes: 其中 141,734 个为新生成（4 个 CLAD explants + 3 个 COVID-19 explants）；整合 15 个已发表研究的
+    IPF/非 IPF ILD/COPD/COVID-19 纤维化数据（摘要称约 1.6M 细胞）。
+  target_id: clad-integrated-cells-1576567
+- id: C2
+  metric: CLAD 样本数（含公开数据补充）
+  paper_value: 8
+  unit: CLAD lungs
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results (Assembly of CLAD transcriptomic datasets...); Discussion
+  author_match: unknown
+  author_repr: null
+  notes: NU 自产 4 例（3 BOS + 1 RAS，retransplantation 获取）+ Khatri et al. 4 例。CLAD 再移植
+    <3% 病例，组织稀缺。
+  target_id: clad-samples-8
+- id: C3
+  metric: scvi 数据整合质量：批次效应去除 silhouette score
+  paper_value: 0.72
+  unit: silhouette score
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results (Data integration and technical optimization for CLAD transcriptomic
+    analysis)
+  author_match: unknown
+  author_repr: null
+  notes: 生物学信息保留 NMI = 0.79；3'V2 vs 5' 化学平台差异识别出 274 个化学偏倚基因。
+  target_id: scvi-integration-silhouette-0-72
+- id: C4
+  metric: CLAD 比较分析中充分代表性的细胞类型数
+  paper_value: 37
+  unit: cell types
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results (Molecular signatures distinguishing CLAD from conserved fibrotic
+    pathways)
+  author_match: unknown
+  author_repr: null
+  notes: 排除 Sun et al.（移植排斥肺作对照）后 37 种细胞类型；pseudo-bulk + ComBat-seq（小样本基准选优）。CLAD
+    AT2 中 6 个基因在所有纤维化疾病共同上调。
+  target_id: clad-cell-types-37
+- id: C5
+  metric: KRT17+KRT5− 致病上皮细胞核心基因签名规模
+  paper_value: 360
+  unit: genes (core signature)
+  tolerance:
+    type: relative
+    value: 0.05
+  source: 'paper Results (Defining pathogenic signatures of KRT17+KRT5- cells in CLAD):
+    "refined 360-gene core signature"'
+  author_match: unknown
+  author_repr: null
+  notes: Top 基因含 CDH2, CPA6, CAPN6, SPINK1 及 COL1A1, PDGFA；EMT 为最富集通路；PDGF/TGF-β/GDF
+    促纤维化通路与 IL-4 免疫调节信号；Xenium 空间验证（IPF 3 例, 289+100 基因 panel）。
+  target_id: krt17-krt5-core-signature-360
+- id: C6
+  metric: COPD 中同种异体排斥基因集显著上调的 q 值（PPI 分析）
+  paper_value: 0.018
+  unit: q value
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results (CLAD-specific transcriptional signatures and comparative
+    disease profiling); Figure 3C
+  author_match: unknown
+  author_repr: null
+  notes: 非移植疾病 COPD 也上调排斥基因集，提示与 CLAD 共享免疫机制。CLAD 未检出显著上调的 disease-unique genes (DUG)。
+  target_id: copd-allograft-rejection-q-0-018
 calibration:
   d1: 2
   d2: 0
   d3: 1
   d4: 0
-  d5: 0
+  d5: 2
   confidence:
     d1: 0.85
     d2: 0.8

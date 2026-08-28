@@ -1,2 +1,20 @@
 schema: questions/v1
-questions: []
+questions:
+- target_id: ad-snvs-distal-re-911
+  question: 复现论文报告的 AD 相关 SNV 位于内含子/基因间（distal-RE）区域的比例 数值
+  unit: '%'
+- target_id: silencer-ad-snvs-1457
+  question: 复现论文报告的 DLPFC 中识别的推定性 silencer adSNV 数量 数值
+  unit: 'silencer adSNVs (enhancer: 3084)'
+- target_id: trednet-enhancer-auroc-0985
+  question: 复现论文报告的 DLPFC TREDNet 模型增强子预测 auROC 数值
+  unit: auROC
+- target_id: rs636317-ctcf-allele-90
+  question: 复现论文报告的 rs636317 保护等位基因 C 在 CTCF ChIP-seq reads 中的占比 数值
+  unit: '%'
+- target_id: dmpra-directional-concordance-634
+  question: 复现论文报告的 dMPRA SNV 中 Δactivity 与 dMPRA 方向一致率（DCR） 数值
+  unit: '%'
+- target_id: sl-locus-microglia-eqtl-70
+  question: 复现论文报告的 SL 位点 radSNV eQTL 中微胶质细胞特异的比例 数值
+  unit: '%'

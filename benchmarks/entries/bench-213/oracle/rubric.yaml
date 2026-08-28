@@ -16,7 +16,7 @@ checks:
     module: verify.py
     function: check_data_references
     config: {}
-  weight: 50
+  weight: 10
 - id: A2
   description: 代码引用可用性判断与 ground truth 一致
   evidence:
@@ -26,4 +26,59 @@ checks:
     module: verify.py
     function: check_code_references
     config: {}
-  weight: 50
+  weight: 10
+- id: C1
+  description: 复现声明 预扫描状态焦虑与 DMN 内 rs-FC 的偏相关（UCR 社区样本）（论文值 -0.32）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C1
+  weight: 16.0
+- id: C2
+  description: 复现声明 预扫描状态焦虑与突显网络内 rs-FC 的偏相关（UCR，非显著）（论文值 -0.19）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C2
+  weight: 16.0
+- id: C3
+  description: 复现声明 预扫描状态焦虑与 DMN 内 rs-FC 的偏相关（NIMH 对照样本，非显著）（论文值 -0.02）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C3
+  weight: 16.0
+- id: C4
+  description: 复现声明 质量控制后最终纳入样本量（UCR / NIMH）（论文值 42）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C4
+  weight: 16.0
+- id: C5
+  description: 复现声明 UCR 样本状态焦虑与扫描中恐惧的相关（事后分析）（论文值 0.33）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C5
+  weight: 16.0

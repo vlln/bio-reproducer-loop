@@ -16,7 +16,7 @@ checks:
     module: verify.py
     function: check_data_references
     config: {}
-  weight: 50
+  weight: 10
 - id: A2
   description: 代码引用可用性判断与 ground truth 一致
   evidence:
@@ -26,4 +26,70 @@ checks:
     module: verify.py
     function: check_code_references
     config: {}
-  weight: 50
+  weight: 10
+- id: C1
+  description: 复现声明 分析样本量（论文值 17790）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C1
+  weight: 13.3333
+- id: C2
+  description: 复现声明 五因子 RSF 模型的 C-index（一致性）（论文值 85.5）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C2
+  weight: 13.3333
+- id: C3
+  description: 复现声明 血清可替宁（吸烟标志物）高/低风险分组的生存树阈值（论文值 4.8）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C3
+  weight: 13.3333
+- id: C4
+  description: 复现声明 血浆葡萄糖高风险阈值（生存树，>143 mg/dL 风险 1.8 vs 0.91）（论文值 143）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C4
+  weight: 13.3333
+- id: C5
+  description: 复现声明 低 GFR 高风险阈值（<69 mL/min/1.73m2）（论文值 69）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C5
+  weight: 13.3333
+- id: C6
+  description: 复现声明 60 岁组白细胞计数的死亡风险上界（论文值 9.5）
+  evidence:
+    artifact_role: answers
+  comparison:
+    comparator: python_verify
+    module: verify.py
+    function: check_claim
+    config:
+      claim_id: C6
+  weight: 13.3333

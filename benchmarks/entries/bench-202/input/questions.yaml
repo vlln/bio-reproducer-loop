@@ -1,2 +1,24 @@
 schema: questions/v1
-questions: []
+questions:
+- target_id: wmh-cohort-n-1243
+  question: 复现论文报告的 Cohort size (>=3 brain MRIs, ADNI+AIBL+OASIS3 combined) 数值
+  unit: participants
+- target_id: wmh-amyloid-cross-sectional-beta
+  question: 复现论文报告的 Cross-sectional association of WMH volume with baseline beta-amyloid
+    burden 数值
+  unit: standardized beta coefficient (per SD centiloid, log-WMH)
+- target_id: wmh-growth-amyloid-slope
+  question: 复现论文报告的 WMH growth rate increase per SD increase in baseline beta-amyloid
+    (centiloid) 数值
+  unit: log-WMH growth slope change per SD centiloid
+- target_id: wmh-fsrp-cross-sectional-beta
+  question: 复现论文报告的 Cross-sectional association of WMH volume with baseline FSRP (vascular
+    risk) 数值
+  unit: standardized beta coefficient (per SD FSRP, log-WMH)
+- target_id: wmh-growth-fsrp-slope
+  question: 复现论文报告的 FSRP association with WMH growth rate over time 数值
+  unit: log-WMH growth slope change per SD FSRP
+- target_id: wmh-growth-antihypertensive-slope
+  question: 复现论文报告的 Anti-hypertensive medication association with WMH growth rate
+    数值
+  unit: log-WMH growth slope change (on treatment vs not)

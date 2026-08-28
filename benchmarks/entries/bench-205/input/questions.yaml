@@ -1,2 +1,21 @@
 schema: questions/v1
-questions: []
+questions:
+- target_id: bz-taper-recruitment-rate
+  question: 复现论文报告的 Recruitment rate 数值
+  unit: '% of reachable/eligible invited patients enrolled'
+- target_id: bz-taper-completion-fidelity
+  question: 复现论文报告的 Intervention fidelity (study completion) 数值
+  unit: '% participants completing all 6 study visits'
+- target_id: bz-dose-reduction-pct-change
+  question: 复现论文报告的 Reduction in benzodiazepine dose at week 10 数值
+  unit: percentage-point reduction from baseline dose
+- target_id: bz-dme-decrease
+  question: 复现论文报告的 Absolute decrease in benzodiazepine dose 数值
+  unit: diazepam milligram equivalents (DME)
+- target_id: bz-promis-anxiety-change
+  question: 复现论文报告的 Change in PROMIS Anxiety T-score (week 0 to 10) 数值
+  unit: PROMIS T-score points
+- target_id: bz-six-month-sustainability
+  question: 复现论文报告的 Sustainability of dose reduction at 6 months post-intervention
+    数值
+  unit: '% of participants on same or lower dose'

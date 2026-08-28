@@ -1,2 +1,23 @@
 schema: questions/v1
-questions: []
+questions:
+- target_id: cmr-lvef-mae-ukb-3344
+  question: 复现论文报告的 LVEF regression MAE on UK BioBank hold-out test set (contrastive
+    pre-trained model) 数值
+  unit: LVEF percentage points (MAE)
+- target_id: cmr-lvef-mae-baseline-4603
+  question: 复现论文报告的 LVEF regression MAE of baseline (traditionally trained, Kinetics-400
+    init) model 数值
+  unit: LVEF percentage points (MAE)
+- target_id: cmr-lvef-mae-kaggle-6880
+  question: 复现论文报告的 LVEF regression MAE on external Kaggle dataset (frozen fine-tuned
+    model) 数值
+  unit: LVEF percentage points (MAE)
+- target_id: cmr-hfref-auc-ukb-088
+  question: 复现论文报告的 HFrEF (LVEF<40%) diagnosis AUC on UK BioBank test set 数值
+  unit: AUC
+- target_id: cmr-amyloidosis-auc-0921
+  question: 复现论文报告的 Internal test AUC for cardiac amyloidosis detection 数值
+  unit: AUC
+- target_id: cmr-ukb-dataset-45623
+  question: 复现论文报告的 UK BioBank dataset size used for validation 数值
+  unit: participants (159,883 cine-CMR scans)

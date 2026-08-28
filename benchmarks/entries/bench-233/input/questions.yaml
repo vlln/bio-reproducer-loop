@@ -1,2 +1,20 @@
 schema: questions/v1
-questions: []
+questions:
+- target_id: senmayo-gene-set-size-125
+  question: 复现论文报告的 SenMayo SASP 基因集规模（及扩展分泌蛋白面板） 数值
+  unit: genes (SenMayo gene set)
+- target_id: brain-p16-p21-shared-senmayo-genes
+  question: 复现论文报告的 小鼠海马中 p16+ 与 p21+ 细胞共表达的 SenMayo 基因数 数值
+  unit: shared genes (Cxcl16, Plaur)
+- target_id: human-skin-cell-populations-16
+  question: 复现论文报告的 人皮肤衰老 scRNA-seq 数据集中鉴定的细胞群数 数值
+  unit: cell populations (human skin)
+- target_id: icam1-p21-tissues-6
+  question: 复现论文报告的 p21+ 细胞中 Icam1 持续表达的受检组织数 数值
+  unit: analyzed tissues (of 6)
+- target_id: sensig-p16-shared-genes-29
+  question: 复现论文报告的 SenSig 中 p16+ 细胞一致表达（≥4 组织）的基因数 数值
+  unit: genes
+- target_id: cellage-p21-datasets-12
+  question: 复现论文报告的 CellAge 基因集中 p21 相关基因（除 Cdkn1a 外）出现的数据集数 数值
+  unit: datasets (of 14)

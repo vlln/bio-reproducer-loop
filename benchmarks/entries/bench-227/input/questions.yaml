@@ -1,2 +1,20 @@
 schema: questions/v1
-questions: []
+questions:
+- target_id: tacq-hr-at-baseline
+  question: 复现论文报告的 TACq time-varying HR at baseline 数值
+  unit: hazard ratio per 1-percentile increase in population-quantile TAC
+- target_id: tacq-hr-12yr
+  question: 复现论文报告的 TACq time-varying HR at 12 years 数值
+  unit: hazard ratio per 1-percentile increase in population-quantile TAC
+- target_id: tacq-hr-fixed-effect
+  question: 复现论文报告的 TACq fixed time-invariant effect HR 数值
+  unit: hazard ratio per 1-percentile increase in population-quantile TAC
+- target_id: cohort-n-participants
+  question: 复现论文报告的 Final cohort sample size 数值
+  unit: participants
+- target_id: age-hr-per-year
+  question: 复现论文报告的 Age HR per additional year 数值
+  unit: hazard ratio per year
+- target_id: female-hr-mortality
+  question: 复现论文报告的 Female vs male all-cause mortality HR 数值
+  unit: hazard ratio (female vs male)

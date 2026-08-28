@@ -4,10 +4,7 @@ paper_title: Regional growth rates of white matter hyperintensities are associat
 paper_doi: 10.1016/j.neurobiolaging.2025.12.006
 pmid: '41483724'
 reproduction_target: result_verification
-task: "\u6838\u5B9E\u8BE5\u8BBA\u6587\u5F15\u7528\u7684\u6570\u636E\u80FD\u5426\u5B9A\
-  \u4F4D\u5E76\u5B9E\u9645\u4E0B\u8F7D\u3001\u4EE3\u7801\u4ED3\u5E93\u662F\u5426\u5B8C\
-  \u6574\u53EF\u7528\uFF1B\u590D\u73B0\u8BBA\u6587\u62A5\u544A\u7684\u5173\u952E\u5B9A\
-  \u91CF\u7ED3\u679C\uFF08\u5982\u6709\uFF09\u3002"
+task: 核实该论文引用的数据能否定位并实际下载、代码仓库是否完整可用；复现论文报告的关键定量结果（如有）。
 data_references:
 - accession: ADNI
   repository: other
@@ -28,13 +25,91 @@ data_references:
   downloadable: 'false'
   notes: transcribed from scores.json evidence
 code_references: []
-claims: []
+claims:
+- id: C1
+  metric: Cohort size (>=3 brain MRIs, ADNI+AIBL+OASIS3 combined)
+  paper_value: 1243
+  unit: participants
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Abstract + Results 'Summary of combined study cohort' / Table 1
+  author_match: unknown
+  author_repr: null
+  notes: 49% female, mean age 71.7 y (SD 7.6). 3589 had >=1 FLAIR MRI; 1243 had >=3
+    MRIs and were analyzed.
+  target_id: wmh-cohort-n-1243
+- id: C2
+  metric: Cross-sectional association of WMH volume with baseline beta-amyloid burden
+  paper_value: 0.27
+  unit: standardized beta coefficient (per SD centiloid, log-WMH)
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Table 2 (primary LME model); Abstract
+  author_match: unknown
+  author_repr: null
+  notes: Estimate 0.27, 95% CI 0.20-0.35, p<0.001, adjusting for age, sex, APOE4,
+    FSRP.
+  target_id: wmh-amyloid-cross-sectional-beta
+- id: C3
+  metric: WMH growth rate increase per SD increase in baseline beta-amyloid (centiloid)
+  paper_value: 0.021
+  unit: log-WMH growth slope change per SD centiloid
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Table 2 (longitudinal slope); Abstract
+  author_match: unknown
+  author_repr: null
+  notes: Estimate 0.021, 95% CI 0.012-0.03, t=4.74, p<0.001. Results text misprints
+    0.027; Table 2 value 0.021 used.
+  target_id: wmh-growth-amyloid-slope
+- id: C4
+  metric: Cross-sectional association of WMH volume with baseline FSRP (vascular risk)
+  paper_value: 0.25
+  unit: standardized beta coefficient (per SD FSRP, log-WMH)
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Table 2
+  author_match: unknown
+  author_repr: null
+  notes: Estimate 0.25, 95% CI 0.14-0.35, p<0.001. Results text gives beta=0.26 (0.15-0.36)
+    for same association; Table 2 value used.
+  target_id: wmh-fsrp-cross-sectional-beta
+- id: C5
+  metric: FSRP association with WMH growth rate over time
+  paper_value: -0.028
+  unit: log-WMH growth slope change per SD FSRP
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Table 2 (longitudinal slope)
+  author_match: unknown
+  author_repr: null
+  notes: Estimate -0.028, 95% CI -0.04 to -0.02, t=-4.7, p<0.001; higher FSRP -> slower
+    WMH progression.
+  target_id: wmh-growth-fsrp-slope
+- id: C6
+  metric: Anti-hypertensive medication association with WMH growth rate
+  paper_value: -0.019
+  unit: log-WMH growth slope change (on treatment vs not)
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results 'FSRP Subcomponent Analysis'; Abstract
+  author_match: unknown
+  author_repr: null
+  notes: 'Slope -0.019, 95% CI -0.03 to -0.007, p=0.002: hypertension treatment slows
+    global WMH progression.'
+  target_id: wmh-growth-antihypertensive-slope
 calibration:
   d1: 1
   d2: 0
   d3: 0
   d4: 0
-  d5: 0
+  d5: 2
   confidence:
     d1: 0.95
     d2: 0.8

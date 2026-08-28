@@ -1,2 +1,19 @@
 schema: questions/v1
-questions: []
+questions:
+- target_id: mtb-ural-clade-size-1604
+  question: 复现论文报告的 Size of lineage 4.2.1.2 (Ural clade C) MDR clade 数值
+  unit: Mtb whole-genome sequences
+- target_id: mtb-clade-mdr-proportion
+  question: 复现论文报告的 Proportion of clade isolates that were MDR (INH+RIF resistant)
+    数值
+  unit: '% of 1604 isolates'
+- target_id: mtb-clade-tmrca-1971
+  question: 复现论文报告的 Time of most recent common ancestor (tMRCA) of lineage 4.2.1.2
+    数值
+  unit: year
+- target_id: mtb-clade-russia-origin-prob
+  question: 复现论文报告的 Root-state probability that clade emerged in Russia 数值
+  unit: probability
+- target_id: mtb-ural-dataset-5909
+  question: 复现论文报告的 Global dataset of lineage 4.2.1/Ural sequences analyzed 数值
+  unit: Mtb whole-genome sequences

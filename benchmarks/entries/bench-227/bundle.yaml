@@ -35,6 +35,6 @@ resources:
   availability: bundled
   path: questions.yaml
   source: urn:benchmark:bench-227:questions
-  sha256: 0c54b67c84c3b6376829ac7d1e1c21f350c3fc4eff7470dd3dffb291b54dc77b
+  sha256: b3df36c160b4d6251377e1be31fd082d97eca5346fc9219f91e1deeffc77714a
   media_type: text/yaml
   license: CC-BY-4.0

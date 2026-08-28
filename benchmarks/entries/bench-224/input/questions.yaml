@@ -1,2 +1,20 @@
 schema: questions/v1
-questions: []
+questions:
+- target_id: nhanes-rsf-sample-17790
+  question: 复现论文报告的 分析样本量 数值
+  unit: adults
+- target_id: rsf-concordance-855
+  question: 复现论文报告的 五因子 RSF 模型的 C-index（一致性） 数值
+  unit: '%'
+- target_id: cotinine-tree-threshold-48
+  question: 复现论文报告的 血清可替宁（吸烟标志物）高/低风险分组的生存树阈值 数值
+  unit: ng/mL
+- target_id: glucose-tree-threshold-143
+  question: 复现论文报告的 血浆葡萄糖高风险阈值（生存树，>143 mg/dL 风险 1.8 vs 0.91） 数值
+  unit: mg/dL
+- target_id: gfr-tree-threshold-69
+  question: 复现论文报告的 低 GFR 高风险阈值（<69 mL/min/1.73m2） 数值
+  unit: mL/min/1.73 m2
+- target_id: wbc-upper-bound-95
+  question: 复现论文报告的 60 岁组白细胞计数的死亡风险上界 数值
+  unit: x10^9/L (approximate)

@@ -4,10 +4,7 @@ paper_title: 'Type 1 Diabetes and Incident Dementia: An Analysis in the All of U
 paper_doi: 10.1212/WNL.0000000000214805
 pmid: '41849727'
 reproduction_target: result_verification
-task: "\u6838\u5B9E\u8BE5\u8BBA\u6587\u5F15\u7528\u7684\u6570\u636E\u80FD\u5426\u5B9A\
-  \u4F4D\u5E76\u5B9E\u9645\u4E0B\u8F7D\u3001\u4EE3\u7801\u4ED3\u5E93\u662F\u5426\u5B8C\
-  \u6574\u53EF\u7528\uFF1B\u590D\u73B0\u8BBA\u6587\u62A5\u544A\u7684\u5173\u952E\u5B9A\
-  \u91CF\u7ED3\u679C\uFF08\u5982\u6709\uFF09\u3002"
+task: 核实该论文引用的数据能否定位并实际下载、代码仓库是否完整可用；复现论文报告的关键定量结果（如有）。
 data_references:
 - accession: null
   repository: other
@@ -20,13 +17,89 @@ code_references:
   language: null
   ground_truth: unknown
   notes: transcribed from scores.json evidence
-claims: []
+claims:
+- id: C1
+  metric: T1DM vs 无糖尿病 发生痴呆 HR（社会人口学调整）
+  paper_value: 2.82
+  unit: HR
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Abstract; Results (HR=2.82; 95% CI 2.28-3.48)
+  author_match: unknown
+  author_repr: null
+  notes: Cox 比例风险模型，另加中年前期因素调整后 HR=2.38 (95% CI 1.84-3.08)
+  target_id: t1dm-dementia-hr-282
+- id: C2
+  metric: T2DM vs 无糖尿病 发生痴呆 HR（社会人口学调整）
+  paper_value: 2.08
+  unit: HR
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results (HR=2.08, 95% CI 1.87-2.31)
+  author_match: unknown
+  author_repr: null
+  notes: 摘要印刷 CI '2.87-2.31' 系笔误；全文为 1.87-2.31；另加中年前期因素调整 HR=2.00 (95% CI 1.76-2.27)
+  target_id: t2dm-dementia-hr-208
+- id: C3
+  metric: 分析样本量（AoU 队列 ≥50 岁参与者）
+  paper_value: 283772
+  unit: participants
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Abstract; Results (283,772 participants; T1DM 5,442 [1.91%]; T2DM
+    51,511 [18.14%])
+  author_match: unknown
+  author_repr: null
+  notes: 平均基线年龄 64.6 (SD 8.9) 岁，56.7% 女性；2,348 人发生痴呆
+  target_id: aou-cohort-n-283772
+- id: C4
+  metric: 平均随访时长
+  paper_value: 2.36
+  unit: years
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results (Over a mean of 2.36 years of follow-up)
+  author_match: unknown
+  author_repr: null
+  notes: 摘要写 2.4 年；全文为 2.36 年；随访数据至 2023-10-10
+  target_id: mean-followup-236-years
+- id: C5
+  metric: DM 分类算法：T1DM EHR 就诊 ≥3 次 判 T1DM 的灵敏度（C-peptide 参照）
+  paper_value: 0.76
+  unit: sensitivity
+  tolerance:
+    type: relative
+    value: 0.05
+  source: 'paper Abstract; Results ''Validation of the Algorithm'' (≥3 encounters:
+    sensitivity 0.76; specificity 0.79)'
+  author_match: unknown
+  author_repr: null
+  notes: 自报糖尿病参照时 ≥1 次就诊：灵敏度 0.59、特异度 0.90；Youden J 指数选阈值，5 折嵌套交叉验证
+  target_id: t1dm-algorithm-sensitivity-076
+- id: C6
+  metric: 女性 T1DM vs 无糖尿病 痴呆 HR（社会人口学调整）
+  paper_value: 3.04
+  unit: HR
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results 'Gender-stratified associations' (women HR=3.04; 95% CI 2.28-4.05;
+    men HR=2.59; 95% CI 1.90-3.54)
+  author_match: unknown
+  author_repr: null
+  notes: 种族分层：Hispanic/Latino HR=3.29 (2.02-5.35)、White HR=2.98 (2.22-4.01)、Other
+    HR=2.38 (1.60-3.55)
+  target_id: t1dm-dementia-hr-women-304
 calibration:
   d1: 1
   d2: 0
   d3: 1
   d4: 0
-  d5: 0
+  d5: 2
   confidence:
     d1: 0.85
     d2: 0.8

@@ -4,10 +4,7 @@ paper_title: 'MntJULiP and Jutils: differential splicing analysis of RNA-seq dat
 paper_doi: 10.1093/nargab/lqaf140
 pmid: '41189648'
 reproduction_target: result_verification
-task: "\u6838\u5B9E\u8BE5\u8BBA\u6587\u5F15\u7528\u7684\u6570\u636E\u80FD\u5426\u5B9A\
-  \u4F4D\u5E76\u5B9E\u9645\u4E0B\u8F7D\u3001\u4EE3\u7801\u4ED3\u5E93\u662F\u5426\u5B8C\
-  \u6574\u53EF\u7528\uFF1B\u590D\u73B0\u8BBA\u6587\u62A5\u544A\u7684\u5173\u952E\u5B9A\
-  \u91CF\u7ED3\u679C\uFF08\u5982\u6709\uFF09\u3002"
+task: 核实该论文引用的数据能否定位并实际下载、代码仓库是否完整可用；复现论文报告的关键定量结果（如有）。
 data_references:
 - accession: null
   repository: SRA
@@ -30,13 +27,92 @@ code_references:
   language: Python
   ground_truth: unknown
   notes: transcribed from scores.json evidence
-claims: []
+claims:
+- id: C1
+  metric: DSR 两两比较 F-value（MntJULiP 协变量模型 vs 竞争者）
+  paper_value: 0.744
+  unit: F-value (2*Sn*Pr/(Sn+Pr))
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results (Method evaluation on control data); Figure 1A
+  author_match: unknown
+  author_repr: null
+  notes: 其次 LeafCutter 0.680。模拟：8M/2F control vs 8F/2M disease，600 个差异基因（200 DE/200
+    DS/200 DE+DS）。
+  target_id: mntjulip-dsr-pairwise-f-value
+- id: C2
+  metric: DSR 两两比较精度（precision）
+  paper_value: 0.945
+  unit: precision (Pr = TP/(TP+FP))
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results (Method evaluation on control data); Figure 1A
+  author_match: unknown
+  author_repr: null
+  notes: 最高精度；sensitivity 0.613 vs DEXSeq 0.628（top）。摘要称 covariate 建模后 precision >90%。
+  target_id: mntjulip-dsr-precision
+- id: C3
+  metric: DSA 两两比较 F-value（MntJULiP vs DESeq2 两个 cutoff 选项）
+  paper_value: 0.886
+  unit: F-value
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results (Method evaluation on control data); Figure 1A
+  author_match: unknown
+  author_repr: null
+  notes: DESeq2 p-val≤0.05 与 q-val≤0.05 分别为 0.843 和 0.727；MntJULiP precision 0.913、sensitivity
+    0.860 vs DESeq2 0.875。
+  target_id: mntjulip-dsa-pairwise-f-value
+- id: C4
+  metric: GTEx 脑 RNA-seq 样本规模
+  paper_value: 1398
+  unit: RNA-seq samples from 13 brain regions
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results (Deconvoluting the effects of covariates on human frontal
+    cortex splicing from GTEx RNA-seq data)
+  author_match: unknown
+  author_repr: null
+  notes: 三个比较之一为 120 个 frontal cortex 样本按年龄组（20s–70s）比较；区域间比较显示小脑/皮层/基底节分组不受 sex/age
+    协变量影响。
+  target_id: gtex-brain-samples-1398
+- id: C5
+  metric: frontal cortex 20s vs 40s 比较中协变量调整后差异剪接基因数
+  paper_value: 931
+  unit: differentially spliced genes
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results (Deconvoluting the effects of covariates...); Supplementary
+    Fig. S6
+  author_match: unknown
+  author_repr: null
+  notes: 不加协变量为 760；以 biological sex 为协变量时显著增加，提示性别特异性分化信号。20s/30s 组样本少（3 和 4）为异常值来源。
+  target_id: frontal-cortex-age-covariate-splicing-genes
+- id: C6
+  metric: 男-女 frontal cortex DSR 比较中 age-at-death 协变量调整后事件数
+  paper_value: 282
+  unit: differential splicing events (DSR)
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results (Deconvoluting the effects of covariates...); Supplementary
+    Fig. S10A
+  author_match: unknown
+  author_repr: null
+  notes: 无协变量 165 事件/148 基因 → 282 事件/221 基因；DSA 相反减少（90→32 事件, 69→22 基因）。83 M vs 37
+    F 样本，29 个样本亚群 (13F/16M) 具独特剪接程序，81 个区分基因。
+  target_id: frontal-cortex-sex-dsr-events-covariate
 calibration:
   d1: 2
   d2: 1
   d3: 1
   d4: 1
-  d5: 0
+  d5: 2
   confidence:
     d1: 0.85
     d2: 0.8

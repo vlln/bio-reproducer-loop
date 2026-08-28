@@ -4,10 +4,7 @@ paper_title: Exposome-wide association study of cognition among older adults in 
 paper_doi: 10.1093/exposome/osaf002
 pmid: '39926246'
 reproduction_target: result_verification
-task: "\u6838\u5B9E\u8BE5\u8BBA\u6587\u5F15\u7528\u7684\u6570\u636E\u80FD\u5426\u5B9A\
-  \u4F4D\u5E76\u5B9E\u9645\u4E0B\u8F7D\u3001\u4EE3\u7801\u4ED3\u5E93\u662F\u5426\u5B8C\
-  \u6574\u53EF\u7528\uFF1B\u590D\u73B0\u8BBA\u6587\u62A5\u544A\u7684\u5173\u952E\u5B9A\
-  \u91CF\u7ED3\u679C\uFF08\u5982\u6709\uFF09\u3002"
+task: 核实该论文引用的数据能否定位并实际下载、代码仓库是否完整可用；复现论文报告的关键定量结果（如有）。
 data_references:
 - accession: NHANES 1999-2014
   repository: NHANES
@@ -26,13 +23,94 @@ code_references:
   language: R
   ground_truth: hollow
   notes: transcribed from scores.json evidence
-claims: []
+claims:
+- id: C1
+  metric: 分析样本量（至少有一种化学物测量的参与者）
+  paper_value: 4982
+  unit: participants
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Abstract; Results (Table 1)
+  author_match: unknown
+  author_repr: null
+  notes: NHANES 三个周期 (1999-2000, 2011-2012, 2013-2014) 合并；mean age 69.8 y, 55.0% female,
+    78.2% Non-Hispanic White, 77.0% ≥ high school。
+  target_id: nhans-exwas-cohort-n-4982
+- id: C2
+  metric: DSST 平均分（连续结局主分析）
+  paper_value: 50.4
+  unit: DSST score points (mean)
+  tolerance:
+    type: relative
+    value: 0.05
+  source: 'paper Abstract; Results (Table 1: 50.42, SD 17.38)'
+  author_match: unknown
+  author_repr: null
+  notes: 摘要报 mean 50.4 (SD=17.4)；Table 1 加权值 50.42 (17.38)，缺失 721。MCI 截断为 survey-weighted
+    25th percentile (DSST ≤ 37)。
+  target_id: exwas-mean-dsst-score
+- id: C3
+  metric: 血清可替宁每 1-SD log2 浓度增量与 DSST 的关联（主分析）
+  paper_value: -2.71
+  unit: DSST points per SD of log2-scaled cotinine
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Abstract; Results; Table 2 (n=4687, 95% CI −3.69, −1.73, unadj P=8.9e-6,
+    FDR adj P=0.001)
+  author_match: unknown
+  author_repr: null
+  notes: 5/147 暴露在 P<0.01 显著；仅 cotinine 与 blood m-/p-xylene 通过 FDR<0.05。cotinine 是测量人数最多的化学物
+    (n=4687)。
+  target_id: exwas-cotinine-dsst-beta
+- id: C4
+  metric: 尿钨每 1-SD log2 浓度增量与 DSST 的关联（主分析）
+  paper_value: -1.34
+  unit: DSST points per SD of log2-scaled urinary tungsten
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Abstract; Results; Table 2 (n=1573, 95% CI −2.11, −0.56, unadj P=0.002,
+    FDR adj P=0.08)
+  author_match: unknown
+  author_repr: null
+  notes: 钨是本研究新发现的负向关联（金属类）；既往 NHANES 研究 (n=888) CERAD 结果方向一致。
+  target_id: exwas-tungsten-dsst-beta
+- id: C5
+  metric: 主分析中 P<0.01 显著关联的化学物数量
+  paper_value: 5
+  unit: exposures out of 147
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Abstract; Results (Associations between chemical concentrations and
+    DSST scores); Figure 4
+  author_match: unknown
+  author_repr: null
+  notes: 显著暴露：serum cotinine、urinary tungsten（负向）；urinary benzophenone-3、blood m-/p-xylene、urinary
+    2-methylhippuric acid（正向）。147 化学物来自 14 个化学类别。
+  target_id: exwas-five-significant-exposures
+- id: C6
+  metric: 血清可替宁每 1-SD log2 浓度增量与 MCI 的患病率比（modified Poisson）
+  paper_value: 1.23
+  unit: prevalence ratio (RR)
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results; Table 3 (n=4687, 95% CI 1.14, 1.33, unadj P=1.5e-5, FDR adj
+    P=0.002)
+  author_match: unknown
+  author_repr: null
+  notes: MCI 结局（DSST≤37）；另 4 个化学物与更低 MCI 患病率相关：2-methylhippuric acid RR 0.81、m-/p-xylene
+    RR 0.80、PFOA RR 0.83、zinc RR 0.84。正常肾功能亚组 cotinine RR 1.24 (1.10, 1.39)。
+  target_id: exwas-cotinine-mci-prevalence-ratio
 calibration:
   d1: 0
   d2: 0
   d3: 1
   d4: 0
-  d5: 0
+  d5: 2
   confidence:
     d1: 0.85
     d2: 0.8

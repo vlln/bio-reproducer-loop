@@ -1,2 +1,20 @@
 schema: questions/v1
-questions: []
+questions:
+- target_id: cd-female-body-fat-pct
+  question: 复现论文报告的 Total body fat percentage, female CD vs BMI-similar controls 数值
+  unit: '% total body fat (mean)'
+- target_id: cd-male-body-fat-pct
+  question: 复现论文报告的 Total body fat percentage, male CD vs BMI-similar controls 数值
+  unit: '% total body fat (mean)'
+- target_id: cd-female-lean-mass-pct
+  question: 复现论文报告的 Total lean mass percentage, female CD vs controls 数值
+  unit: '% total lean mass (mean)'
+- target_id: cd-male-bone-mass-pct
+  question: 复现论文报告的 Total bone mass percentage, male CD vs controls 数值
+  unit: '% total bone mass (mean)'
+- target_id: cd-height-zscore
+  question: 复现论文报告的 Height z-score, CD vs BMI-similar controls 数值
+  unit: height z-score (median)
+- target_id: cd-hgba1c-bmiz-correlation
+  question: 复现论文报告的 Correlation of HgbA1c with BMI z-score in CD group 数值
+  unit: Spearman partial correlation r_s

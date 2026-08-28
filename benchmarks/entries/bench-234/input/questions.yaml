@@ -1,2 +1,20 @@
 schema: questions/v1
-questions: []
+questions:
+- target_id: clad-integrated-cells-1576567
+  question: 复现论文报告的 整合分析的总细胞数（含新生成细胞） 数值
+  unit: cells
+- target_id: clad-samples-8
+  question: 复现论文报告的 CLAD 样本数（含公开数据补充） 数值
+  unit: CLAD lungs
+- target_id: scvi-integration-silhouette-0-72
+  question: 复现论文报告的 scvi 数据整合质量：批次效应去除 silhouette score 数值
+  unit: silhouette score
+- target_id: clad-cell-types-37
+  question: 复现论文报告的 CLAD 比较分析中充分代表性的细胞类型数 数值
+  unit: cell types
+- target_id: krt17-krt5-core-signature-360
+  question: 复现论文报告的 KRT17+KRT5− 致病上皮细胞核心基因签名规模 数值
+  unit: genes (core signature)
+- target_id: copd-allograft-rejection-q-0-018
+  question: 复现论文报告的 COPD 中同种异体排斥基因集显著上调的 q 值（PPI 分析） 数值
+  unit: q value

@@ -4,19 +4,94 @@ paper_title: Random survival forest for predicting the combined effects of multi
 paper_doi: 10.1038/s41598-024-66261-0
 pmid: '38971926'
 reproduction_target: result_verification
-task: "\u6838\u5B9E\u8BE5\u8BBA\u6587\u5F15\u7528\u7684\u6570\u636E\u80FD\u5426\u5B9A\
-  \u4F4D\u5E76\u5B9E\u9645\u4E0B\u8F7D\u3001\u4EE3\u7801\u4ED3\u5E93\u662F\u5426\u5B8C\
-  \u6574\u53EF\u7528\uFF1B\u590D\u73B0\u8BBA\u6587\u62A5\u544A\u7684\u5173\u952E\u5B9A\
-  \u91CF\u7ED3\u679C\uFF08\u5982\u6709\uFF09\u3002"
+task: 核实该论文引用的数据能否定位并实际下载、代码仓库是否完整可用；复现论文报告的关键定量结果（如有）。
 data_references: []
 code_references: []
-claims: []
+claims:
+- id: C1
+  metric: 分析样本量
+  paper_value: 17790
+  unit: adults
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Abstract; Results (17,790 adults; median age 46 [mean 47.38, SD 19.28];
+    9145 [51.4%] women; 1932 [10.9%] deceased)
+  author_match: unknown
+  author_repr: null
+  notes: 含完整生理指标与人口学数据且可随访的成年人
+  target_id: nhanes-rsf-sample-17790
+- id: C2
+  metric: 五因子 RSF 模型的 C-index（一致性）
+  paper_value: 85.5
+  unit: '%'
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results (concordance of 85.5%); Fig.1 图注 (5 factors, 70.12%, n=17,790)
+  author_match: unknown
+  author_repr: null
+  notes: 18 因子模型 72.52%、10 因子 71.09%；单因子生存树 61.1-64.8%，证明多因子联合优于单因子
+  target_id: rsf-concordance-855
+- id: C3
+  metric: 血清可替宁（吸烟标志物）高/低风险分组的生存树阈值
+  paper_value: 4.8
+  unit: ng/mL
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results 'Visualization of risk groups' (threshold of 4.8 ng/mL between
+    smokers and non-smokers/passive smokers)
+  author_match: unknown
+  author_repr: null
+  notes: 低风险男性组内再以 0.059 ng/mL 区分非吸烟者与被动吸烟者；男性相对风险 1.2 vs 女性 0.78
+  target_id: cotinine-tree-threshold-48
+- id: C4
+  metric: 血浆葡萄糖高风险阈值（生存树，>143 mg/dL 风险 1.8 vs 0.91）
+  paper_value: 143
+  unit: mg/dL
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results 'Visualization of risk groups' (plasma glucose >143 mg/dL,
+    1.8 against 0.91)
+  author_match: unknown
+  author_repr: null
+  notes: 低风险组内女性 <111 mg/dL 风险降至 0.66 vs 0.90；男性 <89 mg/dL 风险升至 1.60 vs 1.1
+  target_id: glucose-tree-threshold-143
+- id: C5
+  metric: 低 GFR 高风险阈值（<69 mL/min/1.73m2）
+  paper_value: 69
+  unit: mL/min/1.73 m2
+  tolerance:
+    type: relative
+    value: 0.05
+  source: 'paper Results ''Visualization of risk groups'' (low GFR <69 mL/min/1.73
+    m2: 0.98 vs 0.67 females, 1.5 vs 1.1 males)'
+  author_match: unknown
+  author_repr: null
+  notes: 男性高 GFR >104 亦升高风险；与临床指南下限 60 及既往研究 64.6 基本一致
+  target_id: gfr-tree-threshold-69
+- id: C6
+  metric: 60 岁组白细胞计数的死亡风险上界
+  paper_value: 9.5
+  unit: x10^9/L (approximate)
+  tolerance:
+    type: relative
+    value: 0.05
+  source: paper Results (models detect an upper bound around 9.5 for white blood cell
+    count)
+  author_match: unknown
+  author_repr: null
+  notes: 60 岁组其他截止点：可替宁 ~2 ng/mL、GFR ~70 与 ~90、血糖 ~96 与 ~116 mg/dL；WBC 5%/50%/95%
+    分位为 4.1/6.6/10.6
+  target_id: wbc-upper-bound-95
 calibration:
   d1: 2
   d2: 2
   d3: 1
   d4: 1
-  d5: 1
+  d5: 2
   confidence:
     d1: 0.95
     d2: 0.95
