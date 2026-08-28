@@ -1,15 +1,19 @@
 id: bench-222
 version: 2.1.0
 protocol_version: '2.0'
-oracle_version: 1.1.0
+oracle_version: 2.0.0
 title: 'TorchXRayVision: A library of chest X-ray datasets and models'
 scenario: mixed
 difficulty: medium
 input_dir: input/
 oracle_dir: oracle/
-description: 'ClaroAI-Bench entry (BL-011). PMID , DOI 2111.00595, modality imaging. reproduction_target=result_verification. Scored task: 5 quantitative claim(s) + D1-D3 evidence.'
+description: 'ClaroAI-Bench entry (BL-011). PMID , DOI 2111.00595, modality imaging.
+  reproduction_target=result_verification. Scored task: 5 quantitative claim(s) +
+  D1-D3 evidence.'
 reproduction_target: result_verification
-task: 复现该论文报告的关键定量结果（DenseNet121 parameter count、ResNet50 parameter count、NIH ChestXray14 DenseNet121 Cardiomegaly AUROC、NIH ChestXray14 DenseNet121 Hernia AUROC、CheXpert DenseNet121 Effusion AUROC），并与论文发表的数值核对；同时核实论文引用的数据可定位、可下载，以及代码仓库是否可用。不需要复现论文的全部图表与分析。
+task: 复现该论文报告的关键定量结果（DenseNet121 parameter count、ResNet50 parameter count、NIH ChestXray14
+  DenseNet121 Cardiomegaly AUROC、NIH ChestXray14 DenseNet121 Hernia AUROC、CheXpert
+  DenseNet121 Effusion AUROC），并与论文发表的数值核对；同时核实论文引用的数据可定位、可下载，以及代码仓库是否可用。不需要复现论文的全部图表与分析。
 complexity_profile:
   data:
     data_size: medium
