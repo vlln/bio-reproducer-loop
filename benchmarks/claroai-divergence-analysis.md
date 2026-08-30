@@ -38,7 +38,7 @@ P2 权威时点（git 7257846）oracle 计数：**35 篇中 16 篇有 claims（4
 | 222 | 2 | PARTIAL 30 | 0/5：两个参数量 + 3 个 AUROC 均无复现值 | **数值全败，仅靠 A1/A2** |
 | 203 | 2 | PARTIAL 30 | 0/1：LME p 值无复现值 | 未复现 |
 | 206 | 2 | PARTIAL 30 | 0/3：Flu/乳腺/宫颈三条 PR claims 全无复现值 | 未复现 |
-| 200 | 2 | **FAILED 0** | 0/2：Fig4A DEG 肿瘤 599→163、正常 1390→23（偏差 98%） | **GEO 标签互换未检测** |
+| 200 | 2 | **FAILED 0** | 0/2：Fig4A DEG 肿瘤 599→163（偏差 72.8%）、正常 1390→23（偏差 98.3%） | **GEO 标签互换未检测** |
 | 231 | 2 | **FAILED 15** | 0/2：KNN-5、线性探针 accuracy 无复现值 | UNI gated + 无 GPU |
 | 209 | n/a（wet-lab） | FAILED 17.5 | 1/4：Mann-Whitney U 9.35e6→9.3466e6 ✓；**p 值 1.83e-9→1.83（少 e-9 数量级）**、Pearson 无复现值 | 1 复现，p 值数量级错误 |
 | 229 | 1 | FAILED 15 | **0/4**：multi/ATAC/RNA/spatial 均无复现值（P2 最终） | 全部缺证据 |
@@ -48,6 +48,9 @@ P2 权威时点（git 7257846）oracle 计数：**35 篇中 16 篇有 claims（4
 > （PARTIAL 32.5）；P2 最终重评（eval-b229-final.json / reval35.txt）为 **0/4**，
 > 以最终版为准。222 的 P2 最终评估仅存在于 reval35.txt（0/5），`/tmp/bl012` 无对应
 > JSON 文件——评估产物追溯缺口，建议补登 calibration-assets。
+> 另注：reval35.txt 中 `bench-223|PARTIAL|50.0|0/0` 为 **AUROC claim 恢复前的过期快照**
+> （权威 P2 表与 eval-bench-223-new.json 均为 REPRODUCED 85，AUROC 0.9961≥0.95）；
+> 引用 reval35 时须以本注区分，勿误引 223 行。
 
 ## 2. 差异根因归类
 
@@ -62,11 +65,17 @@ P2 权威时点（git 7257846）oracle 计数：**35 篇中 16 篇有 claims（4
 
 ### 2.2 作者 D5=2 但我们 PARTIAL——3 篇，证据面缺口
 
-- bench-203（LME 无复现值）、bench-206（3 条 PR 无复现值）、bench-210（nuclei 无
-  复现值）：**系统执行了但产物没落成可解析数值**——这正是 ADR-0011 证据面切换
-  （claims 须从 answers.csv 定位）要解决的问题。旧协议 run 无法追溯。
+- bench-201（2/3：Fig2 两条复现，power_selection 无复现值）、bench-203（LME 无复现
+  值）、bench-206（3 条 PR 无复现值）：**系统执行了但产物没落成可解析数值**——这正
+  是 ADR-0011 证据面切换（claims 须从 answers.csv 定位）要解决的问题。旧协议 run
+  无法追溯。
+- 注：bench-210 虽属 D5=2 且含 1 条 claim 缺口（nuclei 无复现值），但其 verdict 为
+  REPRODUCED 65.0（donors 299 复现），归 §1 表而非本节。
 
 ### 2.3 有值但错 / 数值异常——2 篇
+
+> 注：bench-200 同为"有值但错"（Fig4A VIOLATED），但其根因已在 §2.1 归类为 GEO 标签
+> 互换，此处不重复计入；"有值但错"共 3 篇（200/209/225），见 §2.4。
 
 - bench-209：p 值 1.83e-9 被记成 1.83（丢数量级）→ 单条 claim 判 FAILED（wet-lab，
   作者 D5 n/a，此失败不影响"我们 vs 作者计算类"比较）。
@@ -102,6 +111,7 @@ P2 权威时点（git 7257846）oracle 计数：**35 篇中 16 篇有 claims（4
 1. 试点口径下，数值层真正可比的只有 16 篇；"我们复现了作者失败的 5 篇"不成立。
 2. 真实的系统能力差距集中在 **3 篇**（bench-200 标签互换、bench-231 gated+GPU、
    bench-222 数值全败），与作者系统的差距是**具体方法/落盘缺陷**而非量级差距；
-   另有 3 篇（203/206/210）为证据面缺口（结果未落盘为可评分数值）。
+   另有 3 篇（201/203/206）为证据面缺口（结果未落盘为可评分数值；210 同含 1 条
+   claim 缺口但整体 REPRODUCED 65）。
 3. 大量 PARTIAL/FAILED 的根因是**证据面缺口**——S2 + ADR-0011 证据面切换正是为此；
    冻结 oracle v2.0.0 下的正式批次（S5）才能给出可发布的结论。
