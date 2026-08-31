@@ -223,6 +223,86 @@ harness 的 dind 容器仅供开发/校准——两者不可混同（run-entry.s
 - `reporter.py`：生成 summary.json 报告
 - `system_artifact.py`（369 行）：构建/校验 opaque 系统产物（被测系统的发布包）
 
+### 3.9 执行层文件关系（调用链与依赖）
+
+执行层 10 个文件 + 1 个适配器，按**两条执行路径**组织；两条路径共享入口与评估，
+差异只在"被测系统跑在哪"。
+
+```
+                        ┌────────────────────────────────────────────────┐
+                        │ cli.py  cmd_run  (入口，8 个子命令)              │
+                        └───────────────┬────────────────────────────────┘
+                                        │ _build_executor(args)
+                        ┌───────────────┴───────────────────┐
+                        │ backend=docker-validation         │ backend=formal (默认)
+                        ▼                                   ▼
+              ┌───────────────────┐               ┌──────────────────────┐
+              │ sandbox.py        │               │ worker.py            │
+              │ DockerSandbox     │               │ QemuWorker           │
+              │ (校准/开发路径)     │               │ (正式发布路径, ADR-0009)│
+              └─────────┬─────────┘               └──────────┬───────────┘
+                        │ 二者实现同一接口：execution.py 的                  │
+                        │ ExecutionRequest/ExecutionError（executor-neutral）│
+                        ▼                                   ▼
+              ┌──────────────────────────────────────────────────────┐
+              │ runner.py  run_entry(entry, runs, sandbox)           │
+              │   每次 run：validate → stage → 执行 → 收集结果         │
+              └───────────────┬──────────────────────────────────────┘
+                              │ sandbox.run(ExecutionRequest)
+                              ▼
+              ┌──────────────────────────────────────────────────────┐
+              │ adapters/loopflow.py  run()  （唯一引擎耦合层）         │
+              │   1. bundle_validator.validate_entry(entry)  ← 先验 ✓ │
+              │   2. 读 metadata / stage input / resolve paper        │
+              │   3. 组装 loopflow 命令 (+questions_inject 注入段)     │
+              │   4. 执行 → repro-data/ 产物                          │
+              │   5. build_submission_from_existing() 反向组装        │
+              └───────────────┬──────────────────────────────────────┘
+                              │ 输出 submission.json + repro-data/
+                              ▼
+              ┌──────────────────────────────────────────────────────┐
+              │ independent_evaluator.py  evaluate_submission()      │
+              │   逐条执行 check → entry/oracle/verify.py            │
+              │   (动态导入, _run_python_verifier)                    │
+              │   汇总 → verdict/score（NO-EVIDENCE 三态）            │
+              └───────────────┬──────────────────────────────────────┘
+                              │
+                              ▼
+              ┌──────────────────────────────────────────────────────┐
+              │ reporter.py  summary.json  (可选报告层)               │
+              │ release_gate.py  require_formal_submission  (发布门禁) │
+              │ system_artifact.py  build/validate  (系统产物包)      │
+              └──────────────────────────────────────────────────────┘
+```
+
+**依赖关系明细**（谁 import 谁）：
+
+| 文件 | 直接依赖 | 被谁依赖 |
+|------|---------|---------|
+| `cli.py` | sandbox/worker（经 `_build_executor`）、runner、bundle_validator、execution、release_gate（cmd_release_check）、system_artifact（cmd_build/validate_system） | 测试入口 |
+| `runner.py` | execution、adapters/loopflow | cli.cmd_run |
+| `adapters/loopflow.py` | **bundle_validator**（validate_entry 前置）、execution、sandbox（默认 DockerSandbox）、harness/questions_inject | runner（sandbox.run 的目标） |
+| `sandbox.py` | execution | cli（docker-validation）、loopflow（默认） |
+| `worker.py` | execution、system_artifact（validate_system_artifact）、sandbox 相关 | cli（formal 分支）、worker_image/smoke.py |
+| `bundle_validator.py` | schemas/*.json | loopflow、cli、evaluate_run、independent_evaluator（经 validate_entry） |
+| `independent_evaluator.py` | execution、oracle/verify.py（动态） | evaluate_run.py、测试 |
+| `execution.py` | 无（纯数据契约） | sandbox/worker/runner/loopflow |
+| `release_gate.py` | execution | cli.cmd_release_check |
+| `system_artifact.py` | execution | cli、worker |
+| `reporter.py` | 无（读 submission 结果） | cli.cmd_report |
+
+**两条路径的现状（重要，防误读）**：
+- **docker-validation 路径**（sandbox.py + harness/run-entry.sh）：**35 个校准 run 全部
+  走它**——是唯一被实际执行过的路径。
+- **formal 路径**（worker.py + release_gate + system_artifact 构建）：代码完成、有单元
+  契约测试（test_vm_worker_contract.py / test_system_artifact.py），但 **从未端到端
+  跑过真 VM**——远端未装 qemu（AGENTS.local 记载 "formal-vm 需 qemu（远端未装）"）。
+  **S5 正式批次的第一个动作就是装 qemu + 跑通 formal-vm**；在此之前，这些文件属于
+  "已验证设计、未投入使用"的正式发布预留，不是冗余代码（删掉则 S5 需重写）。
+- **评估与入口层两路径共享**：bundle_validator → independent_evaluator → verify.py
+  与"被测系统跑在哪"无关——无论容器还是 VM，评分链完全相同（这正是
+  executor-neutral 设计的目的：ExecutionRequest 抽象隔离了执行后端）。
+
 ---
 
 ## 4. 执行 harness：`benchmarks/harness/`
@@ -326,4 +406,6 @@ runner/评估协议稳定 ✓、但**正式 VM 批次未跑**（S5 未执行）�
 执行）→ 独立评估器（只读产物评分）** 四段式；最核心的架构约束是 ADR-0011 的
 "证据面收缩到标准格式真实产物"——系统自述不算数，只有落盘的 answers.csv/
 sha256sums/digests 才算数；量具（oracle v2.0.0）已冻结，但正式结果尚需 S5 一次性
-VM 批次才能发布。
+VM 批次才能发布。执行层当前只走通 docker-validation 路径（sandbox.py + run-entry.sh），
+formal 路径（worker.py + release_gate + system_artifact）为已验证设计、尚未端到端
+跑通真 VM（见 §3.9）。
