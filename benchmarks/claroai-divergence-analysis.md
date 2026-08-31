@@ -46,11 +46,14 @@ P2 权威时点（git 7257846）oracle 计数：**35 篇中 16 篇有 claims（4
 
 > 注：229 早期评估（eval-bench-229-new.json）曾记录 multi 计数 57491→57491 ✓
 > （PARTIAL 32.5）；P2 最终重评（eval-b229-final.json / reval35.txt）为 **0/4**，
-> 以最终版为准。222 的 P2 最终评估仅存在于 reval35.txt（0/5），`/tmp/bl012` 无对应
-> JSON 文件——评估产物追溯缺口，建议补登 calibration-assets。
+> 以最终版为准。222 的 P2 最终评估已**固化到持久区**：
+> `/storeData/gs/claroai-calibration/scripts/eval-bench-222-final.json`
+> （2026-08-31 用 P2 时点 7257846 代码重跑，PARTIAL 30.0、C1–C5 全 "no reproduced
+> value"、0/5，与 reval35.txt 一致；`/tmp/bl012` 的 eval-bench-222-new.json 是
+> 0-claims 时点的过期版 REPRODUCED 100）。追溯记录已补登 calibration-assets.md。
 > 另注：reval35.txt 中 `bench-223|PARTIAL|50.0|0/0` 为 **AUROC claim 恢复前的过期快照**
 > （权威 P2 表与 eval-bench-223-new.json 均为 REPRODUCED 85，AUROC 0.9961≥0.95）；
-> 引用 reval35 时须以本注区分，勿误引 223 行。
+> 引用 reval35 时须以本注区分，勿误引 223 行（已补登 calibration-assets.md）。
 
 ## 2. 差异根因归类
 
