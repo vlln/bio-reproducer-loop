@@ -194,6 +194,14 @@ bench-208/209/222/225 的 scores.json 无 D5 evidence，从论文作者复现产
   （REPRODUCED 85，AUROC 0.996 ≥ 0.95）
 - 教训：converter 重生成换入会覆盖手工补的 claims——手工补后需回归检查
 
+**评估产物追溯补登（2026-08-31）**：
+- **bench-222 最终评估 JSON 已固化**：`/storeData/gs/claroai-calibration/scripts/
+  eval-bench-222-final.json`（P2 时点代码重跑，PARTIAL 30.0、C1–C5 全部
+  "no reproduced value"、0/5）。此前该结果仅存在于 reval35.txt 汇总行，`/tmp/bl012`
+  只有 0-claims 时点的过期 eval-bench-222-new.json（REPRODUCED 100）——追溯缺口已闭合。
+- **reval35.txt 的 bench-223 行为过期快照**（PARTIAL 50.0、0/0）：是 AUROC claim 恢复前
+  的中间评估；权威值为 REPRODUCED 85（见上）。引用 reval35.txt 时须注意，勿误引 223 行。
+
 ## P0：幽灵进程根因与修复（2026-08-18，loopflow idle timeout）
 
 **根因**：loopflow `CliTransport`（cli.py）docstring 声称"Default 300s"超时但从未实现——
