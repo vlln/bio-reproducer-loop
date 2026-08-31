@@ -1,0 +1,7 @@
+HTTP_CODE: 000 (timeout)
+REDIRECT_URL: 
+CONTENT_TYPE: 
+SIZE: 0
+TIME: >30s (timeout)
+NOTE: NHANES-III homepage (https://wwwn.cdc.gov/nchs/nhanes/Default.aspx) timed out after 30s. However, the NHANES-III data page (https://wwwn.cdc.gov/nchs/nhanes/nhanes3/Default.aspx) returned HTTP 200 with 376KB content.
+

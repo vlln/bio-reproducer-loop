@@ -1,0 +1,4 @@
+REPOSITORY       TAG       DIGEST                                                                    IMAGE ID       CREATED         SIZE
+lead-cvd-r-env   4.2.0     sha256:0b69aeb7eee170ddc091de57f9483b9086fc7d600d3e8b3ee3b9236477a93601   0b69aeb7eee1   4 minutes ago   1.82GB
+hello-world      latest    sha256:5dd0d3e6e255913fc30f90b9f2b1d359cc2cbdb48090cc4b65f1676e203243cc   5dd0d3e6e255   5 months ago    21.8kB
+rocker/r-ver     4.2.0     sha256:53ae350adb0d7807533bc27026923ef1a02bcd9b15e7df016a48b9ca9a003b3a   53ae350adb0d   2 years ago     1.21GB

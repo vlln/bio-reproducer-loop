@@ -138,10 +138,11 @@ C1-Cn 平分 80）、bundle sha256 更新。
 converter 转录自作者审计输出（scores.json）有已知错误，且 19/35 篇零 claims——
 必须从论文原文人工策展，量具才可信。S2 后 oracle v2.0.0 冻结。
 
-### 2.4 `backfill_evidence_switch.py` + `cli.py`
+### 2.4 `cli.py`（转换器入口）
 
 - `cli.py`：转换器命令行入口
-- `backfill_evidence_switch.py`：证据面切换时对既有产物的回填工具（一次性）
+- `backfill_evidence_switch.py`：证据面切换时对既有产物的回填工具（**一次性**，
+  2026-08-26 已用完 → 归档至 `docs/plans/0026-file-centric-artifacts/archive/`）
 
 ---
 
@@ -261,9 +262,13 @@ sha256sums、digests、routing.jsonl 等）。PASS=19 FAIL=0 于 run7。
 
 ### 4.4 辅助
 
-- `crosscheck-prototype.py`：answers 交叉核对原型（source_file 定位）
+- `verify-0026-run.sh`：19 项契约检查（**已固化为 pytest**：
+  `tests/contract/test_verify_run_contract.py`，fixture 为 run7 真实产物快照）
 - `harness-probe.sh`：harness 前置探针（网络 3/3、技能前置）——BL-019 教训：
   "任何网络不通/技能坏了的判断必须先跑它"
+- `crosscheck-prototype.py` / `backfill_evidence_switch.py`：原型与一次性迁移
+  （**已归档**至 `docs/plans/0026-file-centric-artifacts/archive/`，逻辑已分别
+  内嵌 converter verify 模板与 35 entry 现状）
 - `answers.csv` / `table2_q91_results.csv`：样例/夹具
 
 ---

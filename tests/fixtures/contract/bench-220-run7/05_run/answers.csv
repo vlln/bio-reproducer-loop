@@ -1,0 +1,4 @@
+target_id,value,unit,source_file
+blood-lead-cvd-hr,1.63,value,results/table2_cvd_hr_results.csv
+tibia-lead-cvd-hr,3.32,value,results/table2_cvd_hr_results.csv
+patella-lead-cvd-hr,2.42,value,results/table2_cvd_hr_results.csv

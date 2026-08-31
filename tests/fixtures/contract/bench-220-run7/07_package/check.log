@@ -1,0 +1,5 @@
+=== 检查前置条件（只要求 Docker） ===
+OK: 分析镜像 lead-cvd-r-env:4.2.0 已存在
+OK: 分析数据 pbmort3.rda 已存在 (2.7M)
+OK: 前置条件满足（仅需 Docker；分析环境在镜像内）
+EXIT=0

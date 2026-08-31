@@ -1,0 +1,5 @@
+HTTP_CODE: 200
+FINAL_URL: https://wwwn.cdc.gov/nchs/nhanes/nhanes3/datafiles.aspx
+CONTENT_TYPE: text/html; charset=utf-8
+SIZE: 434429
+TIME: 2.377260s

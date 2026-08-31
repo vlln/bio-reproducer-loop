@@ -1,6 +1,0 @@
-target,value,unit,source_file
-blood_lead_cvd_hr,1.63390378426855,ratio,table2_q91_results.csv
-tibia_lead_cvd_hr,3.325,ratio,table2_q91_results.csv
-patella_lead_cvd_hr,2.42,ratio,table2_q91_results.csv
-fabricated_hr,2.99,ratio,table2_q91_results.csv
-wrong_source_hr,1.63390378426855,ratio,table3_paf_results.csv

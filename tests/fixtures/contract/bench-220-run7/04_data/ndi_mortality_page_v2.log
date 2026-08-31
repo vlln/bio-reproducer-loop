@@ -1,0 +1,6 @@
+HTTP_CODE: 200
+REDIRECT_URL: 
+FINAL_URL: https://www.cdc.gov/nchs/linked-data/mortality-files/
+CONTENT_TYPE: text/html
+SIZE: 52345
+TIME: 2.023189s

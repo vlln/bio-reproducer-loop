@@ -1,0 +1,10 @@
+HTTP_CODE: 404
+REDIRECT_URL: 
+CONTENT_TYPE: text/html
+SIZE: 20905
+TIME: 7.339574s
+HTTP_CODE: 200
+FINAL_URL: https://www.cdc.gov/nchs/linked-data/mortality-files/
+CONTENT_TYPE: text/html
+SIZE: 52345
+TIME: 0.671187s

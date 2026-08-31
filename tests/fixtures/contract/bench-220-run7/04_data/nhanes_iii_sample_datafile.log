@@ -1,0 +1,5 @@
+HTTP_CODE: 200
+FINAL_URL: https://wwwn.cdc.gov/nchs/data/nhanes3/1a/adult.dat
+CONTENT_TYPE: text/plain
+SIZE: 67107314
+TIME: 35.521348s

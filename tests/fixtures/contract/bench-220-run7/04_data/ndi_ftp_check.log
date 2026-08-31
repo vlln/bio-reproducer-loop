@@ -1,0 +1,5 @@
+HTTP_CODE: 200
+FINAL_URL: https://ftp.cdc.gov/pub/Health_Statistics/NCHS/datalinkage/linked_mortality/
+CONTENT_TYPE: text/html; charset=UTF-8
+SIZE: 8541
+TIME: 2.669537s
