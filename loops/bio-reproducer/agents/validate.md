@@ -43,8 +43,9 @@ workflow 内部回环与 Package 门控。
 
 ## 路由判定（本阶段核心职责）
 
-逐复现目标对比后，每个不达标目标必须给出**路由去向**（route_to），追加一行到
-`06_validate/routing.jsonl`：
+逐复现目标对比后，每个不达标目标必须给出**路由去向**（route_to），在**返回的
+`payload.route_to`** 给出（ADR-0058：workflow 从 payload 读回环决策，不再读
+routing.jsonl 文件）：
 
 | route_to | 触发信号（通用，非论文特定判断） |
 |----------|------|
@@ -65,7 +66,7 @@ workflow 内部回环与 Package 门控。
 
 1. **定义检查项** — 从 plan.md 的 Expected Results 和 Paper Claims 推导该论文的验证检查项，归入四个通用维度（见下）
 2. **执行对比** — 尽可能自动化提取实际值并与期望值对比；无法自动化的由 agent 审查
-3. **综合自评** — 加权汇总各检查项得分，输出内部自评（`metrics.json`）与路由记录（`routing.jsonl`）
+3. **综合自评** — 加权汇总各检查项得分，输出内部自评（`metrics.json`）与路由决策（payload.route_to）
 4. **Figure-level validation** — 对关键 figure/panel 做图像到图像视觉比较
 
 ## 定义验证检查项
@@ -300,9 +301,9 @@ route_to/reason，一行一事件）；但 workflow **不再读取它做回环**
 ## Next Action（内部路由）
 
 - **全部目标达标**：route_to 全为 null，复现完成，进入 Package。
-- **存在不达标目标**：已在 routing.jsonl 为每个不达标目标记录 route_to；
-  workflow 按预算（`routing_budget`）重跑对应 phase 及下游；预算耗尽后如实
-  留在 routing.jsonl（不掩盖）。
+- **存在不达标目标**：已在 payload.route_to 给出路由去向；
+  workflow 按预算（`routing_budget`）重跑对应 phase 及下游；预算耗尽后
+  workflow 如实记录（ADR-0058：框架 run_rerun_loop 返回 exhausted，不掩盖）。
 - **BLOCKED**：记录阻塞项；等待条件满足或标记为不可复现。
 - **FAILED**：记录失败分析；如根因明确且可修正，路由回最早出错 phase；否则标记为不可复现。
 ```
@@ -313,7 +314,7 @@ route_to/reason，一行一事件）；但 workflow **不再读取它做回环**
 - Figure validation 是必须步骤。
 - 关键 figure check 的主证据必须是 original image vs generated image 的 panel-level visual comparison。
 - 维度权重为默认值；如有调整，在 Score Breakdown 的 Notes 列记录理由。
-- 每个不达标目标**必须**在 routing.jsonl 落一行（含 route_to 与 reason）；达标目标也落一行（route_to=null），保证回环决策可追溯。
+- 每个不达标目标**必须**在返回的 payload 里给 route_to（含 reason）；达标目标 route_to 写 null，保证回环决策可追溯。
 - 触发路由只用通用信号（实际执行与声明不一致且未声明），不做论文特定判断、不拍阈值。
 - 回环重跑由 workflow 执行（覆盖旧产物）；本阶段只记录路由，不自行重跑。
 - Interpretation Guide 必须包含在 report.md 中，使读者无需参考本文件即可理解自评。
@@ -322,5 +323,5 @@ route_to/reason，一行一事件）；但 workflow **不再读取它做回环**
 
 返回 JSON，必须包含 `payload.verdict`（`REPRODUCED` / `PARTIAL` / `FAILED` / `BLOCKED`）——
 **内部自评**，仅供 workflow 内部 Package 门控与路由参考，不对外发布（对外 verdict 由
-外部独立 evaluator 给出）。路由记录写入 `06_validate/routing.jsonl`，完整自评写入
+外部独立 evaluator 给出）。路由决策经 payload.route_to 返回，完整自评写入
 `06_validate/report.md` 和 `metrics.json`，不要塞进返回值。
