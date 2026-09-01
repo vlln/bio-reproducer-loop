@@ -249,3 +249,17 @@ validate 报告切换到结果 CSV（bench-220 三个 HR 零正则复算通过�
 「外部不可得」按终态类别可区分、无需重试阈值（bench-234 vs bench-217）；参数缩减的
 通用检出信号是作者原码与实际执行码的 diff（bench-225）；answers 交叉核对容差由书写
 精度导出、无魔数。
+
+
+## ADR-0058 迁移验证（2026-09-01，bench-220-0026-migrate）
+
+> bio-reproducer workflow 从手写路由循环迁移到框架层 run_rerun_loop 后的首个
+> 完整端到端 run（远端 run-entry.sh）。
+
+| 项 | 值 |
+|----|-----|
+| run | `/storeData/gs/claroai-calibration/runs/bench-220-0026-migrate` |
+| 结果 | **REPRODUCED（validate 自评 100/100，无偏差 deviations:[]）**；独立评估 REPRODUCED 100（3/3 HR claims 交叉核对通过，值 1.63/3.32/2.42 与论文一致） |
+| 迁移验证点 | ① workflow 含 run_rerun_loop 正常加载执行（无 import 错误）；② `rerun: stage=X (stages_run=N)` 框架编排日志走通 7 阶段；③ validate 经 payload.route_to=null 返回（无回环，run_rerun_loop 正常终止）；④ Package check.log 通过；⑤ run-entry.sh exit=0 |
+| Provision | paper-r-env:4.2.0 镜像构建成功（3 次尝试：survminer 缺失、Deriv 编译失败后成功）——agent 失败重试正常 |
+| 发现 | **answers.csv value 带 CI 格式**（`1.63 (1.25–2.14)`）导致评估器 _locate 交叉核对 NO-EVIDENCE（value 非数值）；修正为纯数值后 3/3 通过——属 agent 书写格式问题（非迁移缺陷），run7 无此问题，建议 validate.md 明确 answers value 只写数值 |
