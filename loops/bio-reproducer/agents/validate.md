@@ -12,14 +12,22 @@ output:
           type: string
           enum: [REPRODUCED, PARTIAL, FAILED, BLOCKED]
           description: 内部自评（仅供 workflow 内部 Package 门控与路由参考，不对外发布；对外 verdict 只能由外部独立 evaluator 给出）
+        route_to:
+          type: [string, "null"]
+          enum: [data, provision, run, reader, null]
+          description: 路由去向（ADR-0058：workflow 从本字段读回环决策；null=全部达标）
+        reason:
+          type: [string, "null"]
+          description: 触发路由的事实证据（如「实际执行脚本为 *_patched.py 且 plan 未声明」），不写评分/猜测
       required: [verdict]
   required: [payload]
 ---
 # Phase 6: Validate
 
 ## 目标
-对比复现结果与论文声称，**判定不达标目标应回到哪个 phase**，并追加记录到
-`06_validate/routing.jsonl`。本阶段是系统内部的自反馈路由，**不产出对外评分**：
+对比复现结果与论文声称，**判定不达标目标应回到哪个 phase**，在返回的
+`payload.route_to` 给出路由去向（ADR-0058：workflow 从 payload 读回环决策，
+不再依赖 routing.jsonl 文件）。本阶段是系统内部的自反馈路由，**不产出对外评分**：
 对外 verdict 只能由外部独立 evaluator 给出（ADR-0011 §3）；本阶段输出仅用于
 workflow 内部回环与 Package 门控。
 复现范围非空时，检查项只从范围内目标（`01_plan/plan.md` Reproduction Target
@@ -171,24 +179,28 @@ BLOCKED 在评分前判定：当数据受限、代码缺失、权限不足或外
 
 自动化结果写入 `06_validate/metrics.json`，Manual 检查由 agent 审查后填入同一结构。`metrics.json` 保留机器可读的自评数据（`verdict`、`total_score`、`dimension_scores`、checks 计数、`figure_validation_status`、`deviations`），供 workflow 内部兜底读取 verdict。**本文件是内部自评记录，不是对外评分证据**（对外评分只读真实产物，见 ADR-0011 §4）。
 
-## 路由输出：06_validate/routing.jsonl
+## 路由输出（ADR-0058 迁移）
 
-本阶段唯一被 workflow 程序消费的路由输出。**追加式**写入，一行一个 JSON 事件，
-键名白名单（FC-003，不得加额外字段）：
+**回环决策通道 = 返回的 `payload.route_to`**（workflow 的 run_rerun_loop 从
+Validate 结果读取，不再读文件）。取值与触发信号：
 
-| 键 | 含义 | 取值 |
-|----|------|------|
-| `ts` | 时间戳 | ISO 8601 |
-| `target` | 复现目标 ID | plan.md 的 T1/T2/…（通用检查用 `-`） |
-| `decision` | 该目标的对比结论 | 如 `reproduced` / `deviation` / `blocked`（如实记录） |
-| `route_to` | 路由去向 | `data` / `provision` / `run` / `reader` / `null`（达标目标写 `null`） |
-| `reason` | 触发该路由的事实 | 具体证据（如「实际执行脚本为 *_patched.py 且 plan 未声明」），不写评分/猜测 |
+| route_to | 触发信号（通用，非论文特定判断） |
+|----------|------|
+| `data` | 数据不符：plan 声明的数据与 04_data 实际产物不一致（缺失、版本/范围错误） |
+| `provision` | 环境/版本不符：实际运行环境或工具版本与 plan 声明不一致 |
+| `run` | 参数或步骤不符：**实际执行的代码/参数与声明不一致**——如作者原始代码被修改（存在 `*_patched.py`、diff 未在 plan 声明）、声明执行的脚本与实际不一致 |
+| `reader` | 论文理解错误：plan.md 的复现目标/范围与论文声称不符 |
+| `null` | 全部达标（终止回环） |
 
-示例：
+返回示例（payload 内）：
 ```json
-{"ts": "2026-08-27T10:00:00Z", "target": "T1", "decision": "deviation", "route_to": "run", "reason": "实际执行脚本 DiscRisk_1_train_patched.py，plan 未声明该修改"}
-{"ts": "2026-08-27T10:00:01Z", "target": "T2", "decision": "reproduced", "route_to": null, "reason": ""}
+{"verdict": "PARTIAL", "route_to": "run", "reason": "实际执行脚本 DiscRisk_1_train_patched.py，plan 未声明该修改"}
 ```
+
+**routing.jsonl（可选交付记录，已不参与回环）**：如需对外交付路由轨迹，
+可追加写入 `06_validate/routing.jsonl`（FC-003 键名白名单：ts/target/decision/
+route_to/reason，一行一事件）；但 workflow **不再读取它做回环**——回环决策
+仅来自 payload.route_to。
 
 ## 图表比较输出
 

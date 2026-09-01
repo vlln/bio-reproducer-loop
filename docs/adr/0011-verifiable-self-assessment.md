@@ -92,14 +92,21 @@ bench-232 把公开可下载数据判为需申请、bench-225 私自削减分析
   `DiscRisk_1_train_patched.py` 即此类）。不试图自动判断「某参数是否属于缩减」——那需
   论文语义、无法通用化；只要求「改了必须声明，未声明即路由回 Run」
 - **输出**：内部路由决策——不达标目标应回到哪个 phase（数据不符 → Data；环境/版本不符
-  → Provision；参数或步骤不符 → Run；论文理解错误 → Reader），以及追加式
-  `06_validate/routing.jsonl`（字段：ts、target、判定、route_to、reason）
+  → Provision；参数或步骤不符 → Run；论文理解错误 → Reader），经 Validate 结果
+  `payload.route_to` 返回（ADR-0058：workflow 用框架 `run_rerun_loop` 读 payload 做
+  回环，不再读文件）
 - **不产出对外 verdict**：对外 verdict 只能由外部独立 evaluator 给出
-- **回环上限由调用方参数给定**（workflow 入参 / benchmark envelope 的 deadline 派生），
-  **不在系统内写死数字**；耗尽即终止并如实记入 routing.jsonl
+- **回环上限由调用方参数给定**（workflow 入参 / benchmark envelope 的 deadline 派生，
+  `routing_budget`），**不在系统内写死数字**；耗尽即终止（ADR-0058：框架
+  run_rerun_loop 返回 exhausted 如实记录）
+- **routing.jsonl（可选交付记录，已不参与回环）**：如需对外交付路由轨迹可追加写入
+  `06_validate/routing.jsonl`（FC-003 键名白名单：ts/target/decision/route_to/reason），
+  但回环决策**仅来自 payload.route_to**——routing.jsonl 不再是机制依赖（ADR-0058
+  迁移，2026-08-31）
 - Package 门控继续消费 validate 的单 key verdict（内部用途，不进证据面）
 
-这同时补上系统当前完全缺失的动态路由能力（`workflow.py:120-189` 为纯线性 fail-fast）。
+这同时补上系统当前完全缺失的动态路由能力（`workflow.py:120-189` 为纯线性 fail-fast；
+2026-08-31 迁移后由框架 `run_rerun_loop` 提供，见 ADR-0058）。
 
 ### 4. 证据面收缩：外部评分只读真实产物 + answers，并强制交叉核对
 
@@ -190,11 +197,11 @@ locator 会绑死被测系统的文件名与列名，baseline 一换即失效，
 |----------|------|---------|
 | FC-001 | 需被下游/评估者消费的事实必须落文件；agent 返回值仅允许 validate 的单 key verdict | 代码审查 + workflow 契约测试 |
 | FC-002 | 已有标准格式的事实必须用标准格式；自定义格式仅限 `answers` 与 `routing.jsonl` | 代码审查 + entry/产物 lint |
-| FC-003 | `answers` 与 `routing.jsonl` 使用键名白名单，不得含额外字段：answers 4 列 `target_id,value,unit,source_file`；routing.jsonl 5 键 `ts,target,decision,route_to,reason`（修订：§3 明示 routing 含 reason——触发路由的事实证据，故 FC-003 落实为键名白名单而非「不得含理由」） | schema lint（`artifact_checks.py: answers_parseable / routing_events_ok`）+ 契约测试 |
+| FC-003 | `answers` 与 `routing.jsonl` 使用键名白名单，不得含额外字段：answers 4 列 `target_id,value,unit,source_file`；routing.jsonl 5 键 `ts,target,decision,route_to,reason`（ADR-0058 修订：routing.jsonl 降级为可选交付记录，不参与回环；写了仍须合规） | schema lint（`artifact_checks.py: answers_parseable / routing_events_ok`）+ 契约测试 |
 | FC-004 | `06_validate/` 不得作为任何 rubric check 的证据源（含 converter 生成路径） | bundle validator + converter 测试 |
 | FC-005 | answers 中每个值必须可在结果文件中定位，否则该 claim 记为无证据、不计分 | evaluator 交叉核对实现 + 单元测试 |
 | FC-006 | Validate 不得产出对外 verdict；对外 verdict 仅来自独立 evaluator | 代码审查 + adapter 测试（禁止把 metrics.json 作为评分来源） |
-| FC-007 | 回环上限必须来自调用方参数，系统内不得写死；耗尽须记入 routing.jsonl | 代码审查 + workflow 测试 |
+| FC-007 | 回环上限必须来自调用方参数，系统内不得写死；耗尽须如实记录（ADR-0058：框架 run_rerun_loop 返回 exhausted，不掩盖） | 代码审查 + workflow 测试 |
 | FC-008 | Package 声明 completed 必须有 run.sh 执行日志且退出码 0，否则 partial | workflow 出口检查 + 契约测试 |
 
 ## 验证
