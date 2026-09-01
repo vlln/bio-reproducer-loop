@@ -41,6 +41,17 @@ workflow 内部回环与 Package 门控。
 - `05_run/figures/` — 生成图表和绘图输入
 - `05_run/reports/` — Nextflow 执行报告
 
+## answers.csv 格式纪律（FC-005 交叉核对前提）
+
+`05_run/answers.csv` 的 **value 列必须只写纯数值**（如 `1.63`），**禁止带单位、
+置信区间、括号、说明文字**（如 `1.63 (1.25–2.14)` 会被外部评估器的交叉核对判为
+NO-EVIDENCE——2026-09-01 bench-220-0026-migrate 实测）。正确做法：
+- value 只写数值本身（书写精度决定交叉核对容差，`0.5×10^-decimals`）
+- CI/区间等附加信息放 `source_file` 指向的结果文件（如 results CSV 的
+  ci_lower/ci_upper 列），不放 value
+- unit 列写单位（`value`/`count`/`ratio` 等），source_file 写相对路径
+- 每个复现目标必须逐字使用问题清单的 target_id（见任务注入段）
+
 ## 路由判定（本阶段核心职责）
 
 逐复现目标对比后，每个不达标目标必须给出**路由去向**（route_to），在**返回的
