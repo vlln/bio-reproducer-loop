@@ -39,3 +39,8 @@ work/
 .venv/
 .uv-cache/
 .pytest_cache/
+
+# PPT/演示文稿工作区（ppt-master 产物：backup/svg/pptx 导出等，非仓库资产）
+internel/
+projects/
+p0811/

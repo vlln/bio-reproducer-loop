@@ -243,9 +243,14 @@ deadline 和 completed teardown 全部必需。当前不允许 provider fallback
 | 07_package | `run.sh` + 干净环境执行日志（含退出码） | 执行日志退出码为 0（FC-008，单元 06） |
 
 允许的自定义格式只有两类（FC-002/FC-003 键名白名单）：
-- `05_run/answers.csv`：4 列 `target_id,value,unit,source_file`，无状态词/判断/理由
+- `05_run/answers.csv`：4 列 `target_id,value,unit,source_file`，无状态词/判断/理由；
+  `value` 只写纯数值（禁止单位/CI/括号，单位入 `unit` 列——2026-08-27 migrate run
+  实证：CI 格式使外部 evaluate_run 判 NO-EVIDENCE）
 - `06_validate/routing.jsonl`：5 键 `ts,target,decision,route_to,reason`，追加式一行一事件，
-  系统内部路由（数据不符→data、环境/版本→provision、参数/步骤→run、论文理解→reader）
+  系统内部路由（数据不符→data、环境/版本→provision、参数/步骤→run、论文理解→reader）。
+  **ADR-0058 修订：已降级为可选交付记录**——回环决策改由框架 `run_rerun_loop` 消费
+  Validate 返回的 `payload.route_to` 直接驱动，被测系统 workflow 不再读取本文件做回环；
+  写了仍须符合 FC-003 键名白名单
 
 **NO-EVIDENCE 语义**（FC-005）：answers 值无法在自述 source_file 中定位、产物缺失或
 target 缺失 → 该 claim 记为 `no_evidence`，**不计分不扣分**（不是判错）；全部 check

@@ -1,6 +1,7 @@
 """Run phase 产物契约 + routing.jsonl 契约测试（ADR-0011 §2/§3，单元 03）。
 
-- 05_run 结果契约：results/ CSV 非空 + answers.csv 表头白名单（FC-003）
+- 05_run 结果契约：results/ CSV 非空 + answers.csv 表头白名单（FC-003）+
+  value 纯数值（2026-08-27 migrate run 实证补强）
 - routing.jsonl 键名白名单（FC-003）：ts/target/decision/route_to/reason
 - answers 的「值可定位」交叉核对（FC-005）由单元 04 evaluator 实现，本文件不覆盖
 """
@@ -41,6 +42,45 @@ def test_answers_parseable_rejects_extra_judgment_columns(tmp_path):
 
 def test_answers_parseable_missing_file(tmp_path):
     assert ac.answers_parseable(tmp_path / "05_run" / "answers.csv") is False
+
+
+def test_answers_parseable_rejects_ci_format_value(tmp_path):
+    # value 混入置信区间（2026-08-27 migrate run 实证：CI 格式使外部评估 NO-EVIDENCE）
+    _write_answers(tmp_path,
+                   "target_id,value,unit,source_file\nT1,1.63 (1.25–2.14),HR,results/t1.csv\n")
+    assert ac.answers_parseable(tmp_path / "05_run" / "answers.csv") is False
+
+
+def test_answers_parseable_rejects_unit_in_value(tmp_path):
+    # 单位应写 unit 列，混入 value 属违规
+    _write_answers(tmp_path, "target_id,value,unit,source_file\nT1,1.63 HR,value,results/t1.csv\n")
+    assert ac.answers_parseable(tmp_path / "05_run" / "answers.csv") is False
+
+
+def test_answers_parseable_rejects_empty_value(tmp_path):
+    _write_answers(tmp_path, "target_id,value,unit,source_file\nT1,,HR,results/t1.csv\n")
+    assert ac.answers_parseable(tmp_path / "05_run" / "answers.csv") is False
+
+
+def test_answers_parseable_rejects_na_value(tmp_path):
+    _write_answers(tmp_path, "target_id,value,unit,source_file\nT1,NA,HR,results/t1.csv\n")
+    assert ac.answers_parseable(tmp_path / "05_run" / "answers.csv") is False
+
+
+def test_answers_parseable_accepts_scientific_notation(tmp_path):
+    _write_answers(tmp_path, "target_id,value,unit,source_file\nT1,3.32e-2,HR,results/t1.csv\n")
+    assert ac.answers_parseable(tmp_path / "05_run" / "answers.csv") is True
+
+
+def test_check_run_phase_rejects_ci_value(tmp_path):
+    results = tmp_path / "05_run" / "results"
+    results.mkdir(parents=True)
+    (results / "table2.csv").write_text("g,hr\nA,1.63\n")
+    (tmp_path / "05_run" / "answers.csv").write_text(
+        "target_id,value,unit,source_file\nT1,1.63 (1.25–2.14),HR,results/table2.csv\n")
+    ok, detail = ac.check_run_phase(tmp_path)
+    assert ok is False
+    assert "纯数值" in detail
 
 
 # ── check_run_phase：存在 + 可被标准工具解析 ─────────────────────────

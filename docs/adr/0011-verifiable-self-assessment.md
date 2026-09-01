@@ -199,7 +199,7 @@ locator 会绑死被测系统的文件名与列名，baseline 一换即失效，
 | FC-002 | 已有标准格式的事实必须用标准格式；自定义格式仅限 `answers` 与 `routing.jsonl` | 代码审查 + entry/产物 lint |
 | FC-003 | `answers` 与 `routing.jsonl` 使用键名白名单，不得含额外字段：answers 4 列 `target_id,value,unit,source_file`；routing.jsonl 5 键 `ts,target,decision,route_to,reason`（ADR-0058 修订：routing.jsonl 降级为可选交付记录，不参与回环；写了仍须合规） | schema lint（`artifact_checks.py: answers_parseable / routing_events_ok`）+ 契约测试 |
 | FC-004 | `06_validate/` 不得作为任何 rubric check 的证据源（含 converter 生成路径） | bundle validator + converter 测试 |
-| FC-005 | answers 中每个值必须可在结果文件中定位，否则该 claim 记为无证据、不计分 | evaluator 交叉核对实现 + 单元测试 |
+| FC-005 | answers 中每个值必须可在结果文件中定位，否则该 claim 记为无证据、不计分；`value` 必须为**有限纯数值**（禁止单位/CI/括号——`1.63 (1.25–2.14)` 无法被数值交叉核对解析，2026-08-27 迁移 run 实证：CI 格式使 C1-C3 全部 NO-EVIDENCE；单位写 unit 列，CI 上下界放结果源表） | evaluator 交叉核对实现 + `artifact_checks.py: answers_parseable`（value 纯数值逐行校验）+ 单元测试 |
 | FC-006 | Validate 不得产出对外 verdict；对外 verdict 仅来自独立 evaluator | 代码审查 + adapter 测试（禁止把 metrics.json 作为评分来源） |
 | FC-007 | 回环上限必须来自调用方参数，系统内不得写死；耗尽须如实记录（ADR-0058：框架 run_rerun_loop 返回 exhausted，不掩盖） | 代码审查 + workflow 测试 |
 | FC-008 | Package 声明 completed 必须有 run.sh 执行日志且退出码 0，否则 partial | workflow 出口检查 + 契约测试 |

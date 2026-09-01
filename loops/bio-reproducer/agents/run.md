@@ -78,7 +78,11 @@ agent 必须尝试运行作者代码或记录阻止执行的具体不兼容性�
   （v1 风格任务），用 plan.md 复现目标的 T 编号作内部标识。`source_file` 指向
   `results/` 下**该值实际所在文件**（相对路径）。**文件位置：`05_run/answers.csv`
   根目录，不是 `05_run/results/` 下**（run3 实证：放 results/ 内使 lint 判定
-  缺失）。只记标识符与数值，**不含状态词、判断、理由**（FC-003）
+  缺失）。只记标识符与数值，**不含状态词、判断、理由**（FC-003）。`value` 列
+  **只写纯数值**（如 `1.63`、`3.32e-2`）：**禁止单位、置信区间、括号或任何
+  非数值字符**——`1.63 (1.25–2.14)` 属违规（2026-08-27 migrate run 实证：
+  CI 格式使外部 evaluate_run 判 NO-EVIDENCE）；单位一律写 `unit` 列，CI
+  上下界如需记录放在 `results/` 源表（`source_file` 指向它）
 - **命令日志**：每个主要 pipeline step 的执行命令 + 退出码记入
   `reports/commands.log`（追加式：`ts,step,command,exit_code`），
   使「实际执行了什么」可核验
@@ -138,7 +142,8 @@ Trace/report files: reports/...
   失败原因和 fallback 输入来源。
 - **核心结果必须落 `results/` 为 CSV/TSV，不得只写在散文里**；论文数值声明
   必须转录到 `answers.csv`（target_id,value,unit,source_file），值必须能在
-  自述的 source_file 中定位到。
+  自述的 source_file 中定位到；`value` 只写纯数值（禁止单位/CI/括号，单位写
+  `unit` 列——2026-08-27 migrate run 实证：CI 格式使外部评估 NO-EVIDENCE）。
 - **修改作者代码必须声明**：若需修改作者提供的脚本/notebook（patch、参数替换），
   修改后的脚本名与差异理由必须写入 `run_results.md`（如 `*_patched.py`）；不声明
   的修改会被 Phase 6 按通用信号路由回本阶段。

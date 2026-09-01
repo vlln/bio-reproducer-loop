@@ -70,7 +70,7 @@ PHASES = {
         "prompt": "对比复现结果与论文声称。",
         "agent_def": "validate",
         "label": "Validate",
-        "goal": "完整对比复现结果与论文声称，判定不达标目标应回到哪个 phase，并追加记录到 routing.jsonl。",
+        "goal": "完整对比复现结果与论文声称，判定不达标目标应回到哪个 phase，并在返回的 payload.route_to 中给出路由去向（data/provision/run/reader；ADR-0058：workflow 从 payload 读回环决策，不再读 routing.jsonl）。",
         "goal_max_iterations": 3,
     },
     "Package": {

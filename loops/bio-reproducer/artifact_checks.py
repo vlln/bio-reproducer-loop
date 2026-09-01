@@ -9,6 +9,7 @@
 + 文件存在属已获取。系统内不写死任何重试次数/比例常量。
 """
 import csv
+import math
 import re
 from pathlib import Path
 
@@ -139,18 +140,47 @@ def check_data_phase(workdir="."):
 ANSWERS_COLUMNS = ["target_id", "value", "unit", "source_file"]
 
 
+def _is_pure_numeric(v):
+    """value 列必须为可解析的有限纯数值（FC-005 交叉核对前提）。
+
+    拒绝置信区间/单位/括号等非数值写法（如 `1.63 (1.25–2.14)`）——
+    2026-08-27 migrate run 实证：CI 格式使外部 evaluate_run 判 NO-EVIDENCE。
+    单位一律写 unit 列；空值/NA/inf/nan 均非有效复现值。
+    """
+    s = v.strip()
+    if not s:
+        return False
+    try:
+        return math.isfinite(float(s))
+    except ValueError:
+        return False
+
+
 def answers_parseable(path):
-    """answers.csv 表头必须精确等于 target_id/value/unit/source_file（FC-003 白名单）。
+    """answers.csv 表头必须精确等于 target_id/value/unit/source_file（FC-003 白名单），
+    且每行 value 必须为有限纯数值（单位/CI/括号属违规——单位写 unit 列）。
 
     含额外列（状态词/判断/理由）或缺列都算违规；列顺序不限。
     """
     try:
         with open(path, newline="", encoding="utf-8") as f:
-            header = next(csv.reader(f))
+            rows = list(csv.reader(f))
     except (OSError, StopIteration, csv.Error):
         return False
-    cols = {h.strip().lower() for h in header}
-    return cols == set(ANSWERS_COLUMNS)
+    if not rows:
+        return False
+    cols = {h.strip().lower() for h in rows[0]}
+    if cols != set(ANSWERS_COLUMNS):
+        return False
+    # 列顺序不限 → 定位 value 列索引后逐行校验
+    header = [h.strip().lower() for h in rows[0]]
+    vi = header.index("value")
+    for row in rows[1:]:
+        if not row:  # 空行跳过（csv.reader 对空白行返回空列表）
+            continue
+        if len(row) <= vi or not _is_pure_numeric(row[vi]):
+            return False
+    return True
 
 
 def run_phase_evidence(run_dir):
@@ -178,7 +208,8 @@ def check_run_phase(workdir=".", question_keys=None):
     判据（防 Run 幻觉 complete——返回 complete 却无结果文件）：
     - `05_run/` 目录存在
     - `results/` 至少一个非空 CSV/TSV（结果本体，可被标准 csv 解析）
-    - `answers.csv` 存在且表头合规（target_id,value,unit,source_file）
+    - `answers.csv` 存在且表头合规（target_id,value,unit,source_file），
+      每行 value 为有限纯数值（单位/CI/括号属违规——2026-08-27 migrate run 实证）
     - 任务注入段提供问题清单（question_keys 非空）时，answers 的 target_id
       必须 ⊆ 问题清单键（ADR-0011 §4.1 / Interface 0002 §2.1：公开问题清单键
       是外部 evaluator 与 oracle claims 匹配的唯一键；用 plan.md 内部 T 编号
@@ -194,7 +225,10 @@ def check_run_phase(workdir=".", question_keys=None):
     if not evidence["results_csv"]:
         return False, "05_run/results/ 无任何非空 CSV/TSV 结果文件"
     if not evidence["has_answers"]:
-        return False, "05_run/answers.csv 缺失或表头不合规（须含 target_id,value,unit,source_file）"
+        return False, (
+            "05_run/answers.csv 缺失或不合规（表头须为 target_id,value,unit,"
+            "source_file 且每行 value 为纯数值，禁止单位/CI/括号）"
+        )
     # 键对齐：answers target_id ⊆ 任务问题清单键（question_keys 由评测方传入）
     qkeys = _as_key_set(question_keys)
     if qkeys:

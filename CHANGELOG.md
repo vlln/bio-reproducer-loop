@@ -179,6 +179,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ADR-0010 修订块、Interface 0002 v2（claims 评分协议）、Spec 0001（接入段/BR-018/
   术语）、AC-0005、Plan 0025（plan+report+README）。
 
+### Changed (Plan 0026-09 — answers value 纯数值强制 + ADR-0058 迁移审查缺口闭环，2026-09-01)
+
+- **answers value 纯数值程序化强制**（4 个正交审查的条件缺口闭环，审查通过 → 用户同意
+  push）：`artifact_checks.answers_parseable` 从「仅表头白名单」升级为逐行校验 value 为
+  有限纯数值（`_is_pure_numeric`：拒绝单位/CI/括号/NA/空值，接受科学计数）；`agents/run.md`
+  明示 value 只写纯数值（单位入 unit 列，CI 上下界放 results/ 源表）；interface 0001 同步。
+  背景：2026-08-27 迁移 run 把源表 `hr_formatted` 列（CI 格式）误当 value 转录，外部
+  evaluate_run 判 C1-C3 全部 NO-EVIDENCE（value 非数值）；修正为纯数值后 3/3 交叉核对通过。
+- **workflow Validate goal 文本同步**：回环决策主通道改为 `payload.route_to`（ADR-0058），
+  移除 routing.jsonl 残留提法；interface 0001 注明 routing.jsonl 降级为可选交付记录。
+- **迁移 run 归档补证**：修正版 `answers.fixed.csv`（源表 hr 列派生，原始产物未动）+
+  生成脚本 `benchmarks/converters/claroai/fix-answers-0026-migrate.py` + before/after
+  独立评估 JSON 对（`eval-0026-migrate-ci.json` C1-C3 NO-EVIDENCE vs
+  `eval-0026-migrate-fixed.json` REPRODUCED 100 3/3 passed）归档远端持久资产区；
+  远端 `scripts/evaluate_run.py` 同步仓库版（旧版缺 answers 打包，评估口径漂移）。
+- 测试：`test_run_phase_contract.py` 新增 7 用例（CI/单位/空值/NA 拒绝 + 科学计数接受 +
+  check_run_phase 拦截）；全量 243 passed / 4 skipped。
+
 ## [0.2.0] — 2026-08-04
 
 ### Added

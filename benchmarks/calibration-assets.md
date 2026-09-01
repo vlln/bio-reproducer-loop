@@ -259,10 +259,15 @@ validate 报告切换到结果 CSV（bench-220 三个 HR 零正则复算通过�
 | 项 | 值 |
 |----|-----|
 | run | `/storeData/gs/claroai-calibration/runs/bench-220-0026-migrate` |
-| 结果 | **REPRODUCED（validate 自评 100/100，无偏差 deviations:[]）**；独立评估 REPRODUCED 100（3/3 HR claims 交叉核对通过，值 1.63/3.32/2.42 与论文一致） |
+| 结果 | **REPRODUCED（validate 自评 100/100，无偏差 deviations:[]）**；独立评估（修正版）REPRODUCED 100（3/3 HR claims 交叉核对通过，值 1.6339/3.3246/2.423 与论文 1.63/3.32/2.42 一致） |
 | 迁移验证点 | ① workflow 含 run_rerun_loop 正常加载执行（无 import 错误）；② `rerun: stage=X (stages_run=N)` 框架编排日志走通 7 阶段；③ validate 经 payload.route_to=null 返回（无回环，run_rerun_loop 正常终止）；④ Package check.log 通过；⑤ run-entry.sh exit=0 |
 | Provision | paper-r-env:4.2.0 镜像构建成功（3 次尝试：survminer 缺失、Deriv 编译失败后成功）——agent 失败重试正常 |
-| 发现 | **answers.csv value 带 CI 格式**（`1.63 (1.25–2.14)`）导致评估器 _locate 交叉核对 NO-EVIDENCE（value 非数值）；修正为纯数值后 3/3 通过——属 agent 书写格式问题（非迁移缺陷），run7 无此问题，建议 validate.md 明确 answers value 只写数值 |
+| 发现 | **answers.csv value 带 CI 格式**（`1.63 (1.25–2.14)`）——agent 把源表
+  `hr_formatted` 列误当 value 转录，而 `hr` 列（1.6339/3.3246/2.423）就是纯数值。
+  CI 格式使现行评估器（evaluate_run.py）C1-C3 全部「交叉核对失败 — value 非数值
+  （NO-EVIDENCE，不计分）」；修正为纯数值后 3/3 passed=true——属 agent 书写格式
+  问题（非迁移缺陷），run7 无此问题，已落 validate.md/run.md 明确 value 只写纯数值
+  + artifact_checks 程序化强制（2026-09-01 审查 5e37e08a 归档补证） |
 
 ## ADR-0058 迁移成对 ablation（2026-09-01）
 
@@ -273,10 +278,25 @@ validate 报告切换到结果 CSV（bench-220 三个 HR 零正则复算通过�
 |------|--------------|----------------------|------|
 | workflow 路由实现 | 手写 while routing_budget + routing.jsonl | 框架 run_rerun_loop + payload.route_to | 迁移等价 |
 | verdict | REPRODUCED 100 | REPRODUCED 100 | **无回归** |
-| 独立评估 | REPRODUCED 100（3/3 claims 交叉核对） | REPRODUCED 100（3/3 claims，修正 answers 格式后） | 等价 |
+| 独立评估 | REPRODUCED 100（3/3 claims 交叉核对） | 归档产物本身：C1-C3 NO-EVIDENCE（value 非数值）；**修正版** REPRODUCED 100（3/3 交叉核对） | 等价（证据：`scripts/eval-0026-migrate-ci.json` vs `eval-0026-migrate-fixed.json`） |
 | 7 阶段走通 | ✓ | ✓ | 等价 |
 | 路由触发 | unit 26 用例覆盖 | unit 26 用例覆盖（test_routing_*） | 等价 |
 | 编排日志 | 无框架日志 | `rerun: stage=X (stages_run=N)` 框架编排日志 | 迁移生效证据 |
 
 **结论**：迁移无行为回归；路由机制从 loop 层（自造文件+自检）移到框架层
 （run_rerun_loop + payload），验证了 ADR-0058 的设计目标。
+
+### 归档补证（2026-09-01，审查 5e37e08a gap a 闭环）
+
+迁移 run 的「独立评估 100」此前缺归档证据支撑，现补齐（全部在远端持久资产区）：
+
+| 资产 | 位置 | 说明 |
+|------|------|------|
+| 修正版 answers | `runs/bench-220-0026-migrate/repro-data/05_run/answers.fixed.csv` | value 取源表 `hr` 列；**原始 CI 格式 answers.csv 未改动**（诚实保留 run 产物） |
+| 修正版生成脚本 | `scripts/fix-answers-0026-migrate.py` | 逐行保留 target_id/unit/source_file，从 `all_cvd_hr_results.csv` 的 `hr` 列派生 value；全部行可映射才成功 |
+| 修正版独立评估 | `scripts/eval-0026-migrate-fixed.json` | **REPRODUCED 100**，C1-C3 passed=true（1.6339/3.3246/2.423 vs 论文 1.63/3.32/2.42） |
+| CI 格式对照评估 | `scripts/eval-0026-migrate-ci.json` | 原始产物重评：C1-C3 全部「value 非数值（NO-EVIDENCE，不计分）」——CI 格式不判错但使数值 claim 无证据 |
+| 评估器同步 | `scripts/evaluate_run.py` | 已同步仓库版（旧版不含 answers+results 打包，评估口径漂移） |
+
+修正版与对照版为同一仓库版 evaluate_run.py 对同一 run 产物的唯一差异 = answers value
+列格式，构成干净的 before/after 证据对。
