@@ -2,7 +2,10 @@ FROM ghcr.io/prefix-dev/pixi:0.72.2@sha256:008522050e595a65f6ace804d6159c677afed
 
 FROM python:3.10-slim@sha256:c1e4e6c01eb489c422288b2de34b0761ca316f7a2d98e2c33f47659a73ed108a
 
-ARG CLAUDE_CODE_VERSION=2.1.126
+# claude 2.1.247：CLAUDE_STREAM_IDLE_TIMEOUT_MS 流式空闲看门狗（BL-013 修复，
+# 官方 2.1.210 起支持；2.1.126 默认关闭导致 Provision 收尾挂起）。镜像 tag
+# system-idlefix-cc247 的 cc247 即此版本。
+ARG CLAUDE_CODE_VERSION=2.1.247
 ARG MIP_VERSION=0.2.0
 ARG MIP_SHA256=ccb4d164197d0c39750041b312bda6f804c74626a168e97539c8fdd7cc6597f0
 
