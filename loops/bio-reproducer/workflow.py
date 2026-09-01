@@ -5,8 +5,11 @@ eval harness 从同一注册表取单 agent 调用的 prompt/agent_def
 （loopflow ≥0.26.0 的 `--agent` 单 agent 运行入口）。
 
 单元 03（ADR-0011 §3/§5，BL-016）：Data/Run 的 goal 从 01_plan/plan.md 派生
-（删 RNA-seq 硬编码）；Validate 后按 06_validate/routing.jsonl 做内部路由回环，
-回环预算来自调用方参数 routing_budget（系统内不写死）。
+（删 RNA-seq 硬编码）。单元 0115（ADR-0058）：Validate 后的内部路由回环改用
+框架层 `run_rerun_loop`——validate 回调从 Validate 结果 payload.route_to 读
+路由决策，route_map 即 ROUTE_CHAINS，回环预算来自调用方参数 routing_budget
+（系统内不写死）。routing.jsonl 保留为 validate 的可选交付记录（不依赖它
+做回环，FC-003 自检随证据面切换移除）。
 """
 import json
 import sys
@@ -142,40 +145,31 @@ PREREQ = {
     "Validate": ("01_plan/plan.md", "05_run/run_results.md"),
 }
 
-# 路由目标 → 重跑链（含下游；Reader 重跑后 plan.md 变化，Bootstrap 起全部重跑）
+# 路由目标 → 重跑链（含下游；Reader 重跑后 plan.md 变化，Bootstrap 起全部重跑）。
+# ADR-0058 迁移：直接作为 run_rerun_loop 的 route_map（route_key → 重跑起始
+# stage 名），由框架执行回退编排。
 ROUTE_CHAINS = {
-    "Reader": ["Reader", "Bootstrap", "Provision", "Data", "Run", "Validate"],
-    "Provision": ["Provision", "Data", "Run", "Validate"],
-    "Data": ["Data", "Run", "Validate"],
-    "Run": ["Run", "Validate"],
+    "reader": "Reader",
+    "provision": "Provision",
+    "data": "Data",
+    "run": "Run",
 }
 
 
-def _read_routing(workdir="."):
-    """读 06_validate/routing.jsonl（追加式，一行一事件）。"""
-    path = Path(workdir) / "06_validate" / "routing.jsonl"
-    events = []
-    if path.is_file():
-        for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                events.append(json.loads(line))
-            except json.JSONDecodeError:
-                continue
-    return events
+def _route_from_result(result):
+    """从 Validate 阶段结果读路由决策（ADR-0058 迁移：取代 routing.jsonl）。
 
-
-def _routing_route(events):
-    """取**最后一个事件**的 route_to 决定回环目标（最近一次 Validate 的决策）。
-
-    routing.jsonl 为追加式，历史事件不代表当前状态；最后一次 Validate 的
-    route_to 为空（null）即终止。无事件返回 None。
+    Validate agent 的 goal 返回 payload.route_to（如 "data"/"run"/None）。
+    返回 (route_key, message)：route_key None = 全部达标终止。
     """
-    if not events:
-        return None
-    return events[-1].get("route_to") or None
+    if result is None or result.value is None:
+        return None, None
+    payload = result.value.get("payload", {}) if isinstance(result.value, dict) else {}
+    route_key = payload.get("route_to")
+    if not route_key:
+        return None, None
+    reason = payload.get("reason") or ""
+    return route_key, reason
 
 
 def _phase(agent, name, common, goal=None):
@@ -306,32 +300,94 @@ def run(agent, parallel, pipeline, log, args, workflow, intervene, state):
             return None
 
     # ── Phase 2-6: Bootstrap → Provision → Data → Run → Validate ────
-    validate_result, plan_text = _execute_sequence(
-        agent, common, log,
-        ["Bootstrap", "Provision", "Data", "Run", "Validate"],
-        plan_text,
-        question_keys=question_keys,
-    )
-    if validate_result is None:
+    # ADR-0058 迁移：路由回环由框架 run_rerun_loop 编排（取代手写 while +
+    # routing.jsonl 读取）。stages = 主链 phase（含 Reader：route_to=reader
+    # 时回退重读论文、Bootstrap 起全部重跑，与原 ROUTE_CHAINS.Reader 链语义
+    # 一致）；stage_fn 执行单 phase 并做产物检查；validate 从 Validate 结果
+    # payload.route_to 读决策。首轮 Reader + confirm_plan 门保留在上方。
+    from loopflow.domain.rerun_loop import RouteDecision, RerunOutcome, Stage, run_rerun_loop
+
+    main_chain = ["Reader", "Bootstrap", "Provision", "Data", "Run", "Validate"]
+    routing_budget = int(args.get("routing_budget", 0) or 0)
+
+    # 路由决策状态（stage_fn/validate 闭包共享）：最近一次 Validate 的结果
+    routing_state = {
+        "validate_result": None,
+        "plan_text": plan_text,
+        # 首轮 Reader 已在 run() 开头执行（含 confirm_plan 门）；run_rerun_loop
+        # 从 Reader 开始的 stages 里，首轮 Reader 复用已有结果，回退重跑才
+        # 真正重读论文。
+        "reader_done": True,
+    }
+
+    def stage_fn(stage, context):
+        name = stage.name
+        # 首轮 Reader 复用 run() 开头的结果；回退重跑（reruns>0）才真正执行
+        if name == "Reader" and context.get("reruns") == 0:
+            return RerunOutcome(value=routing_state["validate_result"] or {"payload": {}},
+                                session_id=None)
+        # 前置产物检查（fail-fast）
+        if name in PREREQ and not _require_files(log, *PREREQ[name]):
+            raise RuntimeError(f"前置产物缺失: {PREREQ[name]}")
+        goal = None
+        if name in ("Data", "Run"):
+            goal = derive_goal(name, routing_state["plan_text"] or "")
+        result = _phase(agent, name, common, goal=goal)
+        if result.status != "complete":
+            log(f"{name}: {result.status} — {result.reason} (turns={result.turns}, tokens={result.tokens})")
+            raise RuntimeError(f"{name} 阶段未完成: {result.reason}")
+        # 各 phase 产物契约检查（ADR-0011 §5 fail-fast）
+        if name == "Reader":
+            if not _require_files(log, "01_plan/plan.md"):
+                raise RuntimeError("Reader 未产出 plan.md")
+            if not _require_parsable(log, check_reader_phase, ".", question_keys):
+                raise RuntimeError("Reader plan.md 未通过契约检查")
+            routing_state["plan_text"] = _read_plan_text()
+        elif name == "Provision" and not _require_parsable(log, check_provision_phase, "."):
+            raise RuntimeError("Provision 产物未通过契约检查")
+        elif name == "Data" and not _require_parsable(log, check_data_phase, "."):
+            raise RuntimeError("Data 产物未通过契约检查")
+        elif name == "Run" and not _require_parsable(log, check_run_phase, ".", question_keys):
+            raise RuntimeError("Run 产物未通过契约检查")
+        elif name == "Validate":
+            routing_state["validate_result"] = result
+        return RerunOutcome(value=result, session_id=getattr(result, "session_id", None))
+
+    def validate():
+        """从最近一次 Validate 结果读 route_to → RouteDecision | None。"""
+        result = routing_state["validate_result"]
+        route_key, message = _route_from_result(result)
+        if route_key is None:
+            return None
+        return RouteDecision(route_key, message)
+
+    stages = [Stage(name=n, prompt=PHASES[n]["prompt"], agent_def=PHASES[n]["agent_def"],
+                    label=PHASES[n]["label"], goal=PHASES[n]["goal"],
+                    goal_max_iterations=PHASES[n]["goal_max_iterations"])
+              for n in main_chain]
+
+    try:
+        rerun = run_rerun_loop(
+            stages,
+            validate=validate,
+            route_map=ROUTE_CHAINS,   # route_key → 重跑起始 stage 名
+            budget=routing_budget,
+            stage_fn=stage_fn,
+            emit_log=log,
+        )
+    except RuntimeError as exc:
+        log(f"阶段执行失败: {exc}")
         return None
 
-    # ── 内部路由回环（ADR-0011 §3；FC-007：预算来自调用方参数）────────
-    # routing_budget：允许的回环轮数；0 = 线性执行（默认）。benchmark
-    # envelope 按 deadline 派生传入，系统内不写死上限。
-    routing_budget = int(args.get("routing_budget", 0) or 0)
-    while routing_budget > 0:
-        route = _routing_route(_read_routing())
-        if route is None:
-            break
-        chain = ROUTE_CHAINS.get(route)
-        if chain is None:
-            log(f"Validate 路由目标未知: {route}；终止回环")
-            break
-        log(f"Validate 路由回 {route}（回环预算剩余 {routing_budget - 1}）")
-        validate_result, plan_text = _execute_sequence(agent, common, log, chain, plan_text)
-        if validate_result is None:
-            return None
-        routing_budget -= 1
+    if rerun.status == "exhausted":
+        # 回退预算耗尽或路由未知：停止回环，用最近一次 Validate 结果收尾
+        # （ADR-0058：耗尽如实记录，不掩盖；FC-007 预算来自调用方）
+        log(f"路由回环终止（{rerun.status}）：{rerun.reason}")
+
+    validate_result = routing_state["validate_result"]
+    if validate_result is None:
+        log("未获得 Validate 结果")
+        return None
 
     # ── Phase 7: Package ─────────────────────────────────────────────
     verdict = _validation_verdict(validate_result)

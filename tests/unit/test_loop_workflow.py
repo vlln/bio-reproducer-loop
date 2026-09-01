@@ -28,8 +28,11 @@ REQUIRED_FILES = [
 ]
 
 
-def make_result(status="complete", verdict="REPRODUCED", reason=""):
-    value = {"payload": {"verdict": verdict}} if verdict is not None else None
+def make_result(status="complete", verdict="REPRODUCED", reason="", route_to=None):
+    payload = {"verdict": verdict}
+    if route_to is not None:
+        payload["route_to"] = route_to
+    value = {"payload": payload} if verdict is not None else None
     return SimpleNamespace(status=status, reason=reason, value=value, turns=1, tokens=100)
 
 
@@ -295,7 +298,11 @@ def test_registry_goals_have_no_rnaseq_hardcode():
 # ── 单元 03：Validate 内部路由回环（ADR-0011 §3，FC-007）────────────────
 
 class RoutingAgent(FakeAgent):
-    """Validate 调用时按预定序列写 routing.jsonl（None = 该轮写 route_to=null）。"""
+    """Validate 调用时按预定序列在 payload.route_to 返回路由（None = 达标）。
+
+    ADR-0058 迁移：路由决策从 Validate 结果 payload.route_to 读（取代
+    写 routing.jsonl 文件）。result 由 self.results 提供（调用方预填）。
+    """
 
     def __init__(self, routes):
         super().__init__()
@@ -305,46 +312,41 @@ class RoutingAgent(FakeAgent):
     def __call__(self, prompt, **kwargs):
         label = kwargs.get("label")
         if label == "Validate":
+            self.calls.append(label)
             self.validate_calls += 1
-            if self.routes:
-                route = self.routes.pop(0)
-                d = Path("06_validate")
-                d.mkdir(exist_ok=True)
-                with open(d / "routing.jsonl", "a", encoding="utf-8") as f:
-                    f.write(json.dumps(
-                        {"ts": "t", "target": "T1", "decision": "deviation" if route else "reproduced",
-                         "route_to": route, "reason": "" if route is None else "test"}) + "\n")
+            route = self.routes.pop(0) if self.routes else None
+            return make_result(route_to=route)
         return super().__call__(prompt, **kwargs)
 
 
 def test_routing_loop_reruns_run_chain(tmp_path):
     """route_to=Run → 重跑 Run+Validate 一次，预算 1 耗尽后线性收尾。"""
     write_full_evidence(tmp_path)
-    agent, intervene = RoutingAgent(["Run", None]), FakeIntervene()
+    agent, intervene = RoutingAgent(["run", None]), FakeIntervene()
     result, logs = run_workflow(tmp_path, agent, intervene, {"confirm_plan": False, "routing_budget": 1})
     assert agent.validate_calls == 2
     # 初始链 + 回环链（Run, Validate）
     assert agent.calls == ["Reader", "Bootstrap", "Provision", "Data", "Run", "Validate",
                            "Run", "Validate", "Package"]
-    assert any("路由回 Run" in line for line in logs)
+    assert any("route_key='run' → 回退到 Run" in line for line in logs)
     assert result["payload"]["verdict"] == "REPRODUCED"
 
 
 def test_routing_loop_routes_to_data(tmp_path):
     write_full_evidence(tmp_path)
-    agent, intervene = RoutingAgent(["Data", None]), FakeIntervene()
+    agent, intervene = RoutingAgent(["data", None]), FakeIntervene()
     result, logs = run_workflow(tmp_path, agent, intervene, {"confirm_plan": False, "routing_budget": 2})
     # 初始链 + 回环链（Data, Run, Validate）
     assert agent.calls == ["Reader", "Bootstrap", "Provision", "Data", "Run", "Validate",
                            "Data", "Run", "Validate", "Package"]
-    assert any("路由回 Data" in line for line in logs)
+    assert any("route_key='data' → 回退到 Data" in line for line in logs)
     assert result is not None
 
 
 def test_routing_budget_zero_is_linear(tmp_path):
     """默认 budget=0（调用方未给）→ 不回环，保持现行为。"""
     write_full_evidence(tmp_path)
-    agent, intervene = RoutingAgent(["Run", None]), FakeIntervene()
+    agent, intervene = RoutingAgent(["run", None]), FakeIntervene()
     result, _ = run_workflow(tmp_path, agent, intervene, {"confirm_plan": False})
     assert agent.validate_calls == 1
     assert agent.calls == ALL_PHASES
@@ -353,7 +355,7 @@ def test_routing_budget_zero_is_linear(tmp_path):
 def test_routing_budget_exhausted_stops_loop(tmp_path):
     """预算耗尽即终止（FC-007：上限来自调用方，耗尽如实结束）。"""
     write_full_evidence(tmp_path)
-    agent, intervene = RoutingAgent(["Run", "Run", "Run", "Run", None]), FakeIntervene()
+    agent, intervene = RoutingAgent(["run", "run", "run", "run", None]), FakeIntervene()
     result, logs = run_workflow(tmp_path, agent, intervene, {"confirm_plan": False, "routing_budget": 2})
     assert agent.validate_calls == 3  # 初始 + 2 轮回环
     assert agent.calls == ["Reader", "Bootstrap", "Provision", "Data", "Run", "Validate",
@@ -366,14 +368,14 @@ def test_routing_unknown_target_stops_loop(tmp_path):
     agent, intervene = RoutingAgent(["bogus"]), FakeIntervene()
     result, logs = run_workflow(tmp_path, agent, intervene, {"confirm_plan": False, "routing_budget": 3})
     assert agent.validate_calls == 1
-    assert any("路由目标未知" in line for line in logs)
+    assert any("不在 route_map" in line for line in logs)
     assert result is not None
 
 
 def test_routing_reader_chain_skips_confirm(tmp_path):
     """Reader 回环重跑全链，但不重新触发 confirm 门。"""
     write_full_evidence(tmp_path)
-    agent, intervene = RoutingAgent(["Reader", None]), FakeIntervene()
+    agent, intervene = RoutingAgent(["reader", None]), FakeIntervene()
     result, _ = run_workflow(tmp_path, agent, intervene, {"confirm_plan": False, "routing_budget": 1})
     assert agent.validate_calls == 2
     assert agent.calls == ["Reader", "Bootstrap", "Provision", "Data", "Run", "Validate",
