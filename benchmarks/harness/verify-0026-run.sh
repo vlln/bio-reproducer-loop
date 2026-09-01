@@ -66,13 +66,13 @@ else
   check "05_run 目录存在" 0
 fi
 
-echo; echo "--- Phase 6: Validate (06_validate/routing.jsonl) ---"
+echo; echo "--- Phase 6: Validate (06_validate) ---"
 VAL=$(find "$RUN" -maxdepth 2 -type d -name "06_validate" 2>/dev/null | head -1)
 if [ -n "$VAL" ]; then
   RT=$(find "$VAL" -name "routing.jsonl" 2>/dev/null | head -1)
   if [ -n "$RT" ] && [ -s "$RT" ]; then
-    check "routing.jsonl 非空" 1
-    # 键名白名单: ts/target/decision/route_to/reason
+    check "routing.jsonl 非空（可选交付记录）" 1
+    # 键名白名单: ts/target/decision/route_to/reason（写了必须合规，ADR-0058 可选）
     python3 - "$RT" <<'PY' >/dev/null 2>&1 && check "routing.jsonl 键名在白名单内" 1 || check "routing.jsonl 键名在白名单内" 0
 import json,sys
 allowed={"ts","target","decision","route_to","reason"}
@@ -82,7 +82,9 @@ for line in open(sys.argv[1]):
 PY
     grep -qE "reproduced|proceed|pass|blocked|no_evidence" "$RT" 2>/dev/null && check "routing.jsonl 有决策记录" 1 || check "routing.jsonl 决策记录" 0
   else
-    check "routing.jsonl 存在且非空" 0
+    # ADR-0058 迁移：routing.jsonl 为可选交付记录（回环决策在 payload.route_to），
+    # 不写不算失败
+    check "routing.jsonl 存在（可选，不写视为通过）" 1
   fi
 else
   check "06_validate 目录存在" 0
