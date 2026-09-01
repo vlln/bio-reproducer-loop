@@ -263,3 +263,20 @@ validate 报告切换到结果 CSV（bench-220 三个 HR 零正则复算通过�
 | 迁移验证点 | ① workflow 含 run_rerun_loop 正常加载执行（无 import 错误）；② `rerun: stage=X (stages_run=N)` 框架编排日志走通 7 阶段；③ validate 经 payload.route_to=null 返回（无回环，run_rerun_loop 正常终止）；④ Package check.log 通过；⑤ run-entry.sh exit=0 |
 | Provision | paper-r-env:4.2.0 镜像构建成功（3 次尝试：survminer 缺失、Deriv 编译失败后成功）——agent 失败重试正常 |
 | 发现 | **answers.csv value 带 CI 格式**（`1.63 (1.25–2.14)`）导致评估器 _locate 交叉核对 NO-EVIDENCE（value 非数值）；修正为纯数值后 3/3 通过——属 agent 书写格式问题（非迁移缺陷），run7 无此问题，建议 validate.md 明确 answers value 只写数值 |
+
+## ADR-0058 迁移成对 ablation（2026-09-01）
+
+> 迁移前后同 entry（bench-220）对比：旧 workflow（手写路由循环）vs 新 workflow
+> （框架 run_rerun_loop）。同论文、同 oracle、同 harness。
+
+| 维度 | 迁移前（run7） | 迁移后（0026-migrate） | 结论 |
+|------|--------------|----------------------|------|
+| workflow 路由实现 | 手写 while routing_budget + routing.jsonl | 框架 run_rerun_loop + payload.route_to | 迁移等价 |
+| verdict | REPRODUCED 100 | REPRODUCED 100 | **无回归** |
+| 独立评估 | REPRODUCED 100（3/3 claims 交叉核对） | REPRODUCED 100（3/3 claims，修正 answers 格式后） | 等价 |
+| 7 阶段走通 | ✓ | ✓ | 等价 |
+| 路由触发 | unit 26 用例覆盖 | unit 26 用例覆盖（test_routing_*） | 等价 |
+| 编排日志 | 无框架日志 | `rerun: stage=X (stages_run=N)` 框架编排日志 | 迁移生效证据 |
+
+**结论**：迁移无行为回归；路由机制从 loop 层（自造文件+自检）移到框架层
+（run_rerun_loop + payload），验证了 ADR-0058 的设计目标。
