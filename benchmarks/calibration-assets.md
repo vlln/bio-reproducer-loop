@@ -300,3 +300,15 @@ validate 报告切换到结果 CSV（bench-220 三个 HR 零正则复算通过�
 
 修正版与对照版为同一仓库版 evaluate_run.py 对同一 run 产物的唯一差异 = answers value
 列格式，构成干净的 before/after 证据对。
+
+### 合入与远端同步（2026-09-01，审查 ①②③④ 全部通过后执行）
+
+4 个正交对抗性审查全部通过（2 个有条件通过的条件已闭环），用户同意 push：
+
+| 项 | 结果 |
+|----|------|
+| bio-reproducer develop → github origin | ✅ fast-forward 59+1 commits（`7257846..e850c49`） |
+| loopflow develop → github origin | ✅ 走 PR #43（develop 受保护，5 项 status checks 全绿）→ merged `6ab2d99`；本地 develop 同步 |
+| 远端 ~/bio-reproducer | ✅ `git fetch origin && reset --hard origin/develop` = e850c49；清理 08-28 scp 临时同步落错路径的 4 个残留副本（run-entry.sh/test_loop_workflow.py/run.md/reader.md 根目录或 loops/ 下旧版，移 /tmp/bio-reproducer-stray-20260901/）——纪律文档完全 git 化 |
+| 远端 /storeData/gs/loopflow | ✅ dev-watchdog fast-forward → 6ab2d99（先 bundle 到 ab8cb56 供镜像重建，再 fetch origin 对齐）；editable 安装，运行中的 loop 即含 run_rerun_loop + 技能 preflight |
+| runtime 镜像重建 | 🔄 `bio-reproducer-runtime:system-idlefix-cc247` 用 build-runtime.sh 重建（loopflow=ab8cb56，含 BL-019 preflight；Dockerfile claude 默认 2.1.126→2.1.247 对齐 lineage，e850c49）——旧镜像内 skills.py 无 preflight（早于 ab8cb56） |
